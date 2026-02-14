@@ -1,0 +1,14 @@
+{
+  "name": "swissknife",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "server",
+    "app"
+  ],
+  "scripts": {
+    "server": "npm run dev --workspace=server",
+    "app": "npm start --workspace=app",
+    "typecheck": "tsc --noEmit --workspace=shared && tsc --noEmit --workspace=server"
+  }
+}

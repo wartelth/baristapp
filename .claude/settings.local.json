@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(npx tsx:*)",
+      "Bash(PORT=3099 timeout 3 npx tsx:*)",
+      "Bash(netstat:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3001 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }; Write-Host ''Done''\")",
+      "Bash(/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command 'Get-NetTCPConnection -LocalPort 3001 | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }; echo killed')",
+      "Bash(/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command 'Add-Type -AssemblyName System.Drawing; $bmp = New-Object System.Drawing.Bitmap\\(1024,1024\\); $g = [System.Drawing.Graphics]::FromImage\\($bmp\\); $g.Clear\\([System.Drawing.Color]::FromArgb\\(26,26,46\\)\\); $font = New-Object System.Drawing.Font\\(\"\"Segoe UI Emoji\"\",400\\); $g.DrawString\\([char]0x1F52A, $font, [System.Drawing.Brushes]::White, 100, 100\\); $bmp.Save\\(\"\"C:\\\\Users\\\\thiba\\\\Documents\\\\SwissKnife\\\\app\\\\assets\\\\icon.png\"\"\\); $g.Dispose\\(\\); $bmp.Dispose\\(\\); echo done')",
+      "Bash(npx expo install:*)",
+      "Bash(/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command 'New-NetFirewallRule -DisplayName \"\"Expo Metro\"\" -Direction Inbound -Protocol TCP -LocalPort 8081 -Action Allow -ErrorAction SilentlyContinue; New-NetFirewallRule -DisplayName \"\"SwissKnife Server\"\" -Direction Inbound -Protocol TCP -LocalPort 3001 -Action Allow -ErrorAction SilentlyContinue; echo \"\"Firewall rules added\"\"')",
+      "Bash(node -p:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:buildwithaws.substack.com)",
+      "WebFetch(domain:gist.github.com)"
+    ]
+  }
+}
