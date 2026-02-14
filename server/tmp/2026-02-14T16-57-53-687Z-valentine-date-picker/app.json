@@ -1,0 +1,191 @@
+{
+  "appId": "valentine-date-picker",
+  "title": "Valentine Date Picker",
+  "icon": "💝",
+  "version": 1,
+  "capabilities": [
+    "localStorage"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Valentine Date Ideas",
+      "components": [
+        {
+          "type": "text",
+          "id": "header",
+          "props": {
+            "content": "💝 Valentine Date Randomizer",
+            "variant": "title",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "props": {
+            "content": "Can't decide? Let fate choose your perfect date!",
+            "variant": "subtitle",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "current-choice",
+          "props": {
+            "content": "Tap the button to pick a date idea",
+            "variant": "body",
+            "align": "center",
+            "stateKey": "currentDate"
+          }
+        },
+        {
+          "type": "button",
+          "id": "randomize-btn",
+          "props": {
+            "label": "🎲 Pick Random Date",
+            "action": {
+              "type": "setState",
+              "key": "currentDate",
+              "value": "🍽️ Romantic Dinner"
+            },
+            "variant": "primary"
+          }
+        },
+        {
+          "type": "button",
+          "id": "add-custom-btn",
+          "props": {
+            "label": "➕ Add Your Own Ideas",
+            "action": {
+              "type": "navigate",
+              "screenId": "custom"
+            },
+            "variant": "secondary"
+          }
+        },
+        {
+          "type": "text",
+          "id": "default-ideas-header",
+          "props": {
+            "content": "Built-in Date Ideas:",
+            "variant": "subtitle",
+            "align": "left"
+          }
+        },
+        {
+          "type": "list",
+          "id": "default-list",
+          "props": {
+            "dataKey": "defaultDates",
+            "renderItem": {
+              "components": [
+                {
+                  "type": "text",
+                  "id": "default-item",
+                  "props": {
+                    "content": "",
+                    "variant": "body",
+                    "stateKey": "$item"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "custom",
+      "title": "Add Custom Ideas",
+      "components": [
+        {
+          "type": "text",
+          "id": "custom-header",
+          "props": {
+            "content": "Your Custom Date Ideas",
+            "variant": "title",
+            "align": "center"
+          }
+        },
+        {
+          "type": "input",
+          "id": "custom-input",
+          "props": {
+            "placeholder": "e.g., Picnic in the park 🧺",
+            "stateKey": "newCustomDate",
+            "inputType": "text"
+          }
+        },
+        {
+          "type": "button",
+          "id": "add-custom-idea-btn",
+          "props": {
+            "label": "Add Idea",
+            "action": {
+              "type": "append",
+              "key": "customDates",
+              "fromKey": "newCustomDate"
+            },
+            "variant": "primary"
+          }
+        },
+        {
+          "type": "list",
+          "id": "custom-list",
+          "props": {
+            "dataKey": "customDates",
+            "emptyText": "No custom ideas yet. Add one above!",
+            "renderItem": {
+              "components": [
+                {
+                  "type": "text",
+                  "id": "custom-item",
+                  "props": {
+                    "content": "",
+                    "variant": "body",
+                    "stateKey": "$item"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "button",
+          "id": "back-btn",
+          "props": {
+            "label": "← Back to Randomizer",
+            "action": {
+              "type": "navigate",
+              "screenId": "main"
+            },
+            "variant": "secondary"
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "currentDate": "Tap the button to pick a date idea",
+    "newCustomDate": "",
+    "defaultDates": [
+      "🍽️ Romantic Dinner",
+      "🎬 Movie Night at Home",
+      "🌅 Sunset Walk on the Beach",
+      "🎨 Paint & Sip Class",
+      "🍕 Pizza Making Together",
+      "🎭 Theater or Live Show",
+      "🧗 Rock Climbing Adventure",
+      "☕ Cozy Coffee Shop Date",
+      "🎮 Game Night Tournament",
+      "🌃 Rooftop Stargazing",
+      "🍰 Baking Together",
+      "🚴 Bike Ride & Picnic",
+      "🎵 Concert or Music Event",
+      "🏛️ Museum & Gallery Hop",
+      "🍷 Wine Tasting"
+    ],
+    "customDates": []
+  }
+}
