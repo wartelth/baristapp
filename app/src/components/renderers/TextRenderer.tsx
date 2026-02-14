@@ -14,7 +14,7 @@ export function TextRenderer({ component, state }: RendererProps) {
   const { content, variant = "body", align = "left", stateKey } = component.props;
 
   const displayText = stateKey ? String(state[stateKey] ?? content) : content;
-  const variantStyle = VARIANT_STYLES[variant];
+  const variantStyle = VARIANT_STYLES[variant as keyof typeof VARIANT_STYLES];
 
   return (
     <Text style={[styles.base, variantStyle, { textAlign: align }]}>

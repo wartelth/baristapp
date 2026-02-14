@@ -23,7 +23,9 @@
       "Bash(Types \")",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

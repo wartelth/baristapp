@@ -10,5 +10,8 @@
     "server": "npm run dev --workspace=server",
     "app": "npm start --workspace=app",
     "typecheck": "tsc --noEmit --workspace=shared && tsc --noEmit --workspace=server"
+  },
+  "devDependencies": {
+    "react-refresh": "^0.18.0"
   }
 }

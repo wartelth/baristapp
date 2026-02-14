@@ -1,0 +1,600 @@
+{
+  "appId": "pilates-and-shoes",
+  "title": "Pilates & Chaussures",
+  "icon": "🧘",
+  "version": 2,
+  "capabilities": [
+    "localStorage"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Pilates & Shop",
+      "components": [
+        {
+          "type": "tabs",
+          "id": "main-tabs",
+          "props": {
+            "stateKey": "activeTab",
+            "tabs": [
+              {
+                "label": "Entraînement",
+                "value": "workout",
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "workout-title",
+                    "props": {
+                      "content": "Programme Pilates",
+                      "variant": "title",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer1",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "timer-card",
+                    "props": {
+                      "title": "Minuteur d'exercice",
+                      "children": [
+                        {
+                          "type": "progress",
+                          "id": "exercise-progress",
+                          "props": {
+                            "stateKey": "exerciseTime",
+                            "variant": "circle",
+                            "max": 60,
+                            "color": "#4f46e5",
+                            "label": "Temps restant",
+                            "size": 120
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "time-display",
+                          "props": {
+                            "content": "60s",
+                            "variant": "title",
+                            "align": "center",
+                            "stateKey": "timeDisplay"
+                          }
+                        },
+                        {
+                          "type": "container",
+                          "id": "timer-controls",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "button",
+                                "id": "start-timer",
+                                "props": {
+                                  "label": "Démarrer",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "setState",
+                                        "key": "timerRunning",
+                                        "value": true
+                                      },
+                                      {
+                                        "type": "timer",
+                                        "timerId": "pilates-timer",
+                                        "command": "start",
+                                        "intervalMs": 1000,
+                                        "tickAction": {
+                                          "type": "compute",
+                                          "operation": "decrement",
+                                          "key": "exerciseTime"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "variant": "primary"
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "timerRunning",
+                                  "operator": "falsy"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "pause-timer",
+                                "props": {
+                                  "label": "Pause",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "setState",
+                                        "key": "timerRunning",
+                                        "value": false
+                                      },
+                                      {
+                                        "type": "timer",
+                                        "timerId": "pilates-timer",
+                                        "command": "stop"
+                                      }
+                                    ]
+                                  },
+                                  "variant": "secondary"
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "timerRunning",
+                                  "operator": "truthy"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "reset-timer",
+                                "props": {
+                                  "label": "Reset",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "timer",
+                                        "timerId": "pilates-timer",
+                                        "command": "reset"
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "exerciseTime",
+                                        "value": 60
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "timerRunning",
+                                        "value": false
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "timeDisplay",
+                                        "value": "60s"
+                                      }
+                                    ]
+                                  },
+                                  "variant": "secondary"
+                                }
+                              }
+                            ],
+                            "direction": "row",
+                            "gap": 12,
+                            "justify": "center"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer2",
+                    "props": {
+                      "height": 20
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "exercises-card",
+                    "props": {
+                      "title": "Exercices du jour",
+                      "children": [
+                        {
+                          "type": "list",
+                          "id": "exercises-list",
+                          "props": {
+                            "dataKey": "exercises",
+                            "emptyText": "Aucun exercice",
+                            "renderItem": {
+                              "components": [
+                                {
+                                  "type": "container",
+                                  "id": "exercise-row",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "container",
+                                        "id": "exercise-info",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "exercise-name",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "body",
+                                                "stateKey": "name"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "exercise-duration",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "caption",
+                                                "stateKey": "duration"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "column",
+                                          "gap": 4
+                                        }
+                                      },
+                                      {
+                                        "type": "toggle",
+                                        "id": "exercise-done",
+                                        "props": {
+                                          "stateKey": "done",
+                                          "label": ""
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "padding": 8,
+                                    "justify": "space-between"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Chaussures",
+                "value": "shoes",
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "shop-title",
+                    "props": {
+                      "content": "Boutique Chaussures",
+                      "variant": "title",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer3",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "input",
+                    "id": "search-input",
+                    "props": {
+                      "placeholder": "Rechercher des chaussures...",
+                      "stateKey": "searchQuery"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer4",
+                    "props": {
+                      "height": 12
+                    }
+                  },
+                  {
+                    "type": "list",
+                    "id": "shoes-list",
+                    "props": {
+                      "dataKey": "shoes",
+                      "emptyText": "Aucune chaussure disponible",
+                      "renderItem": {
+                        "components": [
+                          {
+                            "type": "card",
+                            "id": "shoe-card",
+                            "props": {
+                              "children": [
+                                {
+                                  "type": "image",
+                                  "id": "shoe-image",
+                                  "props": {
+                                    "stateKey": "image",
+                                    "height": 150,
+                                    "resizeMode": "contain"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "shoe-name",
+                                  "props": {
+                                    "content": "",
+                                    "variant": "subtitle",
+                                    "stateKey": "name"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "shoe-price",
+                                  "props": {
+                                    "content": "",
+                                    "variant": "body",
+                                    "stateKey": "price"
+                                  }
+                                },
+                                {
+                                  "type": "spacer",
+                                  "id": "spacer5",
+                                  "props": {
+                                    "height": 8
+                                  }
+                                },
+                                {
+                                  "type": "button",
+                                  "id": "add-to-cart",
+                                  "props": {
+                                    "label": "Ajouter au panier",
+                                    "action": {
+                                      "type": "batch",
+                                      "actions": [
+                                        {
+                                          "type": "append",
+                                          "key": "cart",
+                                          "fromKey": "_item"
+                                        },
+                                        {
+                                          "type": "compute",
+                                          "operation": "increment",
+                                          "key": "cartCount"
+                                        }
+                                      ]
+                                    },
+                                    "variant": "primary"
+                                  }
+                                }
+                              ],
+                              "elevation": 2
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Panier",
+                "value": "cart",
+                "children": [
+                  {
+                    "type": "container",
+                    "id": "cart-header",
+                    "props": {
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "cart-title",
+                          "props": {
+                            "content": "Mon Panier",
+                            "variant": "title"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "cart-count",
+                          "props": {
+                            "content": "0",
+                            "variant": "title",
+                            "stateKey": "cartCount"
+                          }
+                        }
+                      ],
+                      "direction": "row",
+                      "padding": 12,
+                      "justify": "space-between"
+                    }
+                  },
+                  {
+                    "type": "divider",
+                    "id": "cart-divider",
+                    "props": {
+                      "color": "#333333",
+                      "thickness": 1,
+                      "marginVertical": 12
+                    }
+                  },
+                  {
+                    "type": "list",
+                    "id": "cart-list",
+                    "props": {
+                      "dataKey": "cart",
+                      "emptyText": "Votre panier est vide",
+                      "renderItem": {
+                        "components": [
+                          {
+                            "type": "card",
+                            "id": "cart-item",
+                            "props": {
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "id": "cart-item-row",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "container",
+                                        "id": "cart-item-info",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "cart-item-name",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "body",
+                                                "stateKey": "name"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "cart-item-price",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "caption",
+                                                "stateKey": "price"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "column",
+                                          "gap": 4
+                                        }
+                                      },
+                                      {
+                                        "type": "button",
+                                        "id": "remove-from-cart",
+                                        "props": {
+                                          "label": "Supprimer",
+                                          "action": {
+                                            "type": "batch",
+                                            "actions": [
+                                              {
+                                                "type": "remove",
+                                                "key": "cart",
+                                                "index": 0
+                                              },
+                                              {
+                                                "type": "compute",
+                                                "operation": "decrement",
+                                                "key": "cartCount"
+                                              }
+                                            ]
+                                          },
+                                          "variant": "danger"
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "justify": "space-between"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer6",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "id": "checkout-btn",
+                    "props": {
+                      "label": "Commander",
+                      "action": {
+                        "type": "batch",
+                        "actions": [
+                          {
+                            "type": "setState",
+                            "key": "cart",
+                            "value": []
+                          },
+                          {
+                            "type": "setState",
+                            "key": "cartCount",
+                            "value": 0
+                          }
+                        ]
+                      },
+                      "variant": "primary"
+                    },
+                    "visibleWhen": {
+                      "stateKey": "cartCount",
+                      "operator": "gt",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTab": "workout",
+    "exerciseTime": 60,
+    "timeDisplay": "60s",
+    "timerRunning": false,
+    "exercises": [
+      {
+        "name": "Planche",
+        "duration": "60 secondes",
+        "done": false
+      },
+      {
+        "name": "Le Cent",
+        "duration": "100 battements",
+        "done": false
+      },
+      {
+        "name": "Roulement arrière",
+        "duration": "10 répétitions",
+        "done": false
+      },
+      {
+        "name": "Étirement colonne",
+        "duration": "5 répétitions",
+        "done": false
+      },
+      {
+        "name": "Ciseaux",
+        "duration": "20 répétitions",
+        "done": false
+      }
+    ],
+    "searchQuery": "",
+    "shoes": [
+      {
+        "name": "Chaussures Pilates Pro",
+        "price": "79,99 €",
+        "image": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400"
+      },
+      {
+        "name": "Baskets Yoga Flex",
+        "price": "65,00 €",
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"
+      },
+      {
+        "name": "Chaussons Studio",
+        "price": "29,99 €",
+        "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400"
+      },
+      {
+        "name": "Sneakers Balance",
+        "price": "89,99 €",
+        "image": "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400"
+      }
+    ],
+    "cart": [],
+    "cartCount": 0
+  },
+  "theme": {
+    "backgroundColor": "#111118",
+    "surfaceColor": "#1e1e2e",
+    "primaryColor": "#4f46e5",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#888888",
+    "borderColor": "#333333",
+    "dangerColor": "#dc2626",
+    "successColor": "#22c55e"
+  }
+}

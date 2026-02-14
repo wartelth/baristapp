@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,18 @@ import {
   TextInput,
   StyleSheet,
   RefreshControl,
+  Modal,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { MiniApp } from "@swissknife/shared";
 import { listApps, deleteApp, clearState } from "../storage/storageLayer";
 import { MiniAppCard, AddCard, CARD_WIDTH } from "../components/MiniAppCard";
+import { useGeneration } from "../context/GenerationContext";
 import type { RootStackParamList } from "../../App";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
@@ -19,8 +25,14 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 const CARD_GAP = 12;
 
 export function HomeScreen({ navigation }: Props) {
+  const { busy, startModify } = useGeneration();
   const [apps, setApps] = useState<MiniApp[]>([]);
   const [search, setSearch] = useState("");
+
+  // Modify modal state
+  const [modifyTarget, setModifyTarget] = useState<MiniApp | null>(null);
+  const [modifyText, setModifyText] = useState("");
+  const modifyInputRef = useRef<TextInput>(null);
 
   const loadApps = useCallback(() => {
     setApps(listApps());
@@ -33,6 +45,29 @@ export function HomeScreen({ navigation }: Props) {
     deleteApp(appId);
     clearState(appId);
     loadApps();
+  };
+
+  const handleModifyOpen = (app: MiniApp) => {
+    if (busy) {
+      Alert.alert("Please wait", "A generation is already in progress.");
+      return;
+    }
+    setModifyTarget(app);
+    setModifyText("");
+  };
+
+  const handleModifyClose = () => {
+    setModifyTarget(null);
+    setModifyText("");
+  };
+
+  const handleModifySubmit = () => {
+    if (!modifyTarget || !modifyText.trim()) return;
+
+    // Fire-and-forget — context handles the API call + notification
+    startModify(modifyTarget, modifyText.trim());
+    setModifyTarget(null);
+    setModifyText("");
   };
 
   const filtered = useMemo(() => {
@@ -84,7 +119,7 @@ export function HomeScreen({ navigation }: Props) {
             Tap the + card below to create your first one
           </Text>
           <View style={styles.emptyAddWrapper}>
-            <AddCard onPress={() => navigation.navigate("Create")} />
+            <AddCard onPress={() => !busy && navigation.navigate("Create")} />
           </View>
         </View>
       ) : (
@@ -97,7 +132,7 @@ export function HomeScreen({ navigation }: Props) {
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => {
             if (isAddCard(item)) {
-              return <AddCard onPress={() => navigation.navigate("Create")} />;
+              return <AddCard onPress={() => !busy && navigation.navigate("Create")} />;
             }
             return (
               <MiniAppCard
@@ -106,6 +141,7 @@ export function HomeScreen({ navigation }: Props) {
                   navigation.navigate("MiniApp", { appId: item.appId })
                 }
                 onDelete={() => handleDelete(item.appId)}
+                onModify={() => handleModifyOpen(item)}
               />
             );
           }}
@@ -119,6 +155,57 @@ export function HomeScreen({ navigation }: Props) {
           }
         />
       )}
+
+      {/* Modify Modal */}
+      <Modal
+        visible={modifyTarget !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={handleModifyClose}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              Modify "{modifyTarget?.title}"
+            </Text>
+            <Text style={styles.modalSubtitle}>
+              What do you want to change?
+            </Text>
+            <TextInput
+              ref={modifyInputRef}
+              style={styles.modifyInput}
+              placeholder='e.g. "add a dark mode toggle"'
+              placeholderTextColor="#555"
+              value={modifyText}
+              onChangeText={setModifyText}
+              multiline
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={handleModifyClose}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.submitBtn,
+                  !modifyText.trim() && styles.submitBtnDisabled,
+                ]}
+                onPress={handleModifySubmit}
+                disabled={!modifyText.trim()}
+              >
+                <Text style={styles.submitBtnText}>Modify</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </View>
   );
 }
@@ -192,5 +279,76 @@ const styles = StyleSheet.create({
   },
   emptyAddWrapper: {
     alignItems: "center",
+  },
+  // Modify modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: "#1a1a2e",
+    borderRadius: 20,
+    padding: 24,
+    width: "100%",
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: "#2a2a3e",
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    color: "#888",
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  modifyInput: {
+    backgroundColor: "#111118",
+    color: "#fff",
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    minHeight: 80,
+    textAlignVertical: "top",
+    borderWidth: 1,
+    borderColor: "#2a2a3e",
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#2a2a3e",
+    alignItems: "center",
+  },
+  cancelBtnText: {
+    color: "#888",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  submitBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#4f46e5",
+    alignItems: "center",
+  },
+  submitBtnDisabled: {
+    opacity: 0.4,
+  },
+  submitBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

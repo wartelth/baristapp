@@ -1,0 +1,537 @@
+{
+  "appId": "draw-and-share",
+  "title": "Draw & Share",
+  "icon": "🎨",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "clipboard"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Draw & Share",
+      "components": [
+        {
+          "type": "container",
+          "id": "canvas-container",
+          "props": {
+            "children": [
+              {
+                "type": "card",
+                "id": "drawing-card",
+                "props": {
+                  "title": "Canvas",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "canvas-placeholder",
+                      "props": {
+                        "content": "Drawing canvas area - use brush/eraser tools below",
+                        "variant": "body",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "type": "spacer",
+                      "id": "canvas-space",
+                      "props": {
+                        "height": 300
+                      }
+                    }
+                  ],
+                  "elevation": 3
+                }
+              },
+              {
+                "type": "container",
+                "id": "tool-controls",
+                "props": {
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tool-label",
+                      "props": {
+                        "content": "Drawing Tools",
+                        "variant": "subtitle"
+                      }
+                    },
+                    {
+                      "type": "container",
+                      "id": "tool-buttons",
+                      "props": {
+                        "children": [
+                          {
+                            "type": "button",
+                            "id": "brush-btn",
+                            "props": {
+                              "label": "🖌️ Brush",
+                              "action": {
+                                "type": "batch",
+                                "actions": [
+                                  {
+                                    "type": "setState",
+                                    "key": "activeTool",
+                                    "value": "brush"
+                                  },
+                                  {
+                                    "type": "haptic",
+                                    "style": "light"
+                                  }
+                                ]
+                              },
+                              "variant": "primary"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "id": "eraser-btn",
+                            "props": {
+                              "label": "🧹 Eraser",
+                              "action": {
+                                "type": "batch",
+                                "actions": [
+                                  {
+                                    "type": "setState",
+                                    "key": "activeTool",
+                                    "value": "eraser"
+                                  },
+                                  {
+                                    "type": "haptic",
+                                    "style": "light"
+                                  }
+                                ]
+                              },
+                              "variant": "secondary"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "id": "undo-btn",
+                            "props": {
+                              "label": "↶ Undo",
+                              "action": {
+                                "type": "batch",
+                                "actions": [
+                                  {
+                                    "type": "compute",
+                                    "operation": "decrement",
+                                    "key": "strokeCount"
+                                  },
+                                  {
+                                    "type": "haptic",
+                                    "style": "light"
+                                  }
+                                ]
+                              },
+                              "variant": "secondary",
+                              "disabled": "undoDisabled"
+                            }
+                          },
+                          {
+                            "type": "button",
+                            "id": "redo-btn",
+                            "props": {
+                              "label": "↷ Redo",
+                              "action": {
+                                "type": "batch",
+                                "actions": [
+                                  {
+                                    "type": "compute",
+                                    "operation": "increment",
+                                    "key": "strokeCount"
+                                  },
+                                  {
+                                    "type": "haptic",
+                                    "style": "light"
+                                  }
+                                ]
+                              },
+                              "variant": "secondary",
+                              "disabled": "redoDisabled"
+                            }
+                          }
+                        ],
+                        "direction": "row",
+                        "gap": 8,
+                        "wrap": true
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "active-tool-display",
+                      "props": {
+                        "content": "Active: Brush",
+                        "variant": "caption",
+                        "stateKey": "activeToolDisplay"
+                      }
+                    },
+                    {
+                      "type": "divider",
+                      "id": "divider-1",
+                      "props": {
+                        "color": "#333333",
+                        "thickness": 1,
+                        "marginVertical": 8
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "brush-size-label",
+                      "props": {
+                        "content": "Brush Size",
+                        "variant": "subtitle"
+                      }
+                    },
+                    {
+                      "type": "slider",
+                      "id": "brush-size-slider",
+                      "props": {
+                        "stateKey": "brushSize",
+                        "min": 1,
+                        "max": 50,
+                        "step": 1,
+                        "label": "Size"
+                      }
+                    },
+                    {
+                      "type": "divider",
+                      "id": "divider-2",
+                      "props": {
+                        "color": "#333333",
+                        "thickness": 1,
+                        "marginVertical": 8
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "color-label",
+                      "props": {
+                        "content": "Brush Color",
+                        "variant": "subtitle"
+                      }
+                    },
+                    {
+                      "type": "select",
+                      "id": "color-picker",
+                      "props": {
+                        "stateKey": "brushColor",
+                        "options": [
+                          {
+                            "label": "⚫ Black",
+                            "value": "#000000"
+                          },
+                          {
+                            "label": "🔴 Red",
+                            "value": "#dc2626"
+                          },
+                          {
+                            "label": "🔵 Blue",
+                            "value": "#4f46e5"
+                          },
+                          {
+                            "label": "🟢 Green",
+                            "value": "#22c55e"
+                          },
+                          {
+                            "label": "🟡 Yellow",
+                            "value": "#f59e0b"
+                          },
+                          {
+                            "label": "🟣 Purple",
+                            "value": "#a855f7"
+                          },
+                          {
+                            "label": "⚪ White",
+                            "value": "#ffffff"
+                          }
+                        ],
+                        "placeholder": "Select color"
+                      }
+                    }
+                  ],
+                  "direction": "column",
+                  "gap": 12
+                }
+              },
+              {
+                "type": "divider",
+                "id": "divider-3",
+                "props": {
+                  "color": "#333333",
+                  "thickness": 1,
+                  "marginVertical": 12
+                }
+              },
+              {
+                "type": "container",
+                "id": "action-buttons",
+                "props": {
+                  "children": [
+                    {
+                      "type": "button",
+                      "id": "save-btn",
+                      "props": {
+                        "label": "💾 Save Drawing",
+                        "action": {
+                          "type": "batch",
+                          "actions": [
+                            {
+                              "type": "append",
+                              "key": "savedDrawings",
+                              "value": {
+                                "id": "{{timestamp}}",
+                                "name": "Drawing",
+                                "timestamp": "{{timestamp}}"
+                              }
+                            },
+                            {
+                              "type": "haptic",
+                              "style": "success"
+                            },
+                            {
+                              "type": "setState",
+                              "key": "lastSaved",
+                              "value": "Drawing saved!"
+                            }
+                          ]
+                        },
+                        "variant": "primary"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "save-status",
+                      "props": {
+                        "content": "Drawing saved!",
+                        "variant": "caption",
+                        "align": "center",
+                        "stateKey": "lastSaved"
+                      },
+                      "visibleWhen": {
+                        "stateKey": "lastSaved",
+                        "operator": "truthy"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "id": "share-btn",
+                      "props": {
+                        "label": "📋 Copy Drawing Link",
+                        "action": {
+                          "type": "batch",
+                          "actions": [
+                            {
+                              "type": "copyToClipboard",
+                              "value": "swissknife://drawing/{{drawingId}}"
+                            },
+                            {
+                              "type": "haptic",
+                              "style": "success"
+                            },
+                            {
+                              "type": "setState",
+                              "key": "shareStatus",
+                              "value": "Link copied to clipboard!"
+                            }
+                          ]
+                        },
+                        "variant": "secondary"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "share-status",
+                      "props": {
+                        "content": "Link copied to clipboard!",
+                        "variant": "caption",
+                        "align": "center",
+                        "stateKey": "shareStatus"
+                      },
+                      "visibleWhen": {
+                        "stateKey": "shareStatus",
+                        "operator": "truthy"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "id": "clear-btn",
+                      "props": {
+                        "label": "🗑️ Clear Canvas",
+                        "action": {
+                          "type": "batch",
+                          "actions": [
+                            {
+                              "type": "setState",
+                              "key": "strokeCount",
+                              "value": 0
+                            },
+                            {
+                              "type": "setState",
+                              "key": "lastSaved",
+                              "value": ""
+                            },
+                            {
+                              "type": "setState",
+                              "key": "shareStatus",
+                              "value": ""
+                            },
+                            {
+                              "type": "haptic",
+                              "style": "warning"
+                            }
+                          ]
+                        },
+                        "variant": "danger"
+                      }
+                    }
+                  ],
+                  "direction": "column",
+                  "gap": 12
+                }
+              },
+              {
+                "type": "divider",
+                "id": "divider-4",
+                "props": {
+                  "color": "#333333",
+                  "thickness": 1,
+                  "marginVertical": 12
+                }
+              },
+              {
+                "type": "container",
+                "id": "gallery-section",
+                "props": {
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gallery-title",
+                      "props": {
+                        "content": "Saved Drawings",
+                        "variant": "subtitle"
+                      }
+                    },
+                    {
+                      "type": "list",
+                      "id": "saved-list",
+                      "props": {
+                        "dataKey": "savedDrawings",
+                        "emptyText": "No saved drawings yet. Create and save your first drawing!",
+                        "renderItem": {
+                          "components": [
+                            {
+                              "type": "card",
+                              "id": "drawing-item-card",
+                              "props": {
+                                "children": [
+                                  {
+                                    "type": "container",
+                                    "id": "drawing-item-container",
+                                    "props": {
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "drawing-name",
+                                          "props": {
+                                            "content": "Drawing",
+                                            "variant": "body",
+                                            "stateKey": "name"
+                                          }
+                                        },
+                                        {
+                                          "type": "button",
+                                          "id": "delete-drawing-btn",
+                                          "props": {
+                                            "label": "🗑️",
+                                            "action": {
+                                              "type": "batch",
+                                              "actions": [
+                                                {
+                                                  "type": "remove",
+                                                  "key": "savedDrawings",
+                                                  "index": 0
+                                                },
+                                                {
+                                                  "type": "haptic",
+                                                  "style": "light"
+                                                }
+                                              ]
+                                            },
+                                            "variant": "danger"
+                                          }
+                                        }
+                                      ],
+                                      "direction": "row",
+                                      "align": "center",
+                                      "justify": "space-between"
+                                    }
+                                  }
+                                ],
+                                "elevation": 2
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "direction": "column",
+                  "gap": 12
+                }
+              }
+            ],
+            "direction": "column",
+            "gap": 12,
+            "padding": 16
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTool": "brush",
+    "activeToolDisplay": "Active: Brush",
+    "brushSize": 5,
+    "brushColor": "#000000",
+    "strokeCount": 0,
+    "undoDisabled": true,
+    "redoDisabled": true,
+    "lastSaved": "",
+    "shareStatus": "",
+    "drawingId": "12345",
+    "savedDrawings": []
+  },
+  "theme": {
+    "backgroundColor": "#111118",
+    "surfaceColor": "#1e1e2e",
+    "primaryColor": "#4f46e5",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#888888",
+    "borderColor": "#333333",
+    "dangerColor": "#dc2626",
+    "successColor": "#22c55e"
+  },
+  "effects": [
+    {
+      "trigger": "onStateChange",
+      "action": {
+        "type": "conditional",
+        "stateKey": "activeTool",
+        "operator": "eq",
+        "value": "brush",
+        "thenAction": {
+          "type": "setState",
+          "key": "activeToolDisplay",
+          "value": "Active: 🖌️ Brush"
+        },
+        "elseAction": {
+          "type": "setState",
+          "key": "activeToolDisplay",
+          "value": "Active: 🧹 Eraser"
+        }
+      },
+      "stateKey": "activeTool"
+    }
+  ]
+}

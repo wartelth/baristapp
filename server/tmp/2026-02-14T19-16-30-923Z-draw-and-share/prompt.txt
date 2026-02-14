@@ -1,0 +1,6 @@
+An app to help me draw and share drawings
+
+Additional context from user:
+- How do users share drawings: via link, social media, email, or local view only? → Copy to clipboard
+- What drawing tools do you need? → Freehand brush, Eraser, Undo/redo
+- Should drawings save automatically, and do you need cloud backup or local storage only? → Local only (phone storage)

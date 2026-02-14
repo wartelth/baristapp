@@ -1,0 +1,668 @@
+{
+  "appId": "cookeo-companion",
+  "title": "Cookeo Companion",
+  "icon": "🍲",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "network",
+    "haptics"
+  ],
+  "screens": [
+    {
+      "id": "home",
+      "title": "Cookeo Companion",
+      "components": [
+        {
+          "type": "container",
+          "id": "main-container",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "id": "title",
+                "props": {
+                  "content": "🍲 Cookeo Companion",
+                  "variant": "title",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "text",
+                "id": "subtitle",
+                "props": {
+                  "content": "Découvrez des recettes pour votre Cookeo",
+                  "variant": "body",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "tabs",
+                "id": "main-tabs",
+                "props": {
+                  "stateKey": "activeTab",
+                  "tabs": [
+                    {
+                      "label": "Recherche",
+                      "value": "search",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "search-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "search-label",
+                                "props": {
+                                  "content": "Que voulez-vous cuisiner ?",
+                                  "variant": "subtitle"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "search-input",
+                                "props": {
+                                  "placeholder": "Ex: poulet, pâtes, soupe...",
+                                  "stateKey": "searchQuery"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "search-btn",
+                                "props": {
+                                  "label": "🔍 Rechercher des recettes",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "setState",
+                                        "key": "isLoading",
+                                        "value": true
+                                      },
+                                      {
+                                        "type": "http",
+                                        "url": "https://www.themealdb.com/api/json/v1/1/search.php?s={{searchQuery}}",
+                                        "method": "GET",
+                                        "resultKey": "searchResults",
+                                        "loadingKey": "isLoading",
+                                        "errorKey": "searchError"
+                                      },
+                                      {
+                                        "type": "haptic",
+                                        "style": "light"
+                                      }
+                                    ]
+                                  },
+                                  "variant": "primary"
+                                }
+                              },
+                              {
+                                "type": "progress",
+                                "id": "loading-bar",
+                                "props": {
+                                  "stateKey": "loadingProgress",
+                                  "variant": "bar",
+                                  "color": "#ff6b35",
+                                  "label": "Recherche en cours..."
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "isLoading",
+                                  "operator": "truthy"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "id": "error-text",
+                                "props": {
+                                  "content": "Erreur lors de la recherche",
+                                  "variant": "body",
+                                  "align": "center"
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "searchError",
+                                  "operator": "truthy"
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "id": "search-results-list",
+                                "props": {
+                                  "dataKey": "searchResults",
+                                  "emptyText": "Aucune recette trouvée",
+                                  "renderItem": {
+                                    "components": [
+                                      {
+                                        "type": "card",
+                                        "id": "recipe-card",
+                                        "props": {
+                                          "title": "",
+                                          "children": [
+                                            {
+                                              "type": "container",
+                                              "id": "recipe-content",
+                                              "props": {
+                                                "children": [
+                                                  {
+                                                    "type": "text",
+                                                    "id": "recipe-name",
+                                                    "props": {
+                                                      "content": "",
+                                                      "variant": "subtitle",
+                                                      "stateKey": "strMeal"
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "text",
+                                                    "id": "recipe-category",
+                                                    "props": {
+                                                      "content": "",
+                                                      "variant": "caption",
+                                                      "stateKey": "strCategory"
+                                                    }
+                                                  }
+                                                ],
+                                                "direction": "column",
+                                                "gap": 8
+                                              }
+                                            }
+                                          ],
+                                          "elevation": 2,
+                                          "onPress": {
+                                            "type": "batch",
+                                            "actions": [
+                                              {
+                                                "type": "setState",
+                                                "key": "selectedRecipe",
+                                                "value": null
+                                              },
+                                              {
+                                                "type": "navigate",
+                                                "screenId": "recipe-detail"
+                                              },
+                                              {
+                                                "type": "haptic",
+                                                "style": "light"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "searchResults",
+                                  "operator": "truthy"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Random",
+                      "value": "random",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "random-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "random-title",
+                                "props": {
+                                  "content": "Inspiration du jour",
+                                  "variant": "subtitle",
+                                  "align": "center"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "random-btn",
+                                "props": {
+                                  "label": "🎲 Recette aléatoire",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "setState",
+                                        "key": "isLoadingRandom",
+                                        "value": true
+                                      },
+                                      {
+                                        "type": "http",
+                                        "url": "https://www.themealdb.com/api/json/v1/1/random.php",
+                                        "method": "GET",
+                                        "resultKey": "randomRecipe",
+                                        "loadingKey": "isLoadingRandom",
+                                        "errorKey": "randomError"
+                                      },
+                                      {
+                                        "type": "haptic",
+                                        "style": "medium"
+                                      }
+                                    ]
+                                  },
+                                  "variant": "primary"
+                                }
+                              },
+                              {
+                                "type": "progress",
+                                "id": "random-loading",
+                                "props": {
+                                  "stateKey": "loadingProgress",
+                                  "variant": "circle",
+                                  "color": "#ff6b35",
+                                  "size": 80
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "isLoadingRandom",
+                                  "operator": "truthy"
+                                }
+                              },
+                              {
+                                "type": "card",
+                                "id": "random-recipe-card",
+                                "props": {
+                                  "children": [
+                                    {
+                                      "type": "container",
+                                      "id": "random-recipe-content",
+                                      "props": {
+                                        "children": [
+                                          {
+                                            "type": "image",
+                                            "id": "random-recipe-image",
+                                            "props": {
+                                              "stateKey": "randomRecipeImage",
+                                              "height": 200,
+                                              "resizeMode": "cover"
+                                            }
+                                          },
+                                          {
+                                            "type": "text",
+                                            "id": "random-recipe-name",
+                                            "props": {
+                                              "content": "",
+                                              "variant": "subtitle",
+                                              "stateKey": "randomRecipeName"
+                                            }
+                                          },
+                                          {
+                                            "type": "text",
+                                            "id": "random-recipe-category",
+                                            "props": {
+                                              "content": "",
+                                              "variant": "caption",
+                                              "stateKey": "randomRecipeCategory"
+                                            }
+                                          },
+                                          {
+                                            "type": "divider",
+                                            "id": "random-divider",
+                                            "props": {}
+                                          },
+                                          {
+                                            "type": "text",
+                                            "id": "random-recipe-instructions",
+                                            "props": {
+                                              "content": "",
+                                              "variant": "body",
+                                              "stateKey": "randomRecipeInstructions"
+                                            }
+                                          },
+                                          {
+                                            "type": "button",
+                                            "id": "save-random-btn",
+                                            "props": {
+                                              "label": "💾 Sauvegarder cette recette",
+                                              "action": {
+                                                "type": "batch",
+                                                "actions": [
+                                                  {
+                                                    "type": "append",
+                                                    "key": "savedRecipes",
+                                                    "value": null
+                                                  },
+                                                  {
+                                                    "type": "haptic",
+                                                    "style": "success"
+                                                  }
+                                                ]
+                                              },
+                                              "variant": "secondary"
+                                            }
+                                          }
+                                        ],
+                                        "direction": "column",
+                                        "gap": 12
+                                      }
+                                    }
+                                  ],
+                                  "elevation": 3
+                                },
+                                "visibleWhen": {
+                                  "stateKey": "randomRecipe",
+                                  "operator": "truthy"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 16
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Favoris",
+                      "value": "favorites",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "favorites-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "favorites-title",
+                                "props": {
+                                  "content": "Mes recettes sauvegardées",
+                                  "variant": "subtitle"
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "id": "favorites-list",
+                                "props": {
+                                  "dataKey": "savedRecipes",
+                                  "emptyText": "Aucune recette sauvegardée",
+                                  "renderItem": {
+                                    "components": [
+                                      {
+                                        "type": "card",
+                                        "id": "saved-recipe-card",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "container",
+                                              "id": "saved-recipe-row",
+                                              "props": {
+                                                "children": [
+                                                  {
+                                                    "type": "container",
+                                                    "id": "saved-recipe-info",
+                                                    "props": {
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "saved-recipe-name",
+                                                          "props": {
+                                                            "content": "",
+                                                            "variant": "body",
+                                                            "stateKey": "name"
+                                                          }
+                                                        },
+                                                        {
+                                                          "type": "text",
+                                                          "id": "saved-recipe-category",
+                                                          "props": {
+                                                            "content": "",
+                                                            "variant": "caption",
+                                                            "stateKey": "category"
+                                                          }
+                                                        }
+                                                      ],
+                                                      "direction": "column",
+                                                      "gap": 4
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "button",
+                                                    "id": "delete-saved-btn",
+                                                    "props": {
+                                                      "label": "🗑️",
+                                                      "action": {
+                                                        "type": "batch",
+                                                        "actions": [
+                                                          {
+                                                            "type": "remove",
+                                                            "key": "savedRecipes",
+                                                            "index": 0
+                                                          },
+                                                          {
+                                                            "type": "haptic",
+                                                            "style": "warning"
+                                                          }
+                                                        ]
+                                                      },
+                                                      "variant": "danger"
+                                                    }
+                                                  }
+                                                ],
+                                                "direction": "row",
+                                                "align": "center",
+                                                "justify": "space-between"
+                                              }
+                                            }
+                                          ],
+                                          "elevation": 2
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "Guide",
+                      "value": "guide",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "guide-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "guide-title",
+                                "props": {
+                                  "content": "Guide d'utilisation Cookeo",
+                                  "variant": "subtitle"
+                                }
+                              },
+                              {
+                                "type": "card",
+                                "id": "guide-card-1",
+                                "props": {
+                                  "title": "Modes de cuisson",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "guide-text-1",
+                                      "props": {
+                                        "content": "• Pression: cuisson rapide sous pression\n• Vapeur: cuisson douce et saine\n• Dorer: rissoler les aliments\n• Mijotage: cuisson lente et tendre\n• Réchauffer: maintenir au chaud",
+                                        "variant": "body"
+                                      }
+                                    }
+                                  ],
+                                  "elevation": 2
+                                }
+                              },
+                              {
+                                "type": "card",
+                                "id": "guide-card-2",
+                                "props": {
+                                  "title": "Temps de cuisson",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "guide-text-2",
+                                      "props": {
+                                        "content": "• Légumes: 5-10 min sous pression\n• Riz/Pâtes: 6-8 min sous pression\n• Viande blanche: 15-20 min\n• Viande rouge: 25-35 min\n• Poisson: 5-8 min vapeur",
+                                        "variant": "body"
+                                      }
+                                    }
+                                  ],
+                                  "elevation": 2
+                                }
+                              },
+                              {
+                                "type": "card",
+                                "id": "guide-card-3",
+                                "props": {
+                                  "title": "Astuces",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "guide-text-3",
+                                      "props": {
+                                        "content": "✓ Toujours ajouter 200ml d'eau minimum\n✓ Ne pas dépasser 2/3 de la cuve\n✓ Nettoyer le joint après chaque usage\n✓ Utiliser le panier vapeur pour les légumes\n✓ Laisser la valve s'ouvrir naturellement",
+                                        "variant": "body"
+                                      }
+                                    }
+                                  ],
+                                  "elevation": 2
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 16
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "direction": "column",
+            "gap": 16,
+            "padding": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "recipe-detail",
+      "title": "Détails de la recette",
+      "components": [
+        {
+          "type": "container",
+          "id": "detail-container",
+          "props": {
+            "children": [
+              {
+                "type": "button",
+                "id": "back-btn",
+                "props": {
+                  "label": "← Retour",
+                  "action": {
+                    "type": "navigate",
+                    "screenId": "home"
+                  },
+                  "variant": "secondary"
+                }
+              },
+              {
+                "type": "image",
+                "id": "detail-image",
+                "props": {
+                  "stateKey": "selectedRecipeImage",
+                  "height": 250,
+                  "resizeMode": "cover"
+                }
+              },
+              {
+                "type": "text",
+                "id": "detail-name",
+                "props": {
+                  "content": "",
+                  "variant": "title",
+                  "stateKey": "selectedRecipeName"
+                }
+              },
+              {
+                "type": "text",
+                "id": "detail-category",
+                "props": {
+                  "content": "",
+                  "variant": "subtitle",
+                  "stateKey": "selectedRecipeCategory"
+                }
+              },
+              {
+                "type": "divider",
+                "id": "detail-divider",
+                "props": {}
+              },
+              {
+                "type": "text",
+                "id": "detail-instructions",
+                "props": {
+                  "content": "",
+                  "variant": "body",
+                  "stateKey": "selectedRecipeInstructions"
+                }
+              }
+            ],
+            "direction": "column",
+            "gap": 16,
+            "padding": 16
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTab": "search",
+    "searchQuery": "",
+    "searchResults": [],
+    "isLoading": false,
+    "loadingProgress": 50,
+    "searchError": null,
+    "randomRecipe": null,
+    "randomRecipeName": "",
+    "randomRecipeCategory": "",
+    "randomRecipeImage": "",
+    "randomRecipeInstructions": "",
+    "isLoadingRandom": false,
+    "randomError": null,
+    "savedRecipes": [],
+    "selectedRecipe": null,
+    "selectedRecipeName": "",
+    "selectedRecipeCategory": "",
+    "selectedRecipeImage": "",
+    "selectedRecipeInstructions": ""
+  },
+  "theme": {
+    "backgroundColor": "#111118",
+    "surfaceColor": "#1e1e2e",
+    "primaryColor": "#ff6b35",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#888888",
+    "borderColor": "#333333",
+    "dangerColor": "#dc2626",
+    "successColor": "#22c55e"
+  },
+  "effects": [
+    {
+      "trigger": "onMount",
+      "action": {
+        "type": "setState",
+        "key": "activeTab",
+        "value": "search"
+      }
+    }
+  ]
+}

@@ -21,22 +21,25 @@ interface MiniAppCardProps {
   app: MiniApp;
   onPress: () => void;
   onDelete: () => void;
+  onModify: () => void;
 }
 
-export function MiniAppCard({ app, onPress, onDelete }: MiniAppCardProps) {
+export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardProps) {
   const bgColor = getCardColor(app.appId);
 
   const handleLongPress = () => {
-    Alert.alert("Delete Mini-App", `Remove "${app.title}"?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(app.title, undefined, [
+      { text: "Modify", onPress: onModify },
       { text: "Delete", style: "destructive", onPress: onDelete },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
 
   const handleMenu = () => {
     Alert.alert(app.title, undefined, [
-      { text: "Cancel", style: "cancel" },
+      { text: "Modify", onPress: onModify },
       { text: "Delete", style: "destructive", onPress: onDelete },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
 

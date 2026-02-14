@@ -11,13 +11,42 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.swissknife.app"
+      "bundleIdentifier": "com.swissknife.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture photos for mini-apps.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to record audio for mini-apps.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location for map and location-based mini-apps."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.swissknife.app"
-    }
+      "package": "com.swissknife.app",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        { "cameraPermission": "SwissKnife needs camera access for mini-apps that use the camera." }
+      ],
+      [
+        "expo-av",
+        { "microphonePermission": "SwissKnife needs microphone access for mini-apps that record audio." }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SwissKnife needs your location for map-based mini-apps.",
+          "locationWhenInUsePermission": "SwissKnife needs your location for map-based mini-apps."
+        }
+      ]
+    ]
   }
 }

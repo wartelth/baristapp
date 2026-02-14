@@ -24,7 +24,7 @@ export function InputRenderer({ component, state, dispatch }: RendererProps) {
         dispatch({ type: "setState", key: stateKey, value: text })
       }
       multiline={multiline}
-      keyboardType={KEYBOARD_TYPES[inputType]}
+      keyboardType={KEYBOARD_TYPES[inputType as keyof typeof KEYBOARD_TYPES]}
     />
   );
 }

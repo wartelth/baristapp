@@ -1,0 +1,6 @@
+Build an app to oversee ISS docking schedule and operations
+
+Additional context from user:
+- What's your primary use case: monitor upcoming dockings, view current ISS status, or track mission details? → All of the above
+- Which data sources should the app pull from? → NASA ISS API
+- What operational features do you need: countdown timers, docking status updates, crew info, or emergency alerts? → Countdown to docking events, Live docking status/stage tracking, Crew information & assignment, Emergency/anomaly alerts, Docking history logs
