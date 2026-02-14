@@ -1,0 +1,1 @@
+An app to search for a hike in Munich tomorrow

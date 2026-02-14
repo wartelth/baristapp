@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 
 const MESSAGES = [
-  "Designing your mini-app...",
-  "Generating UI components...",
+  "Launching Claude Code agent...",
+  "Generating your mini-app...",
+  "Assembling UI components...",
   "Validating schema...",
-  "Almost there...",
+  "Finalizing...",
 ];
 
 export function LoadingOverlay() {

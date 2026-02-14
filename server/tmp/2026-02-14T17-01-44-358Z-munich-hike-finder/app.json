@@ -1,0 +1,199 @@
+{
+  "appId": "munich-hike-finder",
+  "title": "Munich Hike Finder",
+  "icon": "🥾",
+  "version": 1,
+  "capabilities": [
+    "localStorage"
+  ],
+  "screens": [
+    {
+      "id": "search",
+      "title": "Find a Hike",
+      "components": [
+        {
+          "type": "text",
+          "id": "header-text",
+          "props": {
+            "content": "🏔️ Munich Hiking Guide",
+            "variant": "title",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "date-text",
+          "props": {
+            "content": "Tomorrow · February 15, 2026",
+            "variant": "subtitle",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "filter-label",
+          "props": {
+            "content": "Difficulty Level",
+            "variant": "body"
+          }
+        },
+        {
+          "type": "button",
+          "id": "easy-btn",
+          "props": {
+            "label": "Easy",
+            "action": {
+              "type": "setState",
+              "key": "selectedDifficulty",
+              "value": "easy"
+            },
+            "variant": "secondary"
+          }
+        },
+        {
+          "type": "button",
+          "id": "moderate-btn",
+          "props": {
+            "label": "Moderate",
+            "action": {
+              "type": "setState",
+              "key": "selectedDifficulty",
+              "value": "moderate"
+            },
+            "variant": "secondary"
+          }
+        },
+        {
+          "type": "button",
+          "id": "hard-btn",
+          "props": {
+            "label": "Hard",
+            "action": {
+              "type": "setState",
+              "key": "selectedDifficulty",
+              "value": "hard"
+            },
+            "variant": "secondary"
+          }
+        },
+        {
+          "type": "text",
+          "id": "selected-text",
+          "props": {
+            "content": "Selected: ",
+            "variant": "caption",
+            "stateKey": "selectedDifficulty"
+          }
+        },
+        {
+          "type": "button",
+          "id": "view-results-btn",
+          "props": {
+            "label": "View Hikes",
+            "action": {
+              "type": "navigate",
+              "screenId": "results"
+            },
+            "variant": "primary"
+          }
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "title": "Recommended Hikes",
+      "components": [
+        {
+          "type": "text",
+          "id": "results-header",
+          "props": {
+            "content": "Popular Hikes Near Munich",
+            "variant": "title",
+            "align": "center"
+          }
+        },
+        {
+          "type": "list",
+          "id": "hikes-list",
+          "props": {
+            "dataKey": "hikes",
+            "emptyText": "No hikes found. Try adjusting your filters.",
+            "renderItem": {
+              "components": [
+                {
+                  "type": "text",
+                  "id": "hike-name",
+                  "props": {
+                    "content": "",
+                    "variant": "subtitle",
+                    "stateKey": "$item.name"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "hike-distance",
+                  "props": {
+                    "content": "",
+                    "variant": "body",
+                    "stateKey": "$item.distance"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "hike-difficulty",
+                  "props": {
+                    "content": "",
+                    "variant": "caption",
+                    "stateKey": "$item.difficulty"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "button",
+          "id": "back-btn",
+          "props": {
+            "label": "← Back to Search",
+            "action": {
+              "type": "navigate",
+              "screenId": "search"
+            },
+            "variant": "secondary"
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "selectedDifficulty": "moderate",
+    "hikes": [
+      {
+        "name": "🌲 Partnachklamm Gorge",
+        "distance": "6 km · 2h 30min",
+        "difficulty": "Easy"
+      },
+      {
+        "name": "🏔️ Herzogstand Summit",
+        "distance": "12 km · 5h",
+        "difficulty": "Moderate"
+      },
+      {
+        "name": "⛰️ Wendelstein Peak",
+        "distance": "14 km · 6h",
+        "difficulty": "Hard"
+      },
+      {
+        "name": "🌄 Blomberg Trail",
+        "distance": "8 km · 3h",
+        "difficulty": "Easy"
+      },
+      {
+        "name": "🥾 Brauneck Ridge Walk",
+        "distance": "10 km · 4h",
+        "difficulty": "Moderate"
+      }
+    ]
+  }
+}

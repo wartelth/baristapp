@@ -1,0 +1,137 @@
+{
+  "appId": "bird-watch-log",
+  "title": "Bird Watch Log",
+  "icon": "🦜",
+  "version": 1,
+  "capabilities": [
+    "localStorage"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Bird Sightings",
+      "components": [
+        {
+          "type": "text",
+          "id": "header",
+          "props": {
+            "content": "🦜 Bird Watch Log",
+            "variant": "title",
+            "align": "center"
+          }
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "props": {
+            "content": "Record your bird sightings",
+            "variant": "subtitle",
+            "align": "center"
+          }
+        },
+        {
+          "type": "input",
+          "id": "species-input",
+          "props": {
+            "placeholder": "Bird species (e.g., Blue Jay)",
+            "stateKey": "newSpecies",
+            "inputType": "text"
+          }
+        },
+        {
+          "type": "input",
+          "id": "location-input",
+          "props": {
+            "placeholder": "Location (e.g., Central Park)",
+            "stateKey": "newLocation",
+            "inputType": "text"
+          }
+        },
+        {
+          "type": "input",
+          "id": "notes-input",
+          "props": {
+            "placeholder": "Notes (behavior, markings, etc.)",
+            "stateKey": "newNotes",
+            "multiline": true,
+            "inputType": "text"
+          }
+        },
+        {
+          "type": "button",
+          "id": "log-btn",
+          "props": {
+            "label": "Log Sighting",
+            "action": {
+              "type": "submit",
+              "targetKey": "sightings"
+            },
+            "variant": "primary"
+          }
+        },
+        {
+          "type": "text",
+          "id": "history-header",
+          "props": {
+            "content": "Recent Sightings",
+            "variant": "subtitle"
+          }
+        },
+        {
+          "type": "list",
+          "id": "sightings-list",
+          "props": {
+            "dataKey": "sightings",
+            "emptyText": "No sightings logged yet. Start watching!",
+            "renderItem": {
+              "components": [
+                {
+                  "type": "text",
+                  "id": "species-name",
+                  "props": {
+                    "content": "",
+                    "variant": "body",
+                    "stateKey": "$item.species"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "location-text",
+                  "props": {
+                    "content": "",
+                    "variant": "caption",
+                    "stateKey": "$item.location"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "timestamp-text",
+                  "props": {
+                    "content": "",
+                    "variant": "caption",
+                    "stateKey": "$item.timestamp"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "notes-text",
+                  "props": {
+                    "content": "",
+                    "variant": "caption",
+                    "stateKey": "$item.notes"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "newSpecies": "",
+    "newLocation": "",
+    "newNotes": "",
+    "sightings": []
+  }
+}

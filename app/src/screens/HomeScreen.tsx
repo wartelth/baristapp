@@ -1,9 +1,9 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
+  TextInput,
   StyleSheet,
   RefreshControl,
 } from "react-native";
@@ -11,13 +11,16 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { MiniApp } from "@swissknife/shared";
 import { listApps, deleteApp, clearState } from "../storage/storageLayer";
-import { MiniAppCard } from "../components/MiniAppCard";
+import { MiniAppCard, AddCard, CARD_WIDTH } from "../components/MiniAppCard";
 import type { RootStackParamList } from "../../App";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
+const CARD_GAP = 12;
+
 export function HomeScreen({ navigation }: Props) {
   const [apps, setApps] = useState<MiniApp[]>([]);
+  const [search, setSearch] = useState("");
 
   const loadApps = useCallback(() => {
     setApps(listApps());
@@ -32,41 +35,90 @@ export function HomeScreen({ navigation }: Props) {
     loadApps();
   };
 
+  const filtered = useMemo(() => {
+    if (!search.trim()) return apps;
+    const q = search.toLowerCase();
+    return apps.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.appId.toLowerCase().includes(q)
+    );
+  }, [apps, search]);
+
+  // Grid data: filtered apps + a sentinel for the "+" add card
+  const ADD_SENTINEL = { __add: true } as const;
+  type GridItem = MiniApp | typeof ADD_SENTINEL;
+  const gridData: GridItem[] = [...filtered, ADD_SENTINEL];
+
+  const isAddCard = (item: GridItem): item is typeof ADD_SENTINEL =>
+    "__add" in item;
+
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>All Mini-Apps</Text>
+        {apps.length > 0 && (
+          <Text style={styles.headerCount}>{apps.length}</Text>
+        )}
+      </View>
+
+      {/* Search bar */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search apps..."
+          placeholderTextColor="#555"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+        />
+      </View>
+
       {apps.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>🔧</Text>
           <Text style={styles.emptyTitle}>No mini-apps yet</Text>
           <Text style={styles.emptySubtitle}>
-            Tap the button below to create your first one
+            Tap the + card below to create your first one
           </Text>
+          <View style={styles.emptyAddWrapper}>
+            <AddCard onPress={() => navigation.navigate("Create")} />
+          </View>
         </View>
       ) : (
-        <FlatList
-          data={apps}
-          keyExtractor={(item) => item.appId}
-          renderItem={({ item }) => (
-            <MiniAppCard
-              app={item}
-              onPress={() => navigation.navigate("MiniApp", { appId: item.appId })}
-              onDelete={() => handleDelete(item.appId)}
-            />
-          )}
-          contentContainerStyle={styles.list}
+        <FlatList<GridItem>
+          data={gridData}
+          keyExtractor={(item, index) =>
+            isAddCard(item) ? "__add__" : item.appId
+          }
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }) => {
+            if (isAddCard(item)) {
+              return <AddCard onPress={() => navigation.navigate("Create")} />;
+            }
+            return (
+              <MiniAppCard
+                app={item}
+                onPress={() =>
+                  navigation.navigate("MiniApp", { appId: item.appId })
+                }
+                onDelete={() => handleDelete(item.appId)}
+              />
+            );
+          }}
+          contentContainerStyle={styles.grid}
           refreshControl={
-            <RefreshControl refreshing={false} onRefresh={loadApps} tintColor="#4f46e5" />
+            <RefreshControl
+              refreshing={false}
+              onRefresh={loadApps}
+              tintColor="#4f46e5"
+            />
           }
         />
       )}
-
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate("Create")}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -76,8 +128,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#111118",
   },
-  list: {
-    paddingVertical: 12,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+    gap: 8,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  headerCount: {
+    color: "#888",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  searchInput: {
+    backgroundColor: "#1e1e2e",
+    color: "#fff",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    borderWidth: 1,
+    borderColor: "#2a2a3e",
+  },
+  grid: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+  },
+  row: {
+    gap: CARD_GAP,
+    marginBottom: CARD_GAP,
   },
   empty: {
     flex: 1,
@@ -99,27 +188,9 @@ const styles = StyleSheet.create({
     color: "#888",
     fontSize: 15,
     textAlign: "center",
+    marginBottom: 24,
   },
-  fab: {
-    position: "absolute",
-    bottom: 32,
-    right: 24,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: "#4f46e5",
-    justifyContent: "center",
+  emptyAddWrapper: {
     alignItems: "center",
-    elevation: 8,
-    shadowColor: "#4f46e5",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  fabText: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "400",
-    marginTop: -2,
   },
 });
