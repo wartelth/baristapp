@@ -22,7 +22,7 @@ export function ButtonRenderer({ component, dispatch, onNavigate }: RendererProp
 
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: VARIANT_COLORS[variant] }]}
+      style={[styles.button, { backgroundColor: VARIANT_COLORS[variant as keyof typeof VARIANT_COLORS] }]}
       onPress={handlePress}
       activeOpacity={0.7}
     >

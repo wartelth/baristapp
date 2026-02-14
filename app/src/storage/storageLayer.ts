@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { MiniApp } from "@swissknife/shared";
+import { saveCloudSpec } from "../api/supabaseClient";
 
 // ---------------------------------------------------------------------------
 // In-memory cache (keeps the public API synchronous)
@@ -54,6 +55,9 @@ export function saveApp(spec: MiniApp): void {
   if (!cache.has(appStateKey(spec.appId))) {
     persist(appStateKey(spec.appId), JSON.stringify(spec.initialState ?? {}));
   }
+
+  // Fire-and-forget cloud sync
+  saveCloudSpec(spec.appId, spec).catch(() => {});
 }
 
 export function getApp(appId: string): MiniApp | null {

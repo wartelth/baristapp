@@ -41,13 +41,79 @@ const CAPABILITY_INFO: Record<MiniAppCapability, { title: string; description: s
     title: "Network Access",
     description: "Make network requests through the SwissKnife proxy.",
   },
+  microphone: {
+    title: "Microphone",
+    description: "Record audio using your device microphone.",
+  },
+  location: {
+    title: "Location",
+    description: "Access your device location for this mini-app.",
+  },
+  haptics: {
+    title: "Haptic Feedback",
+    description: "Provide vibration feedback on interactions.",
+  },
+  clipboard: {
+    title: "Clipboard",
+    description: "Copy and paste text using the system clipboard.",
+  },
+  notifications: {
+    title: "Notifications",
+    description: "Send local notifications to your device.",
+  },
+  supabaseStorage: {
+    title: "Cloud Storage",
+    description: "Sync app data to the cloud for backup and cross-device access.",
+  },
 };
+
+// ---------------------------------------------------------------------------
+// Native permission wiring
+// ---------------------------------------------------------------------------
+
+async function requestNativePermission(capability: MiniAppCapability): Promise<boolean> {
+  switch (capability) {
+    case "camera": {
+      try {
+        const { Camera } = require("expo-camera");
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        return status === "granted";
+      } catch {
+        return false;
+      }
+    }
+    case "microphone": {
+      try {
+        const { Audio } = require("expo-av");
+        const { status } = await Audio.requestPermissionsAsync();
+        return status === "granted";
+      } catch {
+        return false;
+      }
+    }
+    case "location": {
+      try {
+        const Location = require("expo-location");
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        return status === "granted";
+      } catch {
+        return false;
+      }
+    }
+    default:
+      return true;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-const AUTO_GRANTED: MiniAppCapability[] = ["localStorage"];
+const AUTO_GRANTED: MiniAppCapability[] = [
+  "localStorage",
+  "haptics",
+  "clipboard",
+];
 
 export function requestCapability(
   appId: string,
@@ -78,9 +144,15 @@ export function requestCapability(
         },
         {
           text: "Allow",
-          onPress: () => {
-            setPermission(appId, capability, "granted");
-            resolve(true);
+          onPress: async () => {
+            const nativeGranted = await requestNativePermission(capability);
+            if (nativeGranted) {
+              setPermission(appId, capability, "granted");
+              resolve(true);
+            } else {
+              setPermission(appId, capability, "denied");
+              resolve(false);
+            }
           },
         },
       ]
@@ -107,8 +179,11 @@ export async function requestAllCapabilities(
 }
 
 export function resetPermissions(appId: string): void {
-  const caps: MiniAppCapability[] = ["localStorage", "camera", "network"];
-  for (const cap of caps) {
+  const allCaps: MiniAppCapability[] = [
+    "localStorage", "camera", "network", "microphone",
+    "location", "haptics", "clipboard", "notifications", "supabaseStorage",
+  ];
+  for (const cap of allCaps) {
     const key = permKey(appId, cap);
     permCache.delete(key);
     AsyncStorage.removeItem(key).catch(console.warn);

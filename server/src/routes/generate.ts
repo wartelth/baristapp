@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import { generateMiniApp } from "../services/claudeService";
+import { mountAppEndpoints } from "../services/subServerManager";
+import L, { fmtMs } from "../utils/logger";
 
 const router = Router();
 
@@ -21,48 +23,83 @@ function isRateLimited(ip: string): boolean {
 
 router.post("/", async (req: Request, res: Response): Promise<void> => {
   const ip = req.ip ?? "unknown";
+  const reqId = (req as any).__reqId ?? "????";
   const startTime = Date.now();
 
-  console.log(`[GENERATE] ── New request from ${ip}`);
+  L.separator();
+  L.log("GENERATE", `#${reqId} New generation request from ${ip}`);
 
   if (isRateLimited(ip)) {
-    console.log(`[GENERATE] ✖ Rate limited (${RATE_LIMIT} req/${RATE_WINDOW_MS / 1000}s)`);
+    L.warn("RATE", `#${reqId} Rate limited — ${RATE_LIMIT} req/${RATE_WINDOW_MS / 1000}s`);
     res.status(429).json({ success: false, error: "Too many requests. Try again in a minute." });
     return;
   }
 
-  const { prompt } = req.body;
+  const { prompt, clarifications } = req.body;
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
-    console.log("[GENERATE] ✖ Rejected: empty or missing prompt");
+    L.warn("GENERATE", `#${reqId} Rejected: empty or missing prompt`);
     res.status(400).json({ success: false, error: "Prompt is required." });
     return;
   }
 
   if (prompt.length > 2000) {
-    console.log(`[GENERATE] ✖ Rejected: prompt too long (${prompt.length} chars)`);
+    L.warn("GENERATE", `#${reqId} Rejected: prompt too long (${prompt.length} chars)`);
     res.status(400).json({ success: false, error: "Prompt too long (max 2000 characters)." });
     return;
   }
 
-  console.log(`[GENERATE] Prompt (${prompt.trim().length} chars): "${prompt.trim().slice(0, 100)}${prompt.trim().length > 100 ? "..." : ""}"`);
-  console.log("[GENERATE] Calling Claude...");
+  // Build enriched prompt with clarification answers
+  let enrichedPrompt = prompt.trim();
+  if (Array.isArray(clarifications) && clarifications.length > 0) {
+    const answers = clarifications
+      .map((c: { questionId: string; answer: string }) => `- ${c.answer}`)
+      .join("\n");
+    enrichedPrompt += `\n\nAdditional context from user:\n${answers}`;
+    L.detail("GENERATE", "Clarifications", `${clarifications.length} answer(s) attached`);
+  }
+
+  L.detail("GENERATE", "Prompt", `"${enrichedPrompt.slice(0, 120)}${enrichedPrompt.length > 120 ? "..." : ""}" (${enrichedPrompt.length} chars)`);
+  L.log("GENERATE", `#${reqId} Calling Claude agent...`);
 
   try {
-    const result = await generateMiniApp(prompt.trim());
+    const result = await generateMiniApp(enrichedPrompt);
     const elapsed = Date.now() - startTime;
 
     if (result.success) {
-      console.log(`[GENERATE] ✔ Success — appId="${result.miniApp.appId}", ${result.miniApp.screens.length} screen(s) — ${elapsed}ms`);
+      const app = result.miniApp;
+      const specSize = JSON.stringify(app).length;
+
+      L.success("GENERATE", `#${reqId} App generated in ${fmtMs(elapsed)}`);
+      L.detail("GENERATE", "appId", app.appId);
+      L.detail("GENERATE", "title", `"${app.title}"`);
+      L.detail("GENERATE", "version", (app as any).version ?? 1);
+      L.detail("GENERATE", "screens", app.screens.length);
+      L.detail("GENERATE", "spec size", `${(specSize / 1024).toFixed(1)}KB`);
+
+      // Auto-mount server endpoints for v2 apps
+      const v2 = app as any;
+      if (v2.version === 2 && v2.serverEndpoints?.length > 0) {
+        try {
+          mountAppEndpoints(app.appId, v2.serverEndpoints);
+          L.success("SUBSERVER", `Mounted ${v2.serverEndpoints.length} endpoint(s) for ${app.appId}`);
+        } catch (err) {
+          L.warn("SUBSERVER", `Failed to mount endpoints: ${err}`);
+        }
+      }
+
+      L.separator();
       res.json(result);
     } else {
-      console.log(`[GENERATE] ✖ Failed (422) — ${result.error} — ${elapsed}ms`);
+      L.error("GENERATE", `#${reqId} Failed — ${result.error} — ${fmtMs(elapsed)}`);
+      L.separator();
       res.status(422).json(result);
     }
   } catch (err) {
     const elapsed = Date.now() - startTime;
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error(`[GENERATE] ✖ Unexpected error (500) — ${message} — ${elapsed}ms`);
+    L.error("GENERATE", `#${reqId} Exception — ${message} — ${fmtMs(elapsed)}`);
+    L.separator();
     res.status(500).json({ success: false, error: message });
   }
 });

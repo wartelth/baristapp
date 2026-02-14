@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, ActivityIndicator, StyleSheet, Modal } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  NavigationContainerRef,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { CreateScreen } from "./src/screens/CreateScreen";
 import { MiniAppScreen } from "./src/screens/MiniAppScreen";
 import { initStorage } from "./src/storage/storageLayer";
+import { initDeviceId } from "./src/api/supabaseClient";
+import { GenerationProvider, useGeneration } from "./src/context/GenerationContext";
+import { HeaderSpinner } from "./src/components/HeaderSpinner";
+import { NotificationToast } from "./src/components/NotificationToast";
+import { LoadingOverlay } from "./src/components/LoadingOverlay";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -21,25 +29,31 @@ const SCREEN_OPTIONS = {
   headerTintColor: "#fff",
   headerTitleStyle: { fontWeight: "600" as const },
   contentStyle: { backgroundColor: "#111118" },
+  headerRight: () => <HeaderSpinner />,
 };
 
-export default function App() {
-  const [ready, setReady] = useState(false);
+/** Dismissable progress overlay — shown when the user taps the header spinner. */
+function ProgressModal() {
+  const { busy, progressVisible, toggleProgress, busySince } = useGeneration();
 
-  useEffect(() => {
-    initStorage().then(() => setReady(true));
-  }, []);
-
-  if (!ready) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#4f46e5" />
-      </View>
-    );
-  }
+  if (!busy || !progressVisible) return null;
 
   return (
-    <NavigationContainer>
+    <Modal visible transparent animationType="fade" onRequestClose={toggleProgress}>
+      <LoadingOverlay startTime={busySince} onClose={toggleProgress} />
+    </Modal>
+  );
+}
+
+function AppNavigator() {
+  const navRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
+
+  const handleTapApp = (appId: string) => {
+    navRef.current?.navigate("MiniApp", { appId });
+  };
+
+  return (
+    <NavigationContainer ref={navRef}>
       <StatusBar style="light" />
       <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
         <Stack.Screen
@@ -58,7 +72,31 @@ export default function App() {
           options={{ title: "Loading..." }}
         />
       </Stack.Navigator>
+      <NotificationToast onTapAppId={handleTapApp} />
+      <ProgressModal />
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    Promise.all([initStorage(), initDeviceId()]).then(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#4f46e5" />
+      </View>
+    );
+  }
+
+  return (
+    <GenerationProvider>
+      <AppNavigator />
+    </GenerationProvider>
   );
 }
 

@@ -1,0 +1,260 @@
+{
+  "appId": "gpx-map-viewer",
+  "title": "GPX Map Viewer",
+  "icon": "🗺️",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "location",
+    "network"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "GPX Viewer",
+      "components": [
+        {
+          "type": "card",
+          "id": "upload-card",
+          "props": {
+            "title": "Load GPX File",
+            "children": [
+              {
+                "type": "input",
+                "id": "gpx-url-input",
+                "props": {
+                  "placeholder": "Enter GPX file URL...",
+                  "stateKey": "gpxUrl",
+                  "inputType": "text"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "spacer1",
+                "props": {
+                  "height": 12
+                }
+              },
+              {
+                "type": "button",
+                "id": "load-btn",
+                "props": {
+                  "label": "Load GPX",
+                  "action": {
+                    "type": "batch",
+                    "actions": [
+                      {
+                        "type": "setState",
+                        "key": "loading",
+                        "value": true
+                      },
+                      {
+                        "type": "http",
+                        "url": "{{gpxUrl}}",
+                        "method": "GET",
+                        "resultKey": "gpxData",
+                        "loadingKey": "loading",
+                        "errorKey": "error"
+                      },
+                      {
+                        "type": "setState",
+                        "key": "mapLoaded",
+                        "value": true
+                      }
+                    ]
+                  },
+                  "variant": "primary",
+                  "disabled": "loading"
+                }
+              },
+              {
+                "type": "text",
+                "id": "error-text",
+                "props": {
+                  "content": "Error loading GPX file",
+                  "variant": "caption",
+                  "align": "center",
+                  "stateKey": "error"
+                },
+                "visibleWhen": {
+                  "stateKey": "error",
+                  "operator": "truthy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "spacer",
+          "id": "spacer2",
+          "props": {
+            "height": 16
+          }
+        },
+        {
+          "type": "progress",
+          "id": "loading-bar",
+          "props": {
+            "stateKey": "loadingPct",
+            "variant": "bar",
+            "max": 100,
+            "color": "#4f46e5",
+            "label": "Loading GPX file..."
+          },
+          "visibleWhen": {
+            "stateKey": "loading",
+            "operator": "truthy"
+          }
+        },
+        {
+          "type": "card",
+          "id": "map-card",
+          "props": {
+            "title": "Route Map",
+            "children": [
+              {
+                "type": "mapView",
+                "id": "route-map",
+                "props": {
+                  "markersKey": "trackPoints",
+                  "initialRegion": {
+                    "latitude": 37.7749,
+                    "longitude": -122.4194,
+                    "latitudeDelta": 0.1,
+                    "longitudeDelta": 0.1
+                  },
+                  "height": 400
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "spacer3",
+                "props": {
+                  "height": 12
+                }
+              },
+              {
+                "type": "container",
+                "id": "stats-container",
+                "props": {
+                  "children": [
+                    {
+                      "type": "container",
+                      "id": "distance-stat",
+                      "props": {
+                        "children": [
+                          {
+                            "type": "text",
+                            "id": "distance-label",
+                            "props": {
+                              "content": "Distance",
+                              "variant": "caption"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "id": "distance-value",
+                            "props": {
+                              "content": "0 km",
+                              "variant": "subtitle",
+                              "stateKey": "totalDistance"
+                            }
+                          }
+                        ],
+                        "direction": "column",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "type": "container",
+                      "id": "points-stat",
+                      "props": {
+                        "children": [
+                          {
+                            "type": "text",
+                            "id": "points-label",
+                            "props": {
+                              "content": "Points",
+                              "variant": "caption"
+                            }
+                          },
+                          {
+                            "type": "text",
+                            "id": "points-value",
+                            "props": {
+                              "content": "0",
+                              "variant": "subtitle",
+                              "stateKey": "pointCount"
+                            }
+                          }
+                        ],
+                        "direction": "column",
+                        "align": "center"
+                      }
+                    }
+                  ],
+                  "direction": "row",
+                  "gap": 16,
+                  "justify": "space-around"
+                }
+              }
+            ]
+          },
+          "visibleWhen": {
+            "stateKey": "mapLoaded",
+            "operator": "truthy"
+          }
+        },
+        {
+          "type": "spacer",
+          "id": "spacer4",
+          "props": {
+            "height": 16
+          }
+        },
+        {
+          "type": "card",
+          "id": "info-card",
+          "props": {
+            "title": "How to Use",
+            "children": [
+              {
+                "type": "text",
+                "id": "info-text",
+                "props": {
+                  "content": "1. Enter a public URL to a GPX file\n2. Click 'Load GPX' to parse and display\n3. View your route on the map with track points",
+                  "variant": "body"
+                }
+              }
+            ]
+          },
+          "visibleWhen": {
+            "stateKey": "mapLoaded",
+            "operator": "falsy"
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "gpxUrl": "",
+    "gpxData": null,
+    "trackPoints": [],
+    "loading": false,
+    "loadingPct": 0,
+    "error": null,
+    "mapLoaded": false,
+    "totalDistance": "0 km",
+    "pointCount": 0
+  },
+  "theme": {
+    "backgroundColor": "#111118",
+    "surfaceColor": "#1e1e2e",
+    "primaryColor": "#4f46e5",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#888888",
+    "borderColor": "#333333",
+    "dangerColor": "#dc2626",
+    "successColor": "#22c55e"
+  }
+}

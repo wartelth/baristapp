@@ -1,0 +1,6 @@
+Une appli pour faire de l’astronomie près de chez moi, ça doit contenir une carte dynamique avec des informations qui viennent d’un Dirch. Ça doit contenir une prédiction météo des prochains jours en me montrant quelles sont les meilleurs, ça doit contenir un calendrier pour les le prochain mois en me disant quels seront les meilleurs Soirée, et ça doit me dire qu’est-ce qu’il faut regarder dans le ciel d’une manière super belle visuellement et accessible et voilà en fonction de la date de l’année savoir qu’est-ce qu’il y a dans le ciel à quelle heure et où est-ce que je peux aller près près de moi et quand y a les gros en fonction de la météo
+
+Additional context from user:
+- D'où viennent les données du ciel (positions des astres, événements)? API externe ou données intégrées? → API astronomie externe (ex: Stellarium, Skyview)
+- Quelles nuits veux-tu que l'appli classe comme « meilleures »? (Sélectionne tout ce qui s'applique) → Ciel clair (météo), Visibilité de planètes particulières
+- Pour « lieux près de moi », as-tu des sites spécifiques en tête ou veux-tu des suggestions génériques (montagnes, parcs)? → Ce qui est bien près de Munich

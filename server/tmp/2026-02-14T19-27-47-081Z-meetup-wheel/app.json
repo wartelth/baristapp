@@ -1,0 +1,1166 @@
+{
+  "appId": "meetup-wheel",
+  "title": "Where & What? 🎡",
+  "icon": "🎡",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "haptics",
+    "clipboard"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Where & What? 🎡",
+      "components": [
+        {
+          "type": "tabs",
+          "id": "main-tabs",
+          "props": {
+            "stateKey": "activeTab",
+            "tabs": [
+              {
+                "label": "🎡 Spin",
+                "value": "spin",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "group-card",
+                    "props": {
+                      "title": "👥 Your Squad",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "player-entry-row",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "input",
+                                "id": "player-name-input",
+                                "props": {
+                                  "placeholder": "Your name...",
+                                  "stateKey": "playerName"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "add-player-btn",
+                                "props": {
+                                  "label": "Join",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "conditional",
+                                        "stateKey": "playerName",
+                                        "operator": "truthy",
+                                        "thenAction": {
+                                          "type": "batch",
+                                          "actions": [
+                                            {
+                                              "type": "append",
+                                              "key": "players",
+                                              "fromKey": "playerName"
+                                            },
+                                            {
+                                              "type": "setState",
+                                              "key": "playerName",
+                                              "value": ""
+                                            },
+                                            {
+                                              "type": "haptic",
+                                              "style": "success"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "variant": "primary"
+                                }
+                              }
+                            ],
+                            "direction": "row",
+                            "gap": 8,
+                            "align": "center"
+                          }
+                        },
+                        {
+                          "type": "list",
+                          "id": "player-list",
+                          "props": {
+                            "dataKey": "players",
+                            "emptyText": "No friends yet... add your names! 😢",
+                            "renderItem": {
+                              "components": [
+                                {
+                                  "type": "container",
+                                  "id": "player-row",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "id": "player-name-text",
+                                        "props": {
+                                          "content": "",
+                                          "variant": "body",
+                                          "stateKey": "_itemValue"
+                                        }
+                                      },
+                                      {
+                                        "type": "button",
+                                        "id": "remove-player-btn",
+                                        "props": {
+                                          "label": "✕",
+                                          "action": {
+                                            "type": "remove",
+                                            "key": "players",
+                                            "index": -1
+                                          },
+                                          "variant": "danger"
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "padding": 4,
+                                    "align": "center",
+                                    "justify": "space-between"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "spacer",
+                          "id": "code-spacer",
+                          "props": {
+                            "height": 8
+                          }
+                        },
+                        {
+                          "type": "container",
+                          "id": "invite-row",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "button",
+                                "id": "gen-code-btn",
+                                "props": {
+                                  "label": "🔗 Get Invite Code",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "compute",
+                                        "operation": "random",
+                                        "key": "generatedCode",
+                                        "operands": [
+                                          1000,
+                                          9999
+                                        ],
+                                        "resultKey": "generatedCode"
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "showCodeModal",
+                                        "value": true
+                                      },
+                                      {
+                                        "type": "haptic",
+                                        "style": "medium"
+                                      }
+                                    ]
+                                  },
+                                  "variant": "secondary"
+                                }
+                              }
+                            ],
+                            "direction": "row",
+                            "gap": 8,
+                            "justify": "center"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spin-spacer-1",
+                    "props": {
+                      "height": 12
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "wheel-card",
+                    "props": {
+                      "title": "🎡 The Wheel of Destiny",
+                      "subtitle": "Where fate takes your friend group...",
+                      "children": [
+                        {
+                          "type": "select",
+                          "id": "city-filter",
+                          "props": {
+                            "stateKey": "selectedCity",
+                            "options": [
+                              {
+                                "label": "🎲 Random (Let fate decide!)",
+                                "value": "random"
+                              },
+                              {
+                                "label": "🇫🇷 Paris",
+                                "value": "Paris"
+                              },
+                              {
+                                "label": "🇩🇪 Munich",
+                                "value": "Munich"
+                              },
+                              {
+                                "label": "🇳🇱 Netherlands",
+                                "value": "Netherlands"
+                              },
+                              {
+                                "label": "📍 Anywhere",
+                                "value": "Anywhere"
+                              }
+                            ],
+                            "placeholder": "Filter by city..."
+                          }
+                        },
+                        {
+                          "type": "spacer",
+                          "id": "wheel-spacer-1",
+                          "props": {
+                            "height": 16
+                          }
+                        },
+                        {
+                          "type": "container",
+                          "id": "wheel-display",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "wheel-arrow",
+                                "props": {
+                                  "content": "▼",
+                                  "variant": "title",
+                                  "align": "center"
+                                }
+                              },
+                              {
+                                "type": "container",
+                                "id": "wheel-slots",
+                                "props": {
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "slot-1",
+                                      "props": {
+                                        "content": "🗼",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-2",
+                                      "props": {
+                                        "content": "🍺",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-3",
+                                      "props": {
+                                        "content": "🚲",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-4",
+                                      "props": {
+                                        "content": "🎤",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-5",
+                                      "props": {
+                                        "content": "🧀",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-6",
+                                      "props": {
+                                        "content": "🏔️",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-7",
+                                      "props": {
+                                        "content": "🎳",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "slot-8",
+                                      "props": {
+                                        "content": "🌷",
+                                        "variant": "title",
+                                        "align": "center"
+                                      }
+                                    }
+                                  ],
+                                  "direction": "row",
+                                  "gap": 6,
+                                  "justify": "center",
+                                  "wrap": true
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 8,
+                            "align": "center"
+                          }
+                        },
+                        {
+                          "type": "spacer",
+                          "id": "wheel-spacer-2",
+                          "props": {
+                            "height": 16
+                          }
+                        },
+                        {
+                          "type": "button",
+                          "id": "spin-btn",
+                          "props": {
+                            "label": "🎡  S P I N  T H E  W H E E L  🎡",
+                            "action": {
+                              "type": "batch",
+                              "actions": [
+                                {
+                                  "type": "setState",
+                                  "key": "spinning",
+                                  "value": true
+                                },
+                                {
+                                  "type": "setState",
+                                  "key": "spinStep",
+                                  "value": 0
+                                },
+                                {
+                                  "type": "haptic",
+                                  "style": "heavy"
+                                },
+                                {
+                                  "type": "timer",
+                                  "timerId": "spin-timer",
+                                  "command": "start",
+                                  "intervalMs": 150,
+                                  "tickAction": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "compute",
+                                        "operation": "increment",
+                                        "key": "spinStep"
+                                      },
+                                      {
+                                        "type": "haptic",
+                                        "style": "light"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            },
+                            "variant": "primary"
+                          },
+                          "visibleWhen": {
+                            "stateKey": "spinning",
+                            "operator": "falsy"
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "spinning-text",
+                          "props": {
+                            "content": "✨ The wheel is spinning... ✨",
+                            "variant": "subtitle",
+                            "align": "center"
+                          },
+                          "visibleWhen": {
+                            "stateKey": "spinning",
+                            "operator": "truthy"
+                          }
+                        },
+                        {
+                          "type": "button",
+                          "id": "stop-spin-btn",
+                          "props": {
+                            "label": "🛑 STOP!",
+                            "action": {
+                              "type": "batch",
+                              "actions": [
+                                {
+                                  "type": "timer",
+                                  "timerId": "spin-timer",
+                                  "command": "stop"
+                                },
+                                {
+                                  "type": "setState",
+                                  "key": "spinning",
+                                  "value": false
+                                },
+                                {
+                                  "type": "compute",
+                                  "operation": "random",
+                                  "key": "activityIndex",
+                                  "operands": [
+                                    0,
+                                    17
+                                  ],
+                                  "resultKey": "activityIndex"
+                                },
+                                {
+                                  "type": "compute",
+                                  "operation": "random",
+                                  "key": "cityIndex",
+                                  "operands": [
+                                    0,
+                                    2
+                                  ],
+                                  "resultKey": "cityIndex"
+                                },
+                                {
+                                  "type": "setState",
+                                  "key": "showResultModal",
+                                  "value": true
+                                },
+                                {
+                                  "type": "haptic",
+                                  "style": "heavy"
+                                }
+                              ]
+                            },
+                            "variant": "danger"
+                          },
+                          "visibleWhen": {
+                            "stateKey": "spinning",
+                            "operator": "truthy"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "📋 Activities",
+                "value": "activities",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "suggested-card",
+                    "props": {
+                      "title": "🎯 Activity Pool",
+                      "subtitle": "Pre-loaded + your custom ideas",
+                      "children": [
+                        {
+                          "type": "list",
+                          "id": "activity-list",
+                          "props": {
+                            "dataKey": "activities",
+                            "emptyText": "No activities! Add some below 👇",
+                            "renderItem": {
+                              "components": [
+                                {
+                                  "type": "container",
+                                  "id": "activity-row",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "container",
+                                        "id": "activity-info",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "activity-name",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "body",
+                                                "stateKey": "name"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "activity-city",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "caption",
+                                                "stateKey": "city"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "column",
+                                          "gap": 2
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "padding": 6,
+                                    "align": "center",
+                                    "justify": "space-between"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "add-spacer",
+                    "props": {
+                      "height": 12
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "add-activity-card",
+                    "props": {
+                      "title": "➕ Add Your Own Idea",
+                      "subtitle": "The weirder, the better 😏",
+                      "children": [
+                        {
+                          "type": "input",
+                          "id": "new-activity-input",
+                          "props": {
+                            "placeholder": "e.g. 🦆 Duck race in the canal...",
+                            "stateKey": "newActivityName"
+                          }
+                        },
+                        {
+                          "type": "spacer",
+                          "id": "add-form-spacer",
+                          "props": {
+                            "height": 8
+                          }
+                        },
+                        {
+                          "type": "select",
+                          "id": "new-activity-city",
+                          "props": {
+                            "stateKey": "newActivityCity",
+                            "options": [
+                              {
+                                "label": "🇫🇷 Paris",
+                                "value": "Paris"
+                              },
+                              {
+                                "label": "🇩🇪 Munich",
+                                "value": "Munich"
+                              },
+                              {
+                                "label": "🇳🇱 Netherlands",
+                                "value": "Netherlands"
+                              },
+                              {
+                                "label": "📍 Anywhere",
+                                "value": "Anywhere"
+                              }
+                            ],
+                            "placeholder": "Pick a city..."
+                          }
+                        },
+                        {
+                          "type": "spacer",
+                          "id": "add-btn-spacer",
+                          "props": {
+                            "height": 8
+                          }
+                        },
+                        {
+                          "type": "button",
+                          "id": "add-activity-btn",
+                          "props": {
+                            "label": "🎉 Add to the Wheel!",
+                            "action": {
+                              "type": "conditional",
+                              "stateKey": "newActivityName",
+                              "operator": "truthy",
+                              "thenAction": {
+                                "type": "batch",
+                                "actions": [
+                                  {
+                                    "type": "append",
+                                    "key": "activities",
+                                    "value": {
+                                      "name": "New activity",
+                                      "city": "Anywhere",
+                                      "category": "Custom"
+                                    }
+                                  },
+                                  {
+                                    "type": "setState",
+                                    "key": "newActivityName",
+                                    "value": ""
+                                  },
+                                  {
+                                    "type": "haptic",
+                                    "style": "success"
+                                  }
+                                ]
+                              }
+                            },
+                            "variant": "primary"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "🏆 History",
+                "value": "history",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "history-card",
+                    "props": {
+                      "title": "📜 Past Adventures",
+                      "subtitle": "The wheel has spoken before...",
+                      "children": [
+                        {
+                          "type": "list",
+                          "id": "history-list",
+                          "props": {
+                            "dataKey": "history",
+                            "emptyText": "No spins yet! Go spin the wheel! 🎡",
+                            "renderItem": {
+                              "components": [
+                                {
+                                  "type": "card",
+                                  "id": "history-item-card",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "id": "history-activity",
+                                        "props": {
+                                          "content": "",
+                                          "variant": "subtitle",
+                                          "stateKey": "activity"
+                                        }
+                                      },
+                                      {
+                                        "type": "container",
+                                        "id": "history-meta",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "history-city",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "caption",
+                                                "stateKey": "city"
+                                              }
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "history-status",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "caption",
+                                                "stateKey": "status"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "row",
+                                          "justify": "space-between"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "clear-spacer",
+                    "props": {
+                      "height": 12
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "id": "clear-history-btn",
+                    "props": {
+                      "label": "🗑️ Clear History",
+                      "action": {
+                        "type": "batch",
+                        "actions": [
+                          {
+                            "type": "setState",
+                            "key": "history",
+                            "value": []
+                          },
+                          {
+                            "type": "haptic",
+                            "style": "warning"
+                          }
+                        ]
+                      },
+                      "variant": "danger"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "modal",
+          "id": "code-modal",
+          "props": {
+            "visibleKey": "showCodeModal",
+            "title": "🔗 Invite Your Squad",
+            "children": [
+              {
+                "type": "text",
+                "id": "code-instruction",
+                "props": {
+                  "content": "Share this code with your friends so they can join the session!",
+                  "variant": "body",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "code-modal-spacer-1",
+                "props": {
+                  "height": 16
+                }
+              },
+              {
+                "type": "text",
+                "id": "code-display",
+                "props": {
+                  "content": "----",
+                  "variant": "title",
+                  "align": "center",
+                  "stateKey": "generatedCode"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "code-modal-spacer-2",
+                "props": {
+                  "height": 16
+                }
+              },
+              {
+                "type": "button",
+                "id": "copy-code-btn",
+                "props": {
+                  "label": "📋 Copy Code",
+                  "action": {
+                    "type": "batch",
+                    "actions": [
+                      {
+                        "type": "copyToClipboard",
+                        "fromKey": "generatedCode"
+                      },
+                      {
+                        "type": "haptic",
+                        "style": "success"
+                      }
+                    ]
+                  },
+                  "variant": "primary"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "code-modal-spacer-3",
+                "props": {
+                  "height": 8
+                }
+              },
+              {
+                "type": "button",
+                "id": "close-code-modal",
+                "props": {
+                  "label": "Done",
+                  "action": {
+                    "type": "setState",
+                    "key": "showCodeModal",
+                    "value": false
+                  },
+                  "variant": "secondary"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "modal",
+          "id": "result-modal",
+          "props": {
+            "visibleKey": "showResultModal",
+            "title": "🎉 THE WHEEL HAS SPOKEN!",
+            "children": [
+              {
+                "type": "text",
+                "id": "result-emoji-burst",
+                "props": {
+                  "content": "🎊🎊🎊",
+                  "variant": "title",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "result-spacer-1",
+                "props": {
+                  "height": 12
+                }
+              },
+              {
+                "type": "text",
+                "id": "result-city-label",
+                "props": {
+                  "content": "📍 Destination:",
+                  "variant": "caption",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "text",
+                "id": "result-city-display",
+                "props": {
+                  "content": "Random City!",
+                  "variant": "subtitle",
+                  "align": "center",
+                  "stateKey": "selectedCity"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "result-spacer-2",
+                "props": {
+                  "height": 8
+                }
+              },
+              {
+                "type": "text",
+                "id": "result-activity-label",
+                "props": {
+                  "content": "🎯 Your mission, should you accept it:",
+                  "variant": "caption",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "text",
+                "id": "result-activity-display",
+                "props": {
+                  "content": "Spin the wheel to find out!",
+                  "variant": "title",
+                  "align": "center",
+                  "stateKey": "activityIndex"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "result-spacer-3",
+                "props": {
+                  "height": 8
+                }
+              },
+              {
+                "type": "text",
+                "id": "result-dare",
+                "props": {
+                  "content": "⚠️ NO BACKING OUT! The wheel's word is law! ⚠️",
+                  "variant": "caption",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "result-spacer-4",
+                "props": {
+                  "height": 16
+                }
+              },
+              {
+                "type": "button",
+                "id": "accept-result-btn",
+                "props": {
+                  "label": "✅ We Accept Our Fate!",
+                  "action": {
+                    "type": "batch",
+                    "actions": [
+                      {
+                        "type": "append",
+                        "key": "history",
+                        "value": {
+                          "activity": "Wheel result",
+                          "city": "Decided by fate",
+                          "status": "✅ Accepted!"
+                        }
+                      },
+                      {
+                        "type": "setState",
+                        "key": "showResultModal",
+                        "value": false
+                      },
+                      {
+                        "type": "haptic",
+                        "style": "success"
+                      }
+                    ]
+                  },
+                  "variant": "primary"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "result-spacer-5",
+                "props": {
+                  "height": 8
+                }
+              },
+              {
+                "type": "button",
+                "id": "respin-btn",
+                "props": {
+                  "label": "🔄 Cowards Re-spin (shame!)",
+                  "action": {
+                    "type": "batch",
+                    "actions": [
+                      {
+                        "type": "append",
+                        "key": "history",
+                        "value": {
+                          "activity": "Wheel result",
+                          "city": "Unknown",
+                          "status": "🐔 Chickened out!"
+                        }
+                      },
+                      {
+                        "type": "setState",
+                        "key": "showResultModal",
+                        "value": false
+                      },
+                      {
+                        "type": "haptic",
+                        "style": "error"
+                      }
+                    ]
+                  },
+                  "variant": "danger"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTab": "spin",
+    "groupCode": "",
+    "generatedCode": "",
+    "showCodeModal": false,
+    "playerName": "",
+    "players": [],
+    "showJoinModal": false,
+    "joinCode": "",
+    "spinning": false,
+    "spinResult": "",
+    "spinCategory": "",
+    "wheelPhase": 0,
+    "showResultModal": false,
+    "cityResult": "",
+    "activityResult": "",
+    "selectedCity": "random",
+    "customActivity": "",
+    "activities": [
+      {
+        "id": "a1",
+        "name": "🗼 Climb the Eiffel Tower at sunset",
+        "city": "Paris",
+        "category": "Adventure"
+      },
+      {
+        "id": "a2",
+        "name": "🥐 Croissant crawl — best bakery wins",
+        "city": "Paris",
+        "category": "Food"
+      },
+      {
+        "id": "a3",
+        "name": "🎨 Louvre speedrun challenge (30 min!)",
+        "city": "Paris",
+        "category": "Culture"
+      },
+      {
+        "id": "a4",
+        "name": "🚤 Seine river picnic + boat race toys",
+        "city": "Paris",
+        "category": "Chill"
+      },
+      {
+        "id": "a5",
+        "name": "🍺 Hofbräuhaus stein-holding contest",
+        "city": "Munich",
+        "category": "Food"
+      },
+      {
+        "id": "a6",
+        "name": "🏔️ Day trip to Neuschwanstein Castle",
+        "city": "Munich",
+        "category": "Adventure"
+      },
+      {
+        "id": "a7",
+        "name": "🌊 Surf the Eisbach river wave",
+        "city": "Munich",
+        "category": "Adventure"
+      },
+      {
+        "id": "a8",
+        "name": "🥨 Pretzel bake-off at a local bakery",
+        "city": "Munich",
+        "category": "Food"
+      },
+      {
+        "id": "a9",
+        "name": "🧀 Gouda factory tour + cheese Olympics",
+        "city": "Netherlands",
+        "category": "Food"
+      },
+      {
+        "id": "a10",
+        "name": "🚲 Bike race through Amsterdam canals",
+        "city": "Netherlands",
+        "category": "Adventure"
+      },
+      {
+        "id": "a11",
+        "name": "🌷 Keukenhof flower crown competition",
+        "city": "Netherlands",
+        "category": "Chill"
+      },
+      {
+        "id": "a12",
+        "name": "🎡 Rotterdam rooftop bar crawl",
+        "city": "Netherlands",
+        "category": "Culture"
+      },
+      {
+        "id": "a13",
+        "name": "🎳 Bowling tournament (loser buys dinner)",
+        "city": "Anywhere",
+        "category": "Fun"
+      },
+      {
+        "id": "a14",
+        "name": "🎤 Karaoke battle royale",
+        "city": "Anywhere",
+        "category": "Fun"
+      },
+      {
+        "id": "a15",
+        "name": "🏃 Scavenger hunt across the city",
+        "city": "Anywhere",
+        "category": "Adventure"
+      },
+      {
+        "id": "a16",
+        "name": "🍕 Cook-off: each person picks a dish",
+        "city": "Anywhere",
+        "category": "Food"
+      },
+      {
+        "id": "a17",
+        "name": "🎮 LAN party — bring your worst game",
+        "city": "Anywhere",
+        "category": "Fun"
+      },
+      {
+        "id": "a18",
+        "name": "🧗 Indoor climbing + loser does a dare",
+        "city": "Anywhere",
+        "category": "Adventure"
+      }
+    ],
+    "cities": [
+      {
+        "label": "Paris",
+        "emoji": "🇫🇷"
+      },
+      {
+        "label": "Munich",
+        "emoji": "🇩🇪"
+      },
+      {
+        "label": "Netherlands",
+        "emoji": "🇳🇱"
+      }
+    ],
+    "history": [],
+    "showAddModal": false,
+    "newActivityName": "",
+    "newActivityCity": "Anywhere",
+    "spinStep": 0,
+    "tempSpinLabels": [
+      "🇫🇷",
+      "🇩🇪",
+      "🇳🇱",
+      "🎲",
+      "🇫🇷",
+      "🇩🇪",
+      "🇳🇱",
+      "🎲"
+    ]
+  },
+  "theme": {
+    "backgroundColor": "#0f0a1e",
+    "surfaceColor": "#1a1333",
+    "primaryColor": "#a855f7",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#9ca3af",
+    "borderColor": "#2d2250",
+    "dangerColor": "#ef4444",
+    "successColor": "#22c55e"
+  }
+}

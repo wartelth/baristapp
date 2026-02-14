@@ -32,13 +32,12 @@ export function ListRenderer({ component, state, dispatch, onNavigate }: Rendere
       scrollEnabled={false}
       renderItem={({ item, index }) => (
         <View style={styles.item}>
-          {renderItem.components.map((comp) => {
+          {renderItem.components.map((comp: any) => {
             // Inject item data into state for child components
             const itemState = {
               ...state,
               _item: item,
               _index: index,
-              // If item is a string, also expose it directly
               ...(typeof item === "string" ? { _itemValue: item } : {}),
               ...(typeof item === "object" && item !== null ? (item as Record<string, unknown>) : {}),
             };
