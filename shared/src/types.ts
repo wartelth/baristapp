@@ -51,6 +51,7 @@ import {
   ServerCallAction,
   HapticAction,
   CopyToClipboardAction,
+  GetLocationAction,
 } from "./schema";
 
 // Top-level app types
@@ -107,6 +108,7 @@ export type BatchActionType = z.infer<typeof BatchAction>;
 export type ServerCallActionType = z.infer<typeof ServerCallAction>;
 export type HapticActionType = z.infer<typeof HapticAction>;
 export type CopyToClipboardActionType = z.infer<typeof CopyToClipboardAction>;
+export type GetLocationActionType = z.infer<typeof GetLocationAction>;
 
 // ---------------------------------------------------------------------------
 // Clarification API types

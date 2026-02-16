@@ -119,7 +119,7 @@ The unified `MiniAppSchema` is a union of both versions for backward compatibili
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| Mobile | React Native + Expo 52 | Cross-platform renderer |
+| Mobile | React Native + Expo 54 | Cross-platform renderer |
 | Navigation | React Navigation v7 | Screen routing |
 | State | React useState + refs | Per-app state management |
 | Local Storage | AsyncStorage | Persistent key-value store |

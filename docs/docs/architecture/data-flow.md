@@ -182,17 +182,43 @@ stateDiagram-v2
     MainTabs --> Auth: Sign out
 
     state MainTabs {
-        [*] --> Library
-        Library --> Create
+        [*] --> Apps
+        Apps --> Social
+        Social --> Create
         Create --> Library
         Library --> Profile
-        Library --> MiniApp: Tap app
+        Apps --> MiniApp: Tap app
+        Social --> MiniApp: Open imported app
+        Library --> MiniApp: Open official template
     }
 ```
 
 **Identity resolution:**
 - Logged in → JWT `sub` claim (verified with `SUPABASE_JWT_SECRET`)
 - Anonymous → `x-device-id` header (UUID stored on device)
+
+## Share & Import Flow
+
+```mermaid
+sequenceDiagram
+    actor Owner as Owner User
+    participant Apps as My Apps Screen
+    participant API as Server API
+    participant Social as Social Screen
+    actor Friend as Friend User
+
+    Owner->>Apps: Tap Share on app card
+    Apps->>API: POST /api/social/share/:appId
+    API-->>Apps: short code (abc-def-ghi)
+    Apps->>Owner: Show QR + code + native share sheet
+
+    Friend->>Social: Open Import modal
+    Friend->>Social: Type code OR scan QR
+    Social->>API: POST /api/social/import/:shareCode
+    API-->>Social: Imported app spec + owner metadata
+    Social->>Social: saveApp + saveAppMeta
+    Social->>Friend: Open imported app or go to My Apps
+```
 
 ## Server Endpoints Flow
 

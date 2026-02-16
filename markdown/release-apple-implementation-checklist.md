@@ -71,6 +71,29 @@
 - [x] `markdown/privacy-policy.md`
   - Added draft privacy policy source text for publication.
 
+## 7) Social sharing and import UX polish
+
+- [x] `server/src/services/supabaseClient.ts`
+  - Share code generation now uses short human-readable format (`abc-def-ghi`) with collision retry.
+  - Import accepts normalized share tokens and preserves backward compatibility with legacy codes.
+- [x] `app/src/screens/HomeScreen.tsx`
+  - Share flow upgraded to a dedicated modal with minimal QR code + native share action.
+- [x] `app/src/screens/SocialScreen.tsx`
+  - Import flow upgraded with code auto-formatting, validation, post-import quick actions, and QR scanning.
+- [x] `app/src/utils/shareCode.ts`
+  - Added reusable share-code sanitize/format/validate/extract helpers.
+- [x] `app/package.json`
+  - Added `react-native-qrcode-svg` for QR rendering in sharing flow.
+
+## 8) Official developer library starter content
+
+- [x] `supabase_setup.sql`
+  - Added idempotent seed templates in `featured_mini_apps`:
+    - Tic Tac Toe
+    - Would-You-Rather Party
+    - Debate Duel Timer
+    - Book Club Companion (public API-backed list)
+
 ## Remaining manual release tasks (outside code)
 
 - [ ] Publish the privacy policy and support URLs used in App Store Connect.
