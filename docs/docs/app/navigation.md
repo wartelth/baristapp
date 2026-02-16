@@ -30,9 +30,15 @@ stateDiagram-v2
     AuthStack --> MainTabs: authenticated
 
     state MainTabs {
-        [*] --> Library
-        Library --> MiniApp: tap app
-        MiniApp --> Library: back
+        [*] --> Apps
+        Apps --> Social
+        Social --> Create
+        Create --> Library
+        Library --> Profile
+        Apps --> MiniApp: tap app
+        Social --> MiniApp: open imported app
+        Library --> MiniApp: open added template
+        MiniApp --> Apps: back
     }
 
     MainTabs --> AuthStack: sign out
@@ -48,6 +54,7 @@ stateDiagram-v2
 | Auth | `AuthStack` | Not logged in |
 | MainTabs | Tab Navigator | Logged in |
 | MiniApp | `MiniAppScreen` | Viewing a mini-app |
+| Legal | `LegalScreen` | Privacy/Support page |
 
 ### Auth Stack (`navigation/AuthStack.tsx`)
 
@@ -60,8 +67,10 @@ stateDiagram-v2
 
 | Tab | Screen | Icon | Description |
 |-----|--------|------|-------------|
-| Library | `HomeScreen` | Grid | Saved mini-apps |
+| My Apps (`Apps`) | `HomeScreen` | Grid | Saved mini-apps + sharing |
+| Social | `SocialScreen` | People | Friend avatars + import from share code/QR |
 | Create | `CreateScreen` | Plus (center) | New app prompt |
+| Official (`Library`) | `DeveloperLibraryScreen` | Library | Curated templates (add/ignore/open) |
 | Profile | `ProfileScreen` | User | Account & stats |
 
 ## Type Definitions
@@ -73,7 +82,8 @@ type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
   MainTabs: undefined;
-  MiniApp: { appId: string; title?: string };
+  MiniApp: { appId: string };
+  Legal: { section: "privacy" | "support" };
 };
 
 type AuthStackParamList = {
@@ -82,20 +92,35 @@ type AuthStackParamList = {
 };
 
 type TabParamList = {
-  Library: undefined;
+  Apps: undefined;
+  Social: undefined;
   Create: undefined;
+  Library: undefined;
   Profile: undefined;
 };
 ```
 
 ## Screen Details
 
-### HomeScreen (Library)
+### HomeScreen (My Apps)
 - Grid layout of `MiniAppCard` components
 - Search bar for filtering
-- Long-press for delete
-- "Edit" button for modification
+- Card menu for modify/report/delete/share
+- Share opens short code + QR export modal
 - Pull-to-refresh
+
+### SocialScreen
+- Friends strip (avatars)
+- Shared-with-you app feed
+- Import modal with:
+  - short code format (`abc-def-ghi`)
+  - QR scan support
+  - quick action to open imported app
+
+### DeveloperLibraryScreen (Official)
+- Shows featured templates from backend
+- Supports add / ignore status
+- Added templates open directly after install
 
 ### CreateScreen
 - Text input for prompt

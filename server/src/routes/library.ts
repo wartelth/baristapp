@@ -6,6 +6,7 @@ import {
   markFeaturedAppIgnored,
 } from "../services/supabaseClient";
 import { ensureLibraryAccess } from "../services/billingService";
+import { mountAppEndpoints } from "../services/subServerManager";
 import L from "../utils/logger";
 
 const router = Router();
@@ -44,6 +45,17 @@ router.post("/featured/:featuredAppId/add", async (req: Request, res: Response) 
   if (!result) {
     res.status(404).json({ success: false, error: "Featured app not found." });
     return;
+  }
+
+  // Auto-mount server endpoints for v2 apps
+  const spec = result.spec as any;
+  if (spec.version === 2 && spec.serverEndpoints?.length > 0) {
+    try {
+      mountAppEndpoints(result.installedAppId, spec.serverEndpoints);
+      L.success("SUBSERVER", `Mounted ${spec.serverEndpoints.length} endpoint(s) for ${result.installedAppId}`);
+    } catch (err) {
+      L.warn("SUBSERVER", `Failed to mount endpoints for ${result.installedAppId}: ${err}`);
+    }
   }
 
   L.log(

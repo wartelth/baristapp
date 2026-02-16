@@ -101,6 +101,32 @@ export async function loadAppSpec(
   return data?.spec ?? null;
 }
 
+/**
+ * Load the most recent spec for an appId across all users.
+ * Used for lazy-mounting server endpoints when a request arrives
+ * for an app that isn't in the in-memory registry.
+ */
+export async function loadAnyAppSpec(
+  appId: string
+): Promise<unknown | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+
+  const { data, error } = await sb
+    .from("mini_apps")
+    .select("spec")
+    .eq("app_id", appId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error && error.code !== "PGRST116") {
+    L.error("SUPABASE", `loadAnyAppSpec failed — ${error.message}`);
+  }
+
+  return data?.spec ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Mini-app state CRUD
 // ---------------------------------------------------------------------------
