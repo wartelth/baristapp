@@ -81,6 +81,12 @@ export function AudioRecorderRenderer({ component, state, dispatch }: RendererPr
 
   return (
     <View style={[styles.wrapper, { backgroundColor: theme.surfaceColor, borderColor: theme.borderColor }]}>
+      {isRecording && (
+        <View style={styles.recordingBadge}>
+          <View style={[styles.recordingDot, { backgroundColor: theme.dangerColor }]} />
+          <Text style={[styles.recordingText, { color: theme.dangerColor }]}>Recording</Text>
+        </View>
+      )}
       <Text style={[styles.timer, { color: theme.textColor }]}>
         {isRecording ? formatTime(duration) : "Ready"}
       </Text>
@@ -120,6 +126,23 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
     marginBottom: 12,
+  },
+  recordingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  recordingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  recordingText: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
   recordBtn: {
     paddingHorizontal: 32,

@@ -4,8 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Vibration,
 } from "react-native";
 import { useGeneration } from "../context/GenerationContext";
+import { CelebrationConfetti } from "./CelebrationConfetti";
 
 interface Props {
   onTapAppId?: (appId: string) => void;
@@ -14,6 +16,7 @@ interface Props {
 export function NotificationToast({ onTapAppId }: Props) {
   const { notification, dismissNotification } = useGeneration();
   const translateY = useRef(new Animated.Value(-100)).current;
+  const [confettiVisible, setConfettiVisible] = React.useState(false);
 
   useEffect(() => {
     if (notification) {
@@ -32,6 +35,23 @@ export function NotificationToast({ onTapAppId }: Props) {
     }
   }, [notification]);
 
+  useEffect(() => {
+    if (!notification?.success || notification.event !== "generate_complete") return;
+    setConfettiVisible(true);
+    const hideTimer = setTimeout(() => setConfettiVisible(false), 1700);
+
+    (async () => {
+      try {
+        const Haptics = await import("expo-haptics");
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch {
+        Vibration.vibrate(120);
+      }
+    })();
+
+    return () => clearTimeout(hideTimer);
+  }, [notification]);
+
   if (!notification) return null;
 
   const handlePress = () => {
@@ -42,23 +62,26 @@ export function NotificationToast({ onTapAppId }: Props) {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        { transform: [{ translateY }] },
-        notification.success ? styles.success : styles.error,
-      ]}
-    >
-      <TouchableOpacity style={styles.inner} onPress={handlePress} activeOpacity={0.8}>
-        <Text style={styles.icon}>{notification.success ? "OK" : "!"}</Text>
-        <Text style={styles.message} numberOfLines={2}>
-          {notification.message}
-        </Text>
-        {notification.appId && (
-          <Text style={styles.action}>Open</Text>
-        )}
-      </TouchableOpacity>
-    </Animated.View>
+    <>
+      <CelebrationConfetti visible={confettiVisible} />
+      <Animated.View
+        style={[
+          styles.container,
+          { transform: [{ translateY }] },
+          notification.success ? styles.success : styles.error,
+        ]}
+      >
+        <TouchableOpacity style={styles.inner} onPress={handlePress} activeOpacity={0.8}>
+          <Text style={styles.icon}>{notification.success ? "OK" : "!"}</Text>
+          <Text style={styles.message} numberOfLines={2}>
+            {notification.message}
+          </Text>
+          {notification.appId && (
+            <Text style={styles.action}>Open</Text>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    </>
   );
 }
 

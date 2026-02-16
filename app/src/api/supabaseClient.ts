@@ -38,7 +38,7 @@ export async function initDeviceId(): Promise<void> {
 }
 
 /** Returns headers with auth token if logged in, else device ID. */
-async function getHeaders(): Promise<Record<string, string>> {
+export async function getAuthHeaders(): Promise<Record<string, string>> {
   const base: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -57,7 +57,7 @@ export async function loadCloudState(
 ): Promise<Record<string, unknown> | null> {
   try {
     const response = await fetch(`${BASE_URL}/api/storage/apps/${appId}/state`, {
-      headers: await getHeaders(),
+      headers: await getAuthHeaders(),
     });
     if (!response.ok) return null;
     const data = await response.json();
@@ -74,7 +74,7 @@ export async function saveCloudState(
   try {
     await fetch(`${BASE_URL}/api/storage/apps/${appId}/state`, {
       method: "PUT",
-      headers: await getHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ state }),
     });
   } catch {
@@ -89,7 +89,7 @@ export async function saveCloudSpec(
   try {
     await fetch(`${BASE_URL}/api/storage/apps/${appId}/spec`, {
       method: "PUT",
-      headers: await getHeaders(),
+      headers: await getAuthHeaders(),
       body: JSON.stringify({ spec }),
     });
   } catch {

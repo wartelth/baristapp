@@ -2,40 +2,70 @@ import { Router, Request, Response } from "express";
 import { generateMiniApp } from "../services/claudeService";
 import { mountAppEndpoints } from "../services/subServerManager";
 import L, { fmtMs } from "../utils/logger";
+import { moderateUserText } from "../utils/contentModeration";
+import { getUserId } from "../utils/auth";
+import {
+  checkSlidingWindowLimit,
+  formatRetryAfterSeconds,
+} from "../utils/rateLimiter";
+import {
+  checkGenerationAllowance,
+  recordModelUsage,
+} from "../services/billingService";
 
 const router = Router();
 
-// Simple in-memory rate limiter: max 10 requests per minute per IP
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT = 10;
-const RATE_WINDOW_MS = 60_000;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = rateLimitMap.get(ip) ?? [];
-  const recent = timestamps.filter((t) => now - t < RATE_WINDOW_MS);
-  rateLimitMap.set(ip, recent);
-
-  if (recent.length >= RATE_LIMIT) return true;
-  recent.push(now);
-  return false;
-}
+// In-memory rate limiter: 5 generate requests per 10 minutes per user/device.
+const userRateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60_000;
 
 router.post("/", async (req: Request, res: Response): Promise<void> => {
-  const ip = req.ip ?? "unknown";
   const reqId = (req as any).__reqId ?? "????";
   const startTime = Date.now();
+  const userId = getUserId(req);
 
   L.separator();
-  L.log("GENERATE", `#${reqId} New generation request from ${ip}`);
+  L.log("GENERATE", `#${reqId} New generation request from user=${userId}`);
 
-  if (isRateLimited(ip)) {
-    L.warn("RATE", `#${reqId} Rate limited — ${RATE_LIMIT} req/${RATE_WINDOW_MS / 1000}s`);
-    res.status(429).json({ success: false, error: "Too many requests. Try again in a minute." });
+  const rateCheck = checkSlidingWindowLimit(
+    userRateLimitMap,
+    userId,
+    RATE_LIMIT,
+    RATE_WINDOW_MS
+  );
+  if (!rateCheck.allowed) {
+    const retryAfterSec = formatRetryAfterSeconds(rateCheck.retryAfterMs);
+    L.warn(
+      "RATE",
+      `#${reqId} Rate limited user=${userId} — ${RATE_LIMIT} req/${RATE_WINDOW_MS / 1000}s`
+    );
+    res.status(429).json({
+      success: false,
+      error: "Too many generation requests for this user.",
+      retryAfterSec,
+    });
     return;
   }
 
   const { prompt, clarifications } = req.body;
+
+  const allowance = await checkGenerationAllowance(userId);
+  if (!allowance.allowed) {
+    L.warn("RATE", `#${reqId} Plan limit reached user=${userId} plan=${allowance.planKey}`);
+    res.status(402).json({
+      success: false,
+      error: allowance.reason ?? "Plan limit reached.",
+      billing: {
+        planKey: allowance.planKey,
+        appLimitPerPeriod: allowance.plan.appLimitPerPeriod,
+        periodDays: allowance.periodDays,
+        usedInPeriod: allowance.usedInPeriod,
+        remainingInPeriod: allowance.remainingInPeriod,
+      },
+    });
+    return;
+  }
 
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
     L.warn("GENERATE", `#${reqId} Rejected: empty or missing prompt`);
@@ -46,6 +76,16 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
   if (prompt.length > 2000) {
     L.warn("GENERATE", `#${reqId} Rejected: prompt too long (${prompt.length} chars)`);
     res.status(400).json({ success: false, error: "Prompt too long (max 2000 characters)." });
+    return;
+  }
+
+  const moderation = moderateUserText(prompt);
+  if (moderation.blocked) {
+    L.warn("MODERATION", `#${reqId} Prompt blocked: ${moderation.reason}`);
+    res.status(400).json({
+      success: false,
+      error: "This request cannot be processed due to safety policy.",
+    });
     return;
   }
 
@@ -69,6 +109,14 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     if (result.success) {
       const app = result.miniApp;
       const specSize = JSON.stringify(app).length;
+      await recordModelUsage({
+        userId,
+        appId: app.appId,
+        requestType: "generate",
+        modelName: result.usage.modelName,
+        costUsd: result.usage.costUsd,
+        numTurns: result.usage.numTurns,
+      });
 
       L.success("GENERATE", `#${reqId} App generated in ${fmtMs(elapsed)}`);
       L.detail("GENERATE", "appId", app.appId);
@@ -76,6 +124,7 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
       L.detail("GENERATE", "version", (app as any).version ?? 1);
       L.detail("GENERATE", "screens", app.screens.length);
       L.detail("GENERATE", "spec size", `${(specSize / 1024).toFixed(1)}KB`);
+      L.detail("GENERATE", "model cost", `$${result.usage.costUsd.toFixed(4)}`);
 
       // Auto-mount server endpoints for v2 apps
       const v2 = app as any;

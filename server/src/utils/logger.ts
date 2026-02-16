@@ -110,6 +110,7 @@ const TAG_COLORS: Record<string, string> = {
   SUPABASE: c.blue,
   HEALTH: c.dim,
   RATE: c.red,
+  BILLING: c.bgMagenta + c.white + c.bold,
   ENDPOINT: c.cyan,
   CLARIFY: c.yellow + c.bold,
 };

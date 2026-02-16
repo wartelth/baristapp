@@ -17,17 +17,12 @@ import { clarifyPrompt } from "../api/client";
 import { useGeneration } from "../context/GenerationContext";
 import { useAppTheme } from "../context/AppThemeContext";
 import type { CreateScreenProps } from "../types/navigation";
+import { ensureDataConsentInteractive } from "../privacy/dataConsentFlow";
+import { SuggestionMarquee } from "../components/SuggestionMarquee";
 
 type Props = CreateScreenProps;
 
 type Step = "prompt" | "clarifying" | "questions";
-
-const EXAMPLES = [
-  "A simple grocery list where I can add and remove items",
-  "A workout rep counter for push-ups, squats, and planks",
-  "A movie watchlist where I can add titles and mark them as watched",
-  "A daily journal with date and mood tracking",
-];
 
 export function CreateScreen({ navigation }: Props) {
   const { busy, startGenerate } = useGeneration();
@@ -43,6 +38,15 @@ export function CreateScreen({ navigation }: Props) {
 
   const scrollRef = useRef<ScrollView>(null);
 
+  const resetForm = () => {
+    setStep("prompt");
+    setPrompt("");
+    setSummary("");
+    setQuestions([]);
+    setAnswers({});
+    setFreeformAnswers({});
+  };
+
   // -------------------------------------------------------------------------
   // Step 1 → 2: Send prompt for clarification
   // -------------------------------------------------------------------------
@@ -52,9 +56,14 @@ export function CreateScreen({ navigation }: Props) {
       return;
     }
     Keyboard.dismiss();
-    setStep("clarifying");
 
     try {
+      const consented = await ensureDataConsentInteractive();
+      if (!consented) {
+        return;
+      }
+
+      setStep("clarifying");
       const result = await clarifyPrompt(prompt.trim());
 
       if (!result.success) {
@@ -99,7 +108,8 @@ export function CreateScreen({ navigation }: Props) {
 
     // Fire-and-forget — context handles the API call, notification, and saving
     startGenerate(prompt.trim(), clarifications);
-    navigation.navigate("Library");
+    resetForm();
+    navigation.navigate("Apps");
   };
 
   // -------------------------------------------------------------------------
@@ -108,7 +118,8 @@ export function CreateScreen({ navigation }: Props) {
   const handleSkip = () => {
     Keyboard.dismiss();
     startGenerate(prompt.trim());
-    navigation.navigate("Library");
+    resetForm();
+    navigation.navigate("Apps");
   };
 
   // -------------------------------------------------------------------------
@@ -170,18 +181,7 @@ export function CreateScreen({ navigation }: Props) {
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.examples}>
-            <Text style={[styles.examplesTitle, { color: colors.secondaryText }]}>Try an example:</Text>
-            {EXAMPLES.map((ex) => (
-              <TouchableOpacity
-                key={ex}
-                style={[styles.exampleChip, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}
-                onPress={() => setPrompt(ex)}
-              >
-                <Text style={[styles.exampleText, { color: colors.secondaryText }]}>{ex}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <SuggestionMarquee onSelect={(idea) => setPrompt(idea)} />
         </ScrollView>
       </KeyboardAvoidingView>
     );
@@ -354,26 +354,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 17,
     fontWeight: "600",
-  },
-  examples: {
-    gap: 10,
-    marginTop: 12,
-  },
-  examplesTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  exampleChip: {
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-  },
-  exampleText: {
-    fontSize: 14,
   },
 
   // Clarifying step
