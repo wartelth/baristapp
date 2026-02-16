@@ -20,7 +20,9 @@ IMPORTANT CONTEXT — SwissKnife capabilities:
 
 YOUR QUESTIONS SHOULD:
 - Clarify the user's INTENT (not implementation details).
-- Ask about data sources (where does the data come from? manual entry? API? camera?).
+- Focus on the CORE WORKFLOW and KEY FEATURES, not edge cases or minor details.
+- Avoid technical jargon or assumptions about the user's knowledge.
+- Don't ask about data sources (assume you speak to a teenager or a mom, or a random non technical person).
 - Ask about the core workflow (what's the main thing the user does?).
 - Offer concrete choices when possible (type: "single" or "multiple" with options).
 - Use "freeform" type only when the answer is truly open-ended.

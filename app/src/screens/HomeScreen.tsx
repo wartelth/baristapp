@@ -13,14 +13,13 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { MiniApp } from "@swissknife/shared";
 import { listApps, deleteApp, clearState } from "../storage/storageLayer";
-import { MiniAppCard, AddCard, CARD_WIDTH } from "../components/MiniAppCard";
+import { MiniAppCard } from "../components/MiniAppCard";
 import { useGeneration } from "../context/GenerationContext";
-import type { RootStackParamList } from "../../App";
+import type { LibraryScreenProps } from "../types/navigation";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+type Props = LibraryScreenProps;
 
 const CARD_GAP = 12;
 
@@ -80,19 +79,11 @@ export function HomeScreen({ navigation }: Props) {
     );
   }, [apps, search]);
 
-  // Grid data: filtered apps + a sentinel for the "+" add card
-  const ADD_SENTINEL = { __add: true } as const;
-  type GridItem = MiniApp | typeof ADD_SENTINEL;
-  const gridData: GridItem[] = [...filtered, ADD_SENTINEL];
-
-  const isAddCard = (item: GridItem): item is typeof ADD_SENTINEL =>
-    "__add" in item;
-
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>All Mini-Apps</Text>
+        <Text style={styles.headerTitle}>Library</Text>
         {apps.length > 0 && (
           <Text style={styles.headerCount}>{apps.length}</Text>
         )}
@@ -116,35 +107,25 @@ export function HomeScreen({ navigation }: Props) {
           <Text style={styles.emptyIcon}>🔧</Text>
           <Text style={styles.emptyTitle}>No mini-apps yet</Text>
           <Text style={styles.emptySubtitle}>
-            Tap the + card below to create your first one
+            Tap the + tab to create your first one
           </Text>
-          <View style={styles.emptyAddWrapper}>
-            <AddCard onPress={() => !busy && navigation.navigate("Create")} />
-          </View>
         </View>
       ) : (
-        <FlatList<GridItem>
-          data={gridData}
-          keyExtractor={(item, index) =>
-            isAddCard(item) ? "__add__" : item.appId
-          }
+        <FlatList<MiniApp>
+          data={filtered}
+          keyExtractor={(item) => item.appId}
           numColumns={2}
           columnWrapperStyle={styles.row}
-          renderItem={({ item }) => {
-            if (isAddCard(item)) {
-              return <AddCard onPress={() => !busy && navigation.navigate("Create")} />;
-            }
-            return (
-              <MiniAppCard
-                app={item}
-                onPress={() =>
-                  navigation.navigate("MiniApp", { appId: item.appId })
-                }
-                onDelete={() => handleDelete(item.appId)}
-                onModify={() => handleModifyOpen(item)}
-              />
-            );
-          }}
+          renderItem={({ item }) => (
+            <MiniAppCard
+              app={item}
+              onPress={() =>
+                navigation.navigate("MiniApp", { appId: item.appId })
+              }
+              onDelete={() => handleDelete(item.appId)}
+              onModify={() => handleModifyOpen(item)}
+            />
+          )}
           contentContainerStyle={styles.grid}
           refreshControl={
             <RefreshControl
@@ -276,9 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: "center",
     marginBottom: 24,
-  },
-  emptyAddWrapper: {
-    alignItems: "center",
   },
   // Modify modal
   modalOverlay: {

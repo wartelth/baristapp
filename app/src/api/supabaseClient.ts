@@ -1,24 +1,23 @@
 /**
  * App-side cloud storage via the SwissKnife server proxy.
  * Uses the server's REST API (which uses Supabase under the hood).
- * This avoids needing @supabase/supabase-js in the app bundle.
+ * When logged in, sends Authorization Bearer token; otherwise uses device ID.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { config } from "../config";
+import { supabase } from "../auth/supabaseAuth";
 
-const BASE_URL = __DEV__
-  ? "http://192.168.2.223:3001"
-  : "https://api.swissknife.app";
+const BASE_URL = config.apiBaseUrl;
 
 // ---------------------------------------------------------------------------
-// Persistent device UUID (replaces the old Platform.OS + Version approach)
+// Persistent device UUID (fallback when not logged in)
 // ---------------------------------------------------------------------------
 
 const DEVICE_UUID_KEY = "device:uuid";
 let cachedDeviceId: string = "anonymous";
 
 function generateUUID(): string {
-  // Simple UUID v4 generator (no crypto dependency needed)
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
     const r = (Math.random() * 16) | 0;
     const v = ch === "x" ? r : (r & 0x3) | 0x8;
@@ -38,21 +37,27 @@ export async function initDeviceId(): Promise<void> {
   cachedDeviceId = id;
 }
 
-function getDeviceId(): string {
-  return cachedDeviceId;
+/** Returns headers with auth token if logged in, else device ID. */
+async function getHeaders(): Promise<Record<string, string>> {
+  const base: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    base["Authorization"] = `Bearer ${session.access_token}`;
+    base["x-user-id"] = session.user.id;
+  } else {
+    base["x-device-id"] = cachedDeviceId;
+  }
+  return base;
 }
-
-const headers = () => ({
-  "Content-Type": "application/json",
-  "x-device-id": getDeviceId(),
-});
 
 export async function loadCloudState(
   appId: string
 ): Promise<Record<string, unknown> | null> {
   try {
     const response = await fetch(`${BASE_URL}/api/storage/apps/${appId}/state`, {
-      headers: headers(),
+      headers: await getHeaders(),
     });
     if (!response.ok) return null;
     const data = await response.json();
@@ -69,7 +74,7 @@ export async function saveCloudState(
   try {
     await fetch(`${BASE_URL}/api/storage/apps/${appId}/state`, {
       method: "PUT",
-      headers: headers(),
+      headers: await getHeaders(),
       body: JSON.stringify({ state }),
     });
   } catch {
@@ -84,7 +89,7 @@ export async function saveCloudSpec(
   try {
     await fetch(`${BASE_URL}/api/storage/apps/${appId}/spec`, {
       method: "PUT",
-      headers: headers(),
+      headers: await getHeaders(),
       body: JSON.stringify({ spec }),
     });
   } catch {

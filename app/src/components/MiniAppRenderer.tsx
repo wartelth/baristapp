@@ -4,6 +4,7 @@ import type { MiniApp, MiniAppComponent, MiniAppAction } from "@swissknife/share
 import type { RendererProps } from "../types";
 import { getState, setFullState } from "../storage/storageLayer";
 import { saveCloudState, loadCloudState } from "../api/supabaseClient";
+import { config } from "../config";
 import { evaluateVisibility } from "../hooks/useConditional";
 import { ThemeProvider } from "./ThemeProvider";
 
@@ -408,9 +409,7 @@ export function MiniAppRenderer({ spec, initialScreenId }: MiniAppRendererProps)
         if (loadingKey) setState((prev) => ({ ...prev, [loadingKey]: true }));
 
         try {
-          const BASE_URL = __DEV__
-            ? "http://192.168.2.223:3001"
-            : "https://api.swissknife.app";
+          const BASE_URL = config.apiBaseUrl;
           const body = dataKey ? stateRef.current[dataKey] : undefined;
 
           const response = await fetch(
