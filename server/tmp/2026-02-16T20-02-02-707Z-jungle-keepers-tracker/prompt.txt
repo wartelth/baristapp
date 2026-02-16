@@ -1,0 +1,6 @@
+Create an app to keep track of Jungle Keeprers advances with a map
+
+Additional context from user:
+- Are YOU tracking your own location, or viewing others' locations? → View multiple people's locations on a map
+- What kind of 'advances' do you want to track? → Wildlife or plant observations
+- Do you need to share this data with other people, or just keep it for yourself? → Personal use only

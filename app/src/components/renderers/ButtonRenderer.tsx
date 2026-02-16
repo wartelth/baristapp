@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import type { RendererProps } from "../../types";
 
 const VARIANT_COLORS = {
-  primary: "#4f46e5",
+  primary: "#1e40af",
   secondary: "#374151",
   danger: "#dc2626",
 };

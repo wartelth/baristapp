@@ -1,0 +1,27 @@
+{
+  "id": "schema/capabilities",
+  "title": "Capabilities",
+  "description": "Capabilities are the permission model for mini-apps. Each app declares what native features it needs, and the system requests appropriate permissions from the user.",
+  "source": "@site/docs/schema/capabilities.md",
+  "sourceDirName": "schema",
+  "slug": "/schema/capabilities",
+  "permalink": "/schema/capabilities",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Capabilities"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Effects",
+    "permalink": "/schema/effects"
+  },
+  "next": {
+    "title": "App Overview",
+    "permalink": "/app/overview"
+  }
+}

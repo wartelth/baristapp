@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,15 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Animated,
+  Easing,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { MiniApp } from "@swissknife/shared";
 import { listApps, deleteApp, clearState } from "../storage/storageLayer";
 import { MiniAppCard } from "../components/MiniAppCard";
 import { useGeneration } from "../context/GenerationContext";
+import { useAppTheme } from "../context/AppThemeContext";
 import type { LibraryScreenProps } from "../types/navigation";
 
 type Props = LibraryScreenProps;
@@ -24,9 +27,39 @@ type Props = LibraryScreenProps;
 const CARD_GAP = 12;
 
 export function HomeScreen({ navigation }: Props) {
-  const { busy, startModify } = useGeneration();
+  const { busy, busyLabel, startModify } = useGeneration();
+  const { colors } = useAppTheme();
   const [apps, setApps] = useState<MiniApp[]>([]);
   const [search, setSearch] = useState("");
+
+  // Banner animation
+  const bannerAnim = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (busy) {
+      Animated.spring(bannerAnim, {
+        toValue: 1,
+        tension: 80,
+        friction: 10,
+        useNativeDriver: true,
+      }).start();
+      Animated.loop(
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      Animated.timing(bannerAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [busy]);
 
   // Modify modal state
   const [modifyTarget, setModifyTarget] = useState<MiniApp | null>(null);
@@ -80,21 +113,21 @@ export function HomeScreen({ navigation }: Props) {
   }, [apps, search]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Library</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Library</Text>
         {apps.length > 0 && (
-          <Text style={styles.headerCount}>{apps.length}</Text>
+          <Text style={[styles.headerCount, { color: colors.secondaryText }]}>{apps.length}</Text>
         )}
       </View>
 
       {/* Search bar */}
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.borderAlt }]}
           placeholder="Search apps..."
-          placeholderTextColor="#555"
+          placeholderTextColor={colors.searchPlaceholder}
           value={search}
           onChangeText={setSearch}
           autoCorrect={false}
@@ -102,11 +135,67 @@ export function HomeScreen({ navigation }: Props) {
         />
       </View>
 
+      {/* Generating banner */}
+      <Animated.View
+        style={[
+          styles.banner,
+          {
+            backgroundColor: colors.surfaceAlt,
+            borderColor: colors.borderAlt,
+            opacity: bannerAnim,
+            transform: [
+              {
+                translateY: bannerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-40, 0],
+                }),
+              },
+              {
+                scale: bannerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.95, 1],
+                }),
+              },
+            ],
+          },
+        ]}
+        pointerEvents={busy ? "auto" : "none"}
+      >
+        <Animated.View
+          style={[
+            styles.bannerDot,
+            {
+              backgroundColor: colors.primary,
+              transform: [
+                {
+                  scale: shimmerAnim.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [1, 1.4, 1],
+                  }),
+                },
+              ],
+              opacity: shimmerAnim.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [1, 0.4, 1],
+              }),
+            },
+          ]}
+        />
+        <View style={styles.bannerTextCol}>
+          <Text style={[styles.bannerTitle, { color: colors.text }]}>
+            {busyLabel || "Generating app..."}
+          </Text>
+          <Text style={[styles.bannerSub, { color: colors.secondaryText }]}>
+            This may take a moment
+          </Text>
+        </View>
+      </Animated.View>
+
       {apps.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>🔧</Text>
-          <Text style={styles.emptyTitle}>No mini-apps yet</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>No mini-apps yet</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.secondaryText }]}>
             Tap the + tab to create your first one
           </Text>
         </View>
@@ -131,7 +220,7 @@ export function HomeScreen({ navigation }: Props) {
             <RefreshControl
               refreshing={false}
               onRefresh={loadApps}
-              tintColor="#4f46e5"
+              tintColor={colors.primary}
             />
           }
         />
@@ -146,20 +235,20 @@ export function HomeScreen({ navigation }: Props) {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.modalOverlay}
+          style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}
         >
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
               Modify "{modifyTarget?.title}"
             </Text>
-            <Text style={styles.modalSubtitle}>
+            <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>
               What do you want to change?
             </Text>
             <TextInput
               ref={modifyInputRef}
-              style={styles.modifyInput}
+              style={[styles.modifyInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.borderAlt }]}
               placeholder='e.g. "add a dark mode toggle"'
-              placeholderTextColor="#555"
+              placeholderTextColor={colors.searchPlaceholder}
               value={modifyText}
               onChangeText={setModifyText}
               multiline
@@ -167,14 +256,15 @@ export function HomeScreen({ navigation }: Props) {
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.cancelBtn}
+                style={[styles.cancelBtn, { backgroundColor: colors.borderAlt }]}
                 onPress={handleModifyClose}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={[styles.cancelBtnText, { color: colors.secondaryText }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.submitBtn,
+                  { backgroundColor: colors.primary },
                   !modifyText.trim() && styles.submitBtnDisabled,
                 ]}
                 onPress={handleModifySubmit}
@@ -194,7 +284,6 @@ export function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
   },
   header: {
     flexDirection: "row",
@@ -205,12 +294,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerTitle: {
-    color: "#fff",
     fontSize: 22,
     fontWeight: "700",
   },
   headerCount: {
-    color: "#888",
     fontSize: 16,
     fontWeight: "500",
   },
@@ -219,14 +306,38 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   searchInput: {
-    backgroundColor: "#1e1e2e",
-    color: "#fff",
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
+  },
+  // Generating banner
+  banner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 12,
+  },
+  bannerDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  bannerTextCol: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  bannerSub: {
+    fontSize: 12,
+    marginTop: 2,
   },
   grid: {
     paddingHorizontal: 16,
@@ -247,13 +358,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 8,
   },
   emptySubtitle: {
-    color: "#888",
     fontSize: 15,
     textAlign: "center",
     marginBottom: 24,
@@ -261,41 +370,33 @@ const styles = StyleSheet.create({
   // Modify modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
   },
   modalCard: {
-    backgroundColor: "#1a1a2e",
     borderRadius: 20,
     padding: 24,
     width: "100%",
     maxWidth: 400,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
   },
   modalTitle: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 4,
   },
   modalSubtitle: {
-    color: "#888",
     fontSize: 14,
     marginBottom: 16,
   },
   modifyInput: {
-    backgroundColor: "#111118",
-    color: "#fff",
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
     borderWidth: 1,
-    borderColor: "#2a2a3e",
     marginBottom: 16,
   },
   modalButtons: {
@@ -306,11 +407,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#2a2a3e",
     alignItems: "center",
   },
   cancelBtnText: {
-    color: "#888",
     fontSize: 15,
     fontWeight: "600",
   },
@@ -318,7 +417,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#4f46e5",
     alignItems: "center",
   },
   submitBtnDisabled: {

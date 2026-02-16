@@ -15,6 +15,7 @@ import {
 import type { ClarificationQuestion } from "@swissknife/shared";
 import { clarifyPrompt } from "../api/client";
 import { useGeneration } from "../context/GenerationContext";
+import { useAppTheme } from "../context/AppThemeContext";
 import type { CreateScreenProps } from "../types/navigation";
 
 type Props = CreateScreenProps;
@@ -30,6 +31,7 @@ const EXAMPLES = [
 
 export function CreateScreen({ navigation }: Props) {
   const { busy, startGenerate } = useGeneration();
+  const { colors } = useAppTheme();
   const [step, setStep] = useState<Step>("prompt");
   const [prompt, setPrompt] = useState("");
 
@@ -132,19 +134,19 @@ export function CreateScreen({ navigation }: Props) {
   if (step === "prompt") {
     return (
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.heading}>What do you need?</Text>
-          <Text style={styles.subheading}>
+          <Text style={[styles.heading, { color: colors.text }]}>What do you need?</Text>
+          <Text style={[styles.subheading, { color: colors.secondaryText }]}>
             Describe the tool you want and we'll ask a few questions before building it.
           </Text>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
             placeholder="e.g. An app to track my hiking GPX files on a map..."
-            placeholderTextColor="#555"
+            placeholderTextColor={colors.searchPlaceholder}
             value={prompt}
             onChangeText={setPrompt}
             multiline
@@ -155,10 +157,10 @@ export function CreateScreen({ navigation }: Props) {
             onSubmitEditing={() => Keyboard.dismiss()}
           />
 
-          <Text style={styles.charCount}>{prompt.length}/2000</Text>
+          <Text style={[styles.charCount, { color: colors.tabInactive }]}>{prompt.length}/2000</Text>
 
           <TouchableOpacity
-            style={[styles.button, (!prompt.trim() || busy) && styles.buttonDisabled]}
+            style={[styles.button, { backgroundColor: colors.primary }, (!prompt.trim() || busy) && styles.buttonDisabled]}
             onPress={handleClarify}
             disabled={!prompt.trim() || busy}
             activeOpacity={0.8}
@@ -169,14 +171,14 @@ export function CreateScreen({ navigation }: Props) {
           </TouchableOpacity>
 
           <View style={styles.examples}>
-            <Text style={styles.examplesTitle}>Try an example:</Text>
+            <Text style={[styles.examplesTitle, { color: colors.secondaryText }]}>Try an example:</Text>
             {EXAMPLES.map((ex) => (
               <TouchableOpacity
                 key={ex}
-                style={styles.exampleChip}
+                style={[styles.exampleChip, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}
                 onPress={() => setPrompt(ex)}
               >
-                <Text style={styles.exampleText}>{ex}</Text>
+                <Text style={[styles.exampleText, { color: colors.secondaryText }]}>{ex}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -190,10 +192,10 @@ export function CreateScreen({ navigation }: Props) {
   // -------------------------------------------------------------------------
   if (step === "clarifying") {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#4f46e5" />
-        <Text style={styles.clarifyingText}>Understanding your request...</Text>
-        <Text style={styles.clarifyingSubtext}>Preparing questions</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.clarifyingText, { color: colors.text }]}>Understanding your request...</Text>
+        <Text style={[styles.clarifyingSubtext, { color: colors.secondaryText }]}>Preparing questions</Text>
       </View>
     );
   }
@@ -204,29 +206,29 @@ export function CreateScreen({ navigation }: Props) {
   if (step === "questions") {
     return (
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Summary */}
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Here's what I understood</Text>
-            <Text style={styles.summaryText}>{summary}</Text>
+          <View style={[styles.summaryCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.primary }]}>
+            <Text style={[styles.summaryLabel, { color: colors.primary }]}>Here's what I understood</Text>
+            <Text style={[styles.summaryText, { color: colors.secondaryText }]}>{summary}</Text>
           </View>
 
           {/* Questions */}
-          <Text style={styles.questionsHeading}>A few questions to get it right:</Text>
+          <Text style={[styles.questionsHeading, { color: colors.text }]}>A few questions to get it right:</Text>
 
           {questions.map((q, qi) => (
-            <View key={q.id} style={styles.questionCard}>
-              <Text style={styles.questionNumber}>{qi + 1}/{questions.length}</Text>
-              <Text style={styles.questionText}>{q.question}</Text>
+            <View key={q.id} style={[styles.questionCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+              <Text style={[styles.questionNumber, { color: colors.primary }]}>{qi + 1}/{questions.length}</Text>
+              <Text style={[styles.questionText, { color: colors.text }]}>{q.question}</Text>
 
               {q.type === "freeform" ? (
                 <TextInput
-                  style={styles.freeformInput}
+                  style={[styles.freeformInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
                   placeholder="Type your answer..."
-                  placeholderTextColor="#555"
+                  placeholderTextColor={colors.searchPlaceholder}
                   value={freeformAnswers[q.id] ?? ""}
                   onChangeText={(text) =>
                     setFreeformAnswers((prev) => ({ ...prev, [q.id]: text }))
@@ -240,14 +242,18 @@ export function CreateScreen({ navigation }: Props) {
                     return (
                       <TouchableOpacity
                         key={option}
-                        style={[styles.optionChip, selected && styles.optionChipSelected]}
+                        style={[
+                          styles.optionChip,
+                          { backgroundColor: colors.background, borderColor: colors.border },
+                          selected && { borderColor: colors.primary, backgroundColor: colors.surfaceAlt },
+                        ]}
                         onPress={() => toggleOption(q.id, option, q.type as "single" | "multiple")}
                         activeOpacity={0.7}
                       >
-                        <View style={[styles.optionDot, selected && styles.optionDotSelected]}>
-                          {selected && <View style={styles.optionDotInner} />}
+                        <View style={[styles.optionDot, { borderColor: colors.tabInactive }, selected && { borderColor: colors.primary }]}>
+                          {selected && <View style={[styles.optionDotInner, { backgroundColor: colors.primary }]} />}
                         </View>
-                        <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
+                        <Text style={[styles.optionText, { color: colors.secondaryText }, selected && { color: colors.text }]}>
                           {option}
                         </Text>
                       </TouchableOpacity>
@@ -260,7 +266,7 @@ export function CreateScreen({ navigation }: Props) {
 
           {/* Actions */}
           <TouchableOpacity
-            style={styles.button}
+            style={[styles.button, { backgroundColor: colors.primary }]}
             onPress={handleGenerate}
             activeOpacity={0.8}
           >
@@ -272,7 +278,7 @@ export function CreateScreen({ navigation }: Props) {
             onPress={handleSkip}
             activeOpacity={0.7}
           >
-            <Text style={styles.skipButtonText}>Skip & generate without answers</Text>
+            <Text style={[styles.skipButtonText, { color: colors.secondaryText }]}>Skip & generate without answers</Text>
           </TouchableOpacity>
 
           {/* Back */}
@@ -281,7 +287,7 @@ export function CreateScreen({ navigation }: Props) {
             onPress={() => setStep("prompt")}
             activeOpacity={0.7}
           >
-            <Text style={styles.backButtonText}>← Edit prompt</Text>
+            <Text style={[styles.backButtonText, { color: colors.primary }]}>← Edit prompt</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -299,11 +305,9 @@ export function CreateScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
   },
   centerContainer: {
     flex: 1,
-    backgroundColor: "#111118",
     justifyContent: "center",
     alignItems: "center",
     gap: 12,
@@ -316,35 +320,28 @@ const styles = StyleSheet.create({
 
   // Prompt step
   heading: {
-    color: "#fff",
     fontSize: 26,
     fontWeight: "700",
     marginBottom: 6,
   },
   subheading: {
-    color: "#888",
     fontSize: 15,
     marginBottom: 20,
   },
   input: {
-    backgroundColor: "#1e1e2e",
-    color: "#fff",
     borderWidth: 1,
-    borderColor: "#333",
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
     minHeight: 120,
   },
   charCount: {
-    color: "#555",
     fontSize: 12,
     textAlign: "right",
     marginTop: 4,
     marginBottom: 16,
   },
   button: {
-    backgroundColor: "#4f46e5",
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -363,7 +360,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   examplesTitle: {
-    color: "#666",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -371,41 +367,33 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   exampleChip: {
-    backgroundColor: "#1a1a2e",
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
   },
   exampleText: {
-    color: "#aaa",
     fontSize: 14,
   },
 
   // Clarifying step
   clarifyingText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },
   clarifyingSubtext: {
-    color: "#888",
     fontSize: 14,
   },
 
   // Questions step
   summaryCard: {
-    backgroundColor: "#1a1a2e",
     borderRadius: 14,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#4f46e5",
     borderLeftWidth: 4,
   },
   summaryLabel: {
-    color: "#4f46e5",
     fontSize: 12,
     fontWeight: "700",
     textTransform: "uppercase",
@@ -413,34 +401,28 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   summaryText: {
-    color: "#ccc",
     fontSize: 15,
     lineHeight: 22,
   },
 
   questionsHeading: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 16,
   },
 
   questionCard: {
-    backgroundColor: "#1a1a2e",
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
   },
   questionNumber: {
-    color: "#4f46e5",
     fontSize: 12,
     fontWeight: "700",
     marginBottom: 6,
   },
   questionText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 12,
@@ -453,50 +435,32 @@ const styles = StyleSheet.create({
   optionChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#111118",
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderWidth: 1,
-    borderColor: "#333",
     gap: 12,
-  },
-  optionChipSelected: {
-    borderColor: "#4f46e5",
-    backgroundColor: "#1a1a3e",
   },
   optionDot: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#555",
     justifyContent: "center",
     alignItems: "center",
-  },
-  optionDotSelected: {
-    borderColor: "#4f46e5",
   },
   optionDotInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: "#4f46e5",
   },
   optionText: {
-    color: "#aaa",
     fontSize: 15,
     flex: 1,
   },
-  optionTextSelected: {
-    color: "#fff",
-  },
 
   freeformInput: {
-    backgroundColor: "#111118",
-    color: "#fff",
     borderWidth: 1,
-    borderColor: "#333",
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
@@ -510,7 +474,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   skipButtonText: {
-    color: "#666",
     fontSize: 14,
   },
   backButton: {
@@ -518,7 +481,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: "#4f46e5",
     fontSize: 14,
     fontWeight: "500",
   },

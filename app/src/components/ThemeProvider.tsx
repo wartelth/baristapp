@@ -4,7 +4,7 @@ import type { MiniAppTheme } from "@swissknife/shared";
 const DEFAULT_THEME: Required<MiniAppTheme> = {
   backgroundColor: "#111118",
   surfaceColor: "#1e1e2e",
-  primaryColor: "#4f46e5",
+  primaryColor: "#1e40af",
   textColor: "#ffffff",
   secondaryTextColor: "#888888",
   borderColor: "#333333",

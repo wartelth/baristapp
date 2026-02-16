@@ -1,0 +1,24 @@
+{
+  "id": "intro",
+  "title": "Introduction",
+  "description": "AI-powered declarative micro-app engine — describe what you need, get a fully interactive mobile app.",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "slug": "/",
+    "sidebar_position": 1,
+    "title": "Introduction"
+  },
+  "sidebar": "docs",
+  "next": {
+    "title": "Architecture Overview",
+    "permalink": "/architecture/overview"
+  }
+}

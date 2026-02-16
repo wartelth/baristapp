@@ -20,6 +20,7 @@ import { hasSeenOnboarding } from "./src/storage/onboardingStorage";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { OnboardingProvider } from "./src/context/OnboardingContext";
 import { GenerationProvider, useGeneration } from "./src/context/GenerationContext";
+import { AppThemeProvider, useAppTheme } from "./src/context/AppThemeContext";
 import { HeaderSpinner } from "./src/components/HeaderSpinner";
 import { NotificationToast } from "./src/components/NotificationToast";
 import { LoadingOverlay } from "./src/components/LoadingOverlay";
@@ -30,14 +31,6 @@ export type { RootStackParamList } from "./src/types/navigation";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
-
-const HEADER_OPTIONS = {
-  headerStyle: { backgroundColor: "#111118" },
-  headerTintColor: "#fff",
-  headerTitleStyle: { fontWeight: "600" as const },
-  contentStyle: { backgroundColor: "#111118" },
-  headerRight: () => <HeaderSpinner />,
-};
 
 /** Dismissable progress overlay — shown when the user taps the header spinner. */
 function ProgressModal() {
@@ -57,13 +50,14 @@ function ProgressModal() {
 // ---------------------------------------------------------------------------
 
 function CreateTabButton({ onPress }: { onPress?: () => void }) {
+  const { colors } = useAppTheme();
   return (
     <TouchableOpacity
       style={tabStyles.createButton}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <View style={tabStyles.createButtonInner}>
+      <View style={[tabStyles.createButtonInner, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
         <Ionicons name="add" size={32} color="#fff" />
       </View>
     </TouchableOpacity>
@@ -75,16 +69,25 @@ function CreateTabButton({ onPress }: { onPress?: () => void }) {
 // ---------------------------------------------------------------------------
 
 function MainTabs() {
+  const { colors } = useAppTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: "#111118" },
-        headerTintColor: "#fff",
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.text,
         headerTitleStyle: { fontWeight: "600" as const },
         headerRight: () => <HeaderSpinner />,
-        tabBarStyle: tabStyles.tabBar,
-        tabBarActiveTintColor: "#4f46e5",
-        tabBarInactiveTintColor: "#555",
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.surface,
+          borderTopWidth: 1,
+          height: 88,
+          paddingBottom: 28,
+          paddingTop: 8,
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.tabInactive,
         tabBarLabelStyle: tabStyles.tabLabel,
       }}
     >
@@ -134,7 +137,16 @@ function AppNavigator() {
   const navRef =
     React.useRef<NavigationContainerRef<RootStackParamList>>(null);
   const { session, loading: authLoading } = useAuth();
+  const { mode, colors } = useAppTheme();
   const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null);
+
+  const headerOptions = {
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.text,
+    headerTitleStyle: { fontWeight: "600" as const },
+    contentStyle: { backgroundColor: colors.background },
+    headerRight: () => <HeaderSpinner />,
+  };
 
   useEffect(() => {
     hasSeenOnboarding().then(setOnboardingSeen);
@@ -160,8 +172,8 @@ function AppNavigator() {
 
   if (onboardingSeen === null || authLoading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#4f46e5" />
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -174,9 +186,9 @@ function AppNavigator() {
 
   return (
     <NavigationContainer ref={navRef}>
-      <StatusBar style="light" />
+      <StatusBar style={mode === "dark" ? "light" : "dark"} />
       <Stack.Navigator
-        screenOptions={HEADER_OPTIONS}
+        screenOptions={headerOptions}
         initialRouteName={initialRoute}
       >
         <Stack.Screen
@@ -225,17 +237,19 @@ export default function App() {
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#4f46e5" />
+        <ActivityIndicator size="large" color="#1e40af" />
       </View>
     );
   }
 
   return (
-    <AuthProvider>
-      <GenerationProvider>
-        <AppNavigator />
-      </GenerationProvider>
-    </AuthProvider>
+    <AppThemeProvider>
+      <AuthProvider>
+        <GenerationProvider>
+          <AppNavigator />
+        </GenerationProvider>
+      </AuthProvider>
+    </AppThemeProvider>
   );
 }
 
@@ -253,14 +267,6 @@ const styles = StyleSheet.create({
 });
 
 const tabStyles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: "#111118",
-    borderTopColor: "#1e1e2e",
-    borderTopWidth: 1,
-    height: 88,
-    paddingBottom: 28,
-    paddingTop: 8,
-  },
   tabLabel: {
     fontSize: 11,
     fontWeight: "600",
@@ -274,10 +280,8 @@ const tabStyles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#4f46e5",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#4f46e5",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 8,

@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import type { MiniApp } from "@swissknife/shared";
 import { getCardColor } from "../utils/colors";
+import { useAppTheme } from "../context/AppThemeContext";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const CARD_GAP = 12;
@@ -58,8 +59,8 @@ export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardPro
         <Text style={styles.menuDots}>...</Text>
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.icon}>{app.icon ?? "🔧"}</Text>
+      <Text style={styles.icon}>{app.icon ?? "🔧"}</Text>
+      <View style={styles.titleRow}>
         <Text style={styles.title} numberOfLines={2}>
           {app.title}
         </Text>
@@ -70,15 +71,17 @@ export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardPro
 
 /** "Add new" card — the "+" button at the end of the grid. */
 export function AddCard({ onPress }: { onPress: () => void }) {
+  const { colors } = useAppTheme();
+
   return (
     <TouchableOpacity
-      style={[styles.card, styles.addCard, { width: CARD_WIDTH }]}
+      style={[styles.card, styles.addCard, { width: CARD_WIDTH, backgroundColor: colors.surface, borderColor: colors.border }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.content}>
-        <Text style={styles.addIcon}>+</Text>
-        <Text style={styles.addLabel}>New App</Text>
+      <Text style={[styles.addIcon, { color: colors.tabInactive }]}>+</Text>
+      <View style={styles.titleRow}>
+        <Text style={[styles.addLabel, { color: colors.tabInactive }]}>New App</Text>
       </View>
     </TouchableOpacity>
   );
@@ -87,9 +90,9 @@ export function AddCard({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
-    aspectRatio: 1 / 1.1,
-    padding: 12,
-    position: "relative",
+    aspectRatio: 1 / 0.7,
+    padding: 14,
+    justifyContent: "space-between",
   },
   menuBtn: {
     position: "absolute",
@@ -103,36 +106,28 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 1,
   },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
   icon: {
-    fontSize: 40,
+    fontSize: 28,
+  },
+  titleRow: {
+    marginTop: "auto",
   },
   title: {
     color: "#fff",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 18,
   },
   addCard: {
-    backgroundColor: "#1e1e2e",
     borderWidth: 2,
-    borderColor: "#333",
     borderStyle: "dashed",
   },
   addIcon: {
-    color: "#666",
-    fontSize: 36,
+    fontSize: 24,
     fontWeight: "300",
   },
   addLabel: {
-    color: "#666",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
   },
 });

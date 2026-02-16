@@ -28,7 +28,7 @@ const TILES = [
     icon: "sparkles" as const,
     title: "AI-Powered",
     subtitle: "Describe what you need, get a mini-app in seconds",
-    color: "#4f46e5",
+    color: "#1e40af",
   },
   {
     icon: "grid" as const,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   button: {
-    backgroundColor: "#4f46e5",
+    backgroundColor: "#1e40af",
     borderRadius: 16,
     paddingVertical: 18,
     flexDirection: "row",

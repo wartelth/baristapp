@@ -1,0 +1,27 @@
+{
+  "id": "guides/adding-components",
+  "title": "Adding Components",
+  "description": "This guide explains how to add a new component type to SwissKnife. Every new component touches 4 files across 3 packages.",
+  "source": "@site/docs/guides/adding-components.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/adding-components",
+  "permalink": "/guides/adding-components",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Adding Components"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/guides/getting-started"
+  },
+  "next": {
+    "title": "Adding Actions",
+    "permalink": "/guides/adding-actions"
+  }
+}

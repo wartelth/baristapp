@@ -5,14 +5,17 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Switch,
   Alert,
 } from "react-native";
 import { listApps } from "../storage/storageLayer";
 import { useAuth } from "../context/AuthContext";
+import { useAppTheme } from "../context/AppThemeContext";
 import type { ProfileScreenProps } from "../types/navigation";
 
 export function ProfileScreen(_props: ProfileScreenProps) {
   const { user, signOut } = useAuth();
+  const { mode, colors, toggleTheme } = useAppTheme();
   const [appCount, setAppCount] = useState(0);
 
   useEffect(() => {
@@ -30,70 +33,78 @@ export function ProfileScreen(_props: ProfileScreenProps) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
       {/* Avatar */}
       <View style={styles.avatarSection}>
-        <View style={styles.avatar}>
+        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
           <Text style={styles.avatarText}>{initials}</Text>
         </View>
-        <Text style={styles.userName}>{user?.email ?? displayName}</Text>
+        <Text style={[styles.userName, { color: colors.text }]}>{user?.email ?? displayName}</Text>
         {user?.email && (
-          <Text style={styles.deviceId}>{user.email}</Text>
+          <Text style={[styles.deviceId, { color: colors.tabInactive }]}>{user.email}</Text>
         )}
       </View>
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{appCount}</Text>
-          <Text style={styles.statLabel}>Mini-Apps</Text>
+        <View style={[styles.statCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+          <Text style={[styles.statValue, { color: colors.text }]}>{appCount}</Text>
+          <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Mini-Apps</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>v0.1</Text>
-          <Text style={styles.statLabel}>Version</Text>
+        <View style={[styles.statCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+          <Text style={[styles.statValue, { color: colors.text }]}>v0.1</Text>
+          <Text style={[styles.statLabel, { color: colors.secondaryText }]}>Version</Text>
         </View>
       </View>
 
       {/* Settings section */}
-      <Text style={styles.sectionTitle}>Settings</Text>
-      <View style={styles.section}>
-        <SettingsRow label="Dark Mode" value="Always" />
-        <View style={styles.divider} />
-        <SettingsRow label="Cloud Sync" value={user ? "On" : "Sign in to sync"} />
-        <View style={styles.divider} />
-        <SettingsRow label="Generation Model" value="Auto" />
+      <Text style={[styles.sectionTitle, { color: colors.secondaryText }]}>Settings</Text>
+      <View style={[styles.section, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+        <View style={styles.settingsRow}>
+          <Text style={[styles.settingsLabel, { color: colors.text }]}>Dark Mode</Text>
+          <Switch
+            value={mode === "dark"}
+            onValueChange={toggleTheme}
+            trackColor={{ false: colors.border, true: colors.primary }}
+            thumbColor="#fff"
+          />
+        </View>
+        <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
+        <SettingsRow label="Cloud Sync" value={user ? "On" : "Sign in to sync"} colors={colors} />
+        <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
+        <SettingsRow label="Generation Model" value="Auto" colors={colors} />
         {user && (
           <>
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
             <TouchableOpacity
               style={styles.signOutRow}
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
-              <Text style={styles.signOutText}>Sign out</Text>
+              <Text style={[styles.signOutText, { color: colors.danger }]}>Sign out</Text>
             </TouchableOpacity>
           </>
         )}
       </View>
 
       {/* About section */}
-      <Text style={styles.sectionTitle}>About</Text>
-      <View style={styles.section}>
-        <SettingsRow label="SwissKnife" value="AI Mini-App Generator" />
-        <View style={styles.divider} />
-        <SettingsRow label="Powered by" value="Claude" />
-        <View style={styles.divider} />
-        <SettingsRow label="Platform" value="React Native + Expo" />
+      <Text style={[styles.sectionTitle, { color: colors.secondaryText }]}>About</Text>
+      <View style={[styles.section, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+        <SettingsRow label="SwissKnife" value="AI Mini-App Generator" colors={colors} />
+        <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
+        <SettingsRow label="Powered by" value="Claude" colors={colors} />
+        <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
+        <SettingsRow label="Platform" value="React Native + Expo" colors={colors} />
       </View>
     </ScrollView>
   );
 }
 
-function SettingsRow({ label, value }: { label: string; value: string }) {
+function SettingsRow({ label, value, colors }: { label: string; value: string; colors: { text: string; secondaryText: string } }) {
   return (
     <View style={styles.settingsRow}>
-      <Text style={styles.settingsLabel}>{label}</Text>
-      <Text style={styles.settingsValue}>{value}</Text>
+      <Text style={[styles.settingsLabel, { color: colors.text }]}>{label}</Text>
+      <Text style={[styles.settingsValue, { color: colors.secondaryText }]}>{value}</Text>
     </View>
   );
 }
@@ -101,7 +112,6 @@ function SettingsRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
   },
   content: {
     padding: 20,
@@ -117,7 +127,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#4f46e5",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 14,
@@ -128,13 +137,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   userName: {
-    color: "#fff",
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 4,
   },
   deviceId: {
-    color: "#555",
     fontSize: 13,
     fontFamily: "monospace" as unknown as string,
   },
@@ -146,26 +153,21 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#1a1a2e",
     borderRadius: 14,
     padding: 16,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2a2a3e",
   },
   statValue: {
-    color: "#fff",
     fontSize: 22,
     fontWeight: "700",
     marginBottom: 4,
   },
   statLabel: {
-    color: "#888",
     fontSize: 13,
   },
   // Sections
   sectionTitle: {
-    color: "#888",
     fontSize: 13,
     fontWeight: "600",
     textTransform: "uppercase",
@@ -174,10 +176,8 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   section: {
-    backgroundColor: "#1a1a2e",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
     marginBottom: 24,
     overflow: "hidden",
   },
@@ -189,16 +189,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   settingsLabel: {
-    color: "#fff",
     fontSize: 15,
   },
   settingsValue: {
-    color: "#888",
     fontSize: 15,
   },
   divider: {
     height: 1,
-    backgroundColor: "#2a2a3e",
     marginLeft: 16,
   },
   signOutRow: {
@@ -206,7 +203,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   signOutText: {
-    color: "#dc2626",
     fontSize: 15,
     fontWeight: "600",
   },

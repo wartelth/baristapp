@@ -1,0 +1,27 @@
+{
+  "id": "schema/components",
+  "title": "Components",
+  "description": "SwissKnife v2 defines 20 component types organized into 6 categories. All components support optional visibleWhen for conditional rendering.",
+  "source": "@site/docs/schema/components.md",
+  "sourceDirName": "schema",
+  "slug": "/schema/components",
+  "permalink": "/schema/components",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Components"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Security Model",
+    "permalink": "/architecture/security"
+  },
+  "next": {
+    "title": "Actions",
+    "permalink": "/schema/actions"
+  }
+}

@@ -57,7 +57,7 @@ THEME (optional)
 {
   "backgroundColor": "#111118",
   "surfaceColor": "#1e1e2e",
-  "primaryColor": "#4f46e5",
+  "primaryColor": "#1e40af",
   "textColor": "#ffffff",
   "secondaryTextColor": "#888888",
   "borderColor": "#333333",
@@ -118,7 +118,7 @@ All components have:
     "stateKey": "<state key holding numeric value>",
     "variant": "bar"|"circle",
     "max": 100,
-    "color": "#4f46e5",
+    "color": "#1e40af",
     "label": "Progress",
     "height": 8,
     "size": 80
@@ -261,8 +261,8 @@ Inside list items: _item is the full item, _index is the index, _itemValue is th
     "dataKey": "<array state key>",
     "xKey": "label", "yKey": "value",
     "height": 200,
-    "color": "#4f46e5",
-    "colors": ["#4f46e5", "#22c55e", "#f59e0b"]
+    "color": "#1e40af",
+    "colors": ["#1e40af", "#22c55e", "#f59e0b"]
   }
 }
 Data format: [{ "label": "A", "value": 10 }, ...]

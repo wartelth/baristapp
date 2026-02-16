@@ -1,0 +1,844 @@
+{
+  "appId": "jungle-keepers-tracker",
+  "title": "Jungle Keepers Tracker",
+  "icon": "🌴",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "location",
+    "haptics"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Jungle Keepers Tracker",
+      "components": [
+        {
+          "type": "container",
+          "id": "header-bar",
+          "props": {
+            "children": [
+              {
+                "type": "text",
+                "id": "app-title",
+                "props": {
+                  "content": "🌴 Jungle Keepers",
+                  "variant": "title"
+                }
+              },
+              {
+                "type": "button",
+                "id": "add-obs-btn",
+                "props": {
+                  "label": "+ Observation",
+                  "action": {
+                    "type": "setState",
+                    "key": "showAddModal",
+                    "value": true
+                  },
+                  "variant": "primary"
+                }
+              }
+            ],
+            "direction": "row",
+            "padding": 12,
+            "align": "center",
+            "justify": "space-between"
+          }
+        },
+        {
+          "type": "container",
+          "id": "stats-row",
+          "props": {
+            "children": [
+              {
+                "type": "card",
+                "id": "wildlife-stat-card",
+                "props": {
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "wildlife-icon",
+                      "props": {
+                        "content": "🐾 Wildlife",
+                        "variant": "caption",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "wildlife-count",
+                      "props": {
+                        "content": "0",
+                        "variant": "title",
+                        "align": "center",
+                        "stateKey": "totalWildlife"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "card",
+                "id": "plant-stat-card",
+                "props": {
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "plant-icon",
+                      "props": {
+                        "content": "🌿 Plants",
+                        "variant": "caption",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "plant-count",
+                      "props": {
+                        "content": "0",
+                        "variant": "title",
+                        "align": "center",
+                        "stateKey": "totalPlant"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "card",
+                "id": "total-stat-card",
+                "props": {
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "total-icon",
+                      "props": {
+                        "content": "📋 Total",
+                        "variant": "caption",
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "total-count",
+                      "props": {
+                        "content": "0",
+                        "variant": "title",
+                        "align": "center",
+                        "stateKey": "totalObservations"
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "direction": "row",
+            "gap": 10,
+            "padding": 12,
+            "justify": "space-around"
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "main-tabs",
+          "props": {
+            "stateKey": "activeTab",
+            "tabs": [
+              {
+                "label": "🗺️ Map",
+                "value": "map",
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "map-hint",
+                    "props": {
+                      "content": "Tap markers to view observation details",
+                      "variant": "caption",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "map-spacer-top",
+                    "props": {
+                      "height": 8
+                    }
+                  },
+                  {
+                    "type": "select",
+                    "id": "map-filter",
+                    "props": {
+                      "stateKey": "filterType",
+                      "options": [
+                        {
+                          "label": "🌐 All Observations",
+                          "value": "all"
+                        },
+                        {
+                          "label": "🐾 Wildlife Only",
+                          "value": "wildlife"
+                        },
+                        {
+                          "label": "🌿 Plants Only",
+                          "value": "plant"
+                        }
+                      ],
+                      "placeholder": "Filter observations..."
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "map-spacer-mid",
+                    "props": {
+                      "height": 8
+                    }
+                  },
+                  {
+                    "type": "mapView",
+                    "id": "jungle-map",
+                    "props": {
+                      "markersKey": "markers",
+                      "initialRegion": {
+                        "latitude": -10,
+                        "longitude": -75,
+                        "latitudeDelta": 8,
+                        "longitudeDelta": 8
+                      },
+                      "height": 380,
+                      "onMarkerPress": {
+                        "type": "batch",
+                        "actions": [
+                          {
+                            "type": "setState",
+                            "key": "showDetailModal",
+                            "value": true
+                          },
+                          {
+                            "type": "haptic",
+                            "style": "light"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "📋 Log",
+                "value": "log",
+                "children": [
+                  {
+                    "type": "select",
+                    "id": "log-filter",
+                    "props": {
+                      "stateKey": "filterType",
+                      "options": [
+                        {
+                          "label": "🌐 All",
+                          "value": "all"
+                        },
+                        {
+                          "label": "🐾 Wildlife",
+                          "value": "wildlife"
+                        },
+                        {
+                          "label": "🌿 Plants",
+                          "value": "plant"
+                        }
+                      ],
+                      "placeholder": "Filter..."
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "log-spacer",
+                    "props": {
+                      "height": 8
+                    }
+                  },
+                  {
+                    "type": "list",
+                    "id": "observations-list",
+                    "props": {
+                      "dataKey": "observations",
+                      "emptyText": "No observations yet. Tap '+ Observation' to log your first sighting!",
+                      "renderItem": {
+                        "components": [
+                          {
+                            "type": "card",
+                            "id": "obs-card",
+                            "props": {
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "id": "obs-card-header",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "text",
+                                        "id": "obs-species-name",
+                                        "props": {
+                                          "content": "",
+                                          "variant": "subtitle",
+                                          "stateKey": "species"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "id": "obs-type-badge",
+                                        "props": {
+                                          "content": "",
+                                          "variant": "caption",
+                                          "stateKey": "typeBadge"
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "align": "center",
+                                    "justify": "space-between"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "obs-keeper-name",
+                                  "props": {
+                                    "content": "",
+                                    "variant": "caption",
+                                    "stateKey": "keeperDisplay"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "obs-notes",
+                                  "props": {
+                                    "content": "",
+                                    "variant": "body",
+                                    "stateKey": "notes"
+                                  }
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "obs-coords",
+                                  "props": {
+                                    "content": "",
+                                    "variant": "caption",
+                                    "stateKey": "coordsDisplay"
+                                  }
+                                },
+                                {
+                                  "type": "container",
+                                  "id": "obs-actions-row",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "button",
+                                        "id": "obs-delete-btn",
+                                        "props": {
+                                          "label": "🗑️ Remove",
+                                          "action": {
+                                            "type": "batch",
+                                            "actions": [
+                                              {
+                                                "type": "remove",
+                                                "key": "observations",
+                                                "index": -1
+                                              },
+                                              {
+                                                "type": "haptic",
+                                                "style": "warning"
+                                              }
+                                            ]
+                                          },
+                                          "variant": "danger"
+                                        }
+                                      }
+                                    ],
+                                    "direction": "row",
+                                    "gap": 8,
+                                    "justify": "flex-end"
+                                  }
+                                }
+                              ],
+                              "elevation": 2
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "📊 Stats",
+                "value": "stats",
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "stats-title",
+                    "props": {
+                      "content": "Observations by Type",
+                      "variant": "subtitle",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "stats-spacer-1",
+                    "props": {
+                      "height": 12
+                    }
+                  },
+                  {
+                    "type": "chart",
+                    "id": "type-chart",
+                    "props": {
+                      "chartType": "pie",
+                      "dataKey": "chartData",
+                      "xKey": "label",
+                      "yKey": "value",
+                      "height": 250,
+                      "colors": [
+                        "#22c55e",
+                        "#4ade80"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "stats-spacer-2",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "id": "keeper-stats-title",
+                    "props": {
+                      "content": "Recent Observations",
+                      "variant": "subtitle",
+                      "align": "center"
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "stats-spacer-3",
+                    "props": {
+                      "height": 8
+                    }
+                  },
+                  {
+                    "type": "chart",
+                    "id": "keeper-chart",
+                    "props": {
+                      "chartType": "bar",
+                      "dataKey": "keeperChartData",
+                      "xKey": "label",
+                      "yKey": "value",
+                      "height": 200,
+                      "color": "#22c55e"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "modal",
+          "id": "add-modal",
+          "props": {
+            "visibleKey": "showAddModal",
+            "title": "🔍 New Observation",
+            "children": [
+              {
+                "type": "select",
+                "id": "type-select",
+                "props": {
+                  "stateKey": "newType",
+                  "options": [
+                    {
+                      "label": "🐾 Wildlife",
+                      "value": "wildlife"
+                    },
+                    {
+                      "label": "🌿 Plant",
+                      "value": "plant"
+                    }
+                  ],
+                  "placeholder": "Observation type..."
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "modal-spacer-1",
+                "props": {
+                  "height": 10
+                }
+              },
+              {
+                "type": "input",
+                "id": "species-input",
+                "props": {
+                  "placeholder": "Species name (e.g., Jaguar, Mahogany)...",
+                  "stateKey": "newSpecies"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "modal-spacer-2",
+                "props": {
+                  "height": 10
+                }
+              },
+              {
+                "type": "input",
+                "id": "keeper-input",
+                "props": {
+                  "placeholder": "Keeper / Observer name...",
+                  "stateKey": "newKeeper"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "modal-spacer-3",
+                "props": {
+                  "height": 10
+                }
+              },
+              {
+                "type": "input",
+                "id": "notes-input",
+                "props": {
+                  "placeholder": "Notes (behavior, condition, count)...",
+                  "stateKey": "newNotes",
+                  "multiline": true
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "modal-spacer-4",
+                "props": {
+                  "height": 10
+                }
+              },
+              {
+                "type": "container",
+                "id": "coords-row",
+                "props": {
+                  "children": [
+                    {
+                      "type": "input",
+                      "id": "lat-input",
+                      "props": {
+                        "placeholder": "Latitude (e.g., -9.5)",
+                        "stateKey": "newLat",
+                        "inputType": "number"
+                      }
+                    },
+                    {
+                      "type": "input",
+                      "id": "lng-input",
+                      "props": {
+                        "placeholder": "Longitude (e.g., -75.0)",
+                        "stateKey": "newLng",
+                        "inputType": "number"
+                      }
+                    }
+                  ],
+                  "direction": "row",
+                  "gap": 10
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "modal-spacer-5",
+                "props": {
+                  "height": 16
+                }
+              },
+              {
+                "type": "container",
+                "id": "modal-btn-row",
+                "props": {
+                  "children": [
+                    {
+                      "type": "button",
+                      "id": "cancel-btn",
+                      "props": {
+                        "label": "Cancel",
+                        "action": {
+                          "type": "setState",
+                          "key": "showAddModal",
+                          "value": false
+                        },
+                        "variant": "secondary"
+                      }
+                    },
+                    {
+                      "type": "button",
+                      "id": "save-obs-btn",
+                      "props": {
+                        "label": "💾 Save Observation",
+                        "action": {
+                          "type": "batch",
+                          "actions": [
+                            {
+                              "type": "append",
+                              "key": "observations",
+                              "value": {
+                                "species": "New Observation",
+                                "type": "wildlife",
+                                "notes": "",
+                                "keeper": "",
+                                "lat": -10,
+                                "lng": -75,
+                                "typeBadge": "🐾 Wildlife",
+                                "keeperDisplay": "👤 Unknown",
+                                "coordsDisplay": "📍 -10.0, -75.0"
+                              }
+                            },
+                            {
+                              "type": "append",
+                              "key": "markers",
+                              "value": {
+                                "latitude": -10,
+                                "longitude": -75,
+                                "title": "New Observation",
+                                "description": "Wildlife sighting"
+                              }
+                            },
+                            {
+                              "type": "compute",
+                              "operation": "increment",
+                              "key": "totalObservations"
+                            },
+                            {
+                              "type": "setState",
+                              "key": "showAddModal",
+                              "value": false
+                            },
+                            {
+                              "type": "setState",
+                              "key": "newSpecies",
+                              "value": ""
+                            },
+                            {
+                              "type": "setState",
+                              "key": "newNotes",
+                              "value": ""
+                            },
+                            {
+                              "type": "setState",
+                              "key": "newKeeper",
+                              "value": ""
+                            },
+                            {
+                              "type": "setState",
+                              "key": "newLat",
+                              "value": ""
+                            },
+                            {
+                              "type": "setState",
+                              "key": "newLng",
+                              "value": ""
+                            },
+                            {
+                              "type": "haptic",
+                              "style": "success"
+                            }
+                          ]
+                        },
+                        "variant": "primary"
+                      }
+                    }
+                  ],
+                  "direction": "row",
+                  "gap": 12,
+                  "justify": "center"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "modal",
+          "id": "detail-modal",
+          "props": {
+            "visibleKey": "showDetailModal",
+            "title": "📍 Observation Detail",
+            "children": [
+              {
+                "type": "text",
+                "id": "detail-hint",
+                "props": {
+                  "content": "Marker tapped! Check the Log tab for full observation details.",
+                  "variant": "body",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "spacer",
+                "id": "detail-spacer",
+                "props": {
+                  "height": 16
+                }
+              },
+              {
+                "type": "button",
+                "id": "detail-close-btn",
+                "props": {
+                  "label": "Close",
+                  "action": {
+                    "type": "setState",
+                    "key": "showDetailModal",
+                    "value": false
+                  },
+                  "variant": "secondary"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTab": "map",
+    "observations": [
+      {
+        "species": "Jaguar",
+        "type": "wildlife",
+        "notes": "Adult female spotted near river crossing, healthy condition",
+        "keeper": "Carlos",
+        "lat": -9.92,
+        "lng": -75.01,
+        "typeBadge": "🐾 Wildlife",
+        "keeperDisplay": "👤 Carlos",
+        "coordsDisplay": "📍 -9.92, -75.01"
+      },
+      {
+        "species": "Mahogany Tree",
+        "type": "plant",
+        "notes": "Mature specimen, approx 30m tall, good canopy coverage",
+        "keeper": "Ana",
+        "lat": -10.15,
+        "lng": -74.85,
+        "typeBadge": "🌿 Plant",
+        "keeperDisplay": "👤 Ana",
+        "coordsDisplay": "📍 -10.15, -74.85"
+      },
+      {
+        "species": "Harpy Eagle",
+        "type": "wildlife",
+        "notes": "Nesting pair observed, 2 chicks visible in nest",
+        "keeper": "Carlos",
+        "lat": -9.78,
+        "lng": -75.22,
+        "typeBadge": "🐾 Wildlife",
+        "keeperDisplay": "👤 Carlos",
+        "coordsDisplay": "📍 -9.78, -75.22"
+      },
+      {
+        "species": "Giant Otter",
+        "type": "wildlife",
+        "notes": "Family group of 6, feeding in oxbow lake",
+        "keeper": "Maria",
+        "lat": -10.35,
+        "lng": -75.45,
+        "typeBadge": "🐾 Wildlife",
+        "keeperDisplay": "👤 Maria",
+        "coordsDisplay": "📍 -10.35, -75.45"
+      },
+      {
+        "species": "Brazil Nut Tree",
+        "type": "plant",
+        "notes": "Fruiting season, heavy nut production observed",
+        "keeper": "Ana",
+        "lat": -10.05,
+        "lng": -74.68,
+        "typeBadge": "🌿 Plant",
+        "keeperDisplay": "👤 Ana",
+        "coordsDisplay": "📍 -10.05, -74.68"
+      }
+    ],
+    "markers": [
+      {
+        "latitude": -9.92,
+        "longitude": -75.01,
+        "title": "Jaguar",
+        "description": "🐾 Wildlife — Carlos"
+      },
+      {
+        "latitude": -10.15,
+        "longitude": -74.85,
+        "title": "Mahogany Tree",
+        "description": "🌿 Plant — Ana"
+      },
+      {
+        "latitude": -9.78,
+        "longitude": -75.22,
+        "title": "Harpy Eagle",
+        "description": "🐾 Wildlife — Carlos"
+      },
+      {
+        "latitude": -10.35,
+        "longitude": -75.45,
+        "title": "Giant Otter",
+        "description": "🐾 Wildlife — Maria"
+      },
+      {
+        "latitude": -10.05,
+        "longitude": -74.68,
+        "title": "Brazil Nut Tree",
+        "description": "🌿 Plant — Ana"
+      }
+    ],
+    "newType": "wildlife",
+    "newSpecies": "",
+    "newNotes": "",
+    "newLat": "",
+    "newLng": "",
+    "newKeeper": "",
+    "showAddModal": false,
+    "showDetailModal": false,
+    "filterType": "all",
+    "totalWildlife": 3,
+    "totalPlant": 2,
+    "totalObservations": 5,
+    "chartData": [
+      {
+        "label": "🐾 Wildlife",
+        "value": 3
+      },
+      {
+        "label": "🌿 Plants",
+        "value": 2
+      }
+    ],
+    "keeperChartData": [
+      {
+        "label": "Carlos",
+        "value": 2
+      },
+      {
+        "label": "Ana",
+        "value": 2
+      },
+      {
+        "label": "Maria",
+        "value": 1
+      }
+    ]
+  },
+  "theme": {
+    "backgroundColor": "#0a1a0f",
+    "surfaceColor": "#132a1a",
+    "primaryColor": "#22c55e",
+    "textColor": "#e8f5e9",
+    "secondaryTextColor": "#6b9e78",
+    "borderColor": "#2d5a3a",
+    "dangerColor": "#dc2626",
+    "successColor": "#4ade80"
+  }
+}
