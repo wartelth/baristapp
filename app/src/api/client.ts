@@ -1,10 +1,7 @@
 import type { GenerateResult, ClarifyResult, ModifyResult, MiniApp } from "@swissknife/shared";
+import { config } from "../config";
 
-// In development, use your local machine IP.
-// For Expo Go on a physical device, replace with your LAN IP.
-const BASE_URL = __DEV__
-  ? "http://192.168.2.223:3001"
-  : "https://api.swissknife.app";
+const BASE_URL = config.apiBaseUrl;
 
 /** Step 1: Get clarification questions for a prompt */
 export async function clarifyPrompt(prompt: string): Promise<ClarifyResult> {

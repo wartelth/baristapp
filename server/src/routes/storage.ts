@@ -5,13 +5,10 @@ import {
   saveAppState,
   loadAppState,
 } from "../services/supabaseClient";
+import { getUserId } from "../utils/auth";
 import L from "../utils/logger";
 
 const router = Router();
-
-function getUserId(req: Request): string {
-  return (req.headers["x-device-id"] as string) ?? "anonymous";
-}
 
 // ---------------------------------------------------------------------------
 // App spec endpoints

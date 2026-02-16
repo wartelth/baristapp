@@ -12,13 +12,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ClarificationQuestion } from "@swissknife/shared";
 import { clarifyPrompt } from "../api/client";
 import { useGeneration } from "../context/GenerationContext";
-import type { RootStackParamList } from "../../App";
+import type { CreateScreenProps } from "../types/navigation";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Create">;
+type Props = CreateScreenProps;
 
 type Step = "prompt" | "clarifying" | "questions";
 
@@ -98,7 +97,7 @@ export function CreateScreen({ navigation }: Props) {
 
     // Fire-and-forget — context handles the API call, notification, and saving
     startGenerate(prompt.trim(), clarifications);
-    navigation.goBack();
+    navigation.navigate("Library");
   };
 
   // -------------------------------------------------------------------------
@@ -107,7 +106,7 @@ export function CreateScreen({ navigation }: Props) {
   const handleSkip = () => {
     Keyboard.dismiss();
     startGenerate(prompt.trim());
-    navigation.goBack();
+    navigation.navigate("Library");
   };
 
   // -------------------------------------------------------------------------

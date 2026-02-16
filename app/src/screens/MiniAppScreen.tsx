@@ -11,15 +11,14 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { MiniApp } from "@swissknife/shared";
 import { getApp } from "../storage/storageLayer";
 import { MiniAppRenderer } from "../components/MiniAppRenderer";
 import { useGeneration } from "../context/GenerationContext";
 import { HeaderSpinner } from "../components/HeaderSpinner";
-import type { RootStackParamList } from "../../App";
+import type { MiniAppScreenProps } from "../types/navigation";
 
-type Props = NativeStackScreenProps<RootStackParamList, "MiniApp">;
+type Props = MiniAppScreenProps;
 
 // ---------------------------------------------------------------------------
 // Error boundary — catches render crashes so the app never silently dies
