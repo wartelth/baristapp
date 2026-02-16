@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   action: {
-    color: "#4f46e5",
+    color: "#1e40af",
     fontSize: 14,
     fontWeight: "700",
   },

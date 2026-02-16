@@ -33,17 +33,19 @@ The output is a **declarative schema** (screens, components, actions, state) —
 
 ```
 SwissKnife/
-├── app/          # React Native (Expo) mobile app — the "player"
-├── server/       # Express API — generation, modification, storage, per-app endpoints
-├── shared/       # Zod schemas + TypeScript types — single source of truth
-├── src/          # This README + project docs
-└── package.json  # Workspaces: shared, server, app
+├── app/                  # React Native (Expo) mobile app — the "player"
+├── server/               # Express API — generation, modification, storage, per-app endpoints
+├── shared/                # Zod schemas + TypeScript types — single source of truth
+├── swissknife.config.js   # Root config — debug/production, API URL, Supabase credentials
+└── package.json           # Workspaces: shared, server, app
 ```
 
 **Workspace scripts:**
 - `npm run server` — Start the backend (tsx watch)
 - `npm run app` — Start Expo dev server
 - `npm run typecheck` — Type-check shared + server
+
+**Config:** Edit `swissknife.config.js` to switch debug/production, set `apiBaseUrl`, and add Supabase URL + anon key.
 
 ---
 
@@ -135,13 +137,19 @@ Each endpoint has:
 
 | File | Purpose |
 |------|---------|
-| `App.tsx` | Root: `GenerationProvider`, `NavigationContainer`, `Stack.Navigator` |
+| `App.tsx` | Root: `AuthProvider`, `GenerationProvider`, `NavigationContainer` |
+| `app.config.js` | Injects `swissknife.config.js` into Expo `extra` |
 | `index.ts` | Expo entry point |
 
+**Flow:** Onboarding (first launch) → Auth (Login/Signup) → Main (tabs)
+
 **Screens:**
-- `Home` — Grid of saved mini-apps, search, add, delete, modify
-- `Create` — Prompt input → clarify → questions → generate (background)
-- `MiniApp` — Renders a single mini-app via `MiniAppRenderer`
+- `OnboardingScreen` — Portfolio-style tiles, "Get started" → Auth
+- `LoginScreen` / `SignupScreen` — Email + password (Supabase Auth)
+- `HomeScreen` (Library tab) — Grid of saved mini-apps, search, delete, modify
+- `CreateScreen` (Create tab) — Prompt input → clarify → questions → generate (background)
+- `ProfileScreen` (Profile tab) — User email, stats, Sign out
+- `MiniAppScreen` — Renders a single mini-app via `MiniAppRenderer`
 
 ### 4.2 App Structure
 
@@ -149,7 +157,9 @@ Each endpoint has:
 app/src/
 ├── api/              # HTTP client + Supabase proxy
 │   ├── client.ts     # clarify, generate, modify, callServerEndpoint
-│   └── supabaseClient.ts  # Cloud spec/state sync via server proxy
+│   └── supabaseClient.ts  # Cloud spec/state sync via server proxy (auth token when logged in)
+├── auth/
+│   └── supabaseAuth.ts     # Supabase client for login/signup
 ├── capabilities/     # Permission requests
 │   └── capabilityManager.ts
 ├── components/       # UI components
@@ -160,18 +170,28 @@ app/src/
 │   ├── NotificationToast.tsx
 │   ├── LoadingOverlay.tsx
 │   └── renderers/    # One per component type (20 files)
+├── config.ts        # Reads from Expo extra (swissknife.config.js)
 ├── context/
-│   └── GenerationContext.tsx  # busy, startGenerate, startModify, notification
+│   ├── AuthContext.tsx      # session, signIn, signUp, signOut
+│   ├── GenerationContext.tsx  # busy, startGenerate, startModify, notification
+│   └── OnboardingContext.tsx  # onComplete callback
 ├── hooks/
 │   └── useConditional.ts     # evaluateVisibility for visibleWhen
+├── navigation/
+│   └── AuthStack.tsx         # Login + Signup stack
 ├── screens/
+│   ├── OnboardingScreen.tsx  # Portfolio tiles, animations
+│   ├── LoginScreen.tsx
+│   ├── SignupScreen.tsx
 │   ├── HomeScreen.tsx
 │   ├── CreateScreen.tsx
+│   ├── ProfileScreen.tsx
 │   └── MiniAppScreen.tsx
 ├── storage/
-│   └── storageLayer.ts       # AsyncStorage + in-memory cache
+│   ├── storageLayer.ts       # AsyncStorage + in-memory cache
+│   └── onboardingStorage.ts # hasSeenOnboarding, setOnboardingSeen
 └── types/
-    └── index.ts              # RendererProps, re-exports from shared
+    └── navigation.ts         # RootStackParamList, AuthStackParamList, TabParamList
 ```
 
 ### 4.3 MiniAppRenderer — Core Engine
@@ -226,19 +246,29 @@ Examples:
 - `requestAllCapabilities(appId, caps)` — Requests all caps for a newly generated app
 - Auto-granted: `localStorage`, `haptics`, `clipboard`
 
-### 4.8 API Client
+### 4.8 Config
+
+**File:** `app/src/config.ts`
+
+- Reads from `Constants.expoConfig.extra` (injected by `app.config.js` from `swissknife.config.js`)
+- Fallback: `require("../../swissknife.config.js")` when extra is empty
+- `config.apiBaseUrl`, `config.supabaseUrl`, `config.supabaseAnonKey`, `config.debug`
+
+### 4.9 API Client
 
 **File:** `app/src/api/client.ts`
 
-- `BASE_URL`: Dev = `http://192.168.2.223:3001`, Prod = `https://api.swissknife.app`
+- Uses `config.apiBaseUrl` (from `swissknife.config.js`)
 - `clarifyPrompt`, `generateMiniApp`, `modifyMiniApp`, `callServerEndpoint`
 
-### 4.9 Supabase Client (App-Side)
+### 4.10 Supabase Client (App-Side)
 
 **File:** `app/src/api/supabaseClient.ts`
 
-- Uses server as proxy (no Supabase SDK in app)
-- `initDeviceId()` — Generates/stores device UUID for user identification
+- Uses server as proxy for storage
+- When logged in: sends `Authorization: Bearer <token>` and `x-user-id`
+- When not logged in: sends `x-device-id` (device UUID)
+- `initDeviceId()` — Generates/stores device UUID (fallback when not logged in)
 - `loadCloudState`, `saveCloudState`, `saveCloudSpec` — All via server REST API
 
 ---
@@ -273,7 +303,7 @@ Examples:
 | `generate.ts` | `generateMiniApp` | Generate mini-app spec, mount endpoints |
 | `modify.ts` | `modifyMiniApp` | Modify existing spec |
 | `apps.ts` | Dynamic | Dispatch to per-app router |
-| `storage.ts` | Supabase | Load/save spec and state |
+| `storage.ts` | Supabase | Load/save spec and state (user_id from JWT or x-device-id) |
 
 ### 5.3 Services
 
@@ -285,6 +315,8 @@ Examples:
 | `subServerManager.ts` | `mountAppEndpoints`, `unmountAppEndpoints`, `getAppRouter` — In-memory router registry |
 | `sessionStore.ts` | `saveSession`, `listSessions` — Save to `server/tmp/` for debugging |
 | `supabaseClient.ts` | `saveAppSpec`, `loadAppSpec`, `saveAppState`, `loadAppState` — Cloud persistence |
+
+**Auth:** `server/src/utils/auth.ts` — `getUserId(req)` extracts user ID from JWT (verifies with `SUPABASE_JWT_SECRET`) or falls back to `x-device-id`.
 
 ### 5.4 Subservers (Per-App Endpoints)
 
@@ -364,8 +396,16 @@ MiniAppRenderer loads spec from getState(spec.appId)
 ### 6.4 Storage Flow
 
 - **Local:** AsyncStorage (`app:${appId}:spec`, `app:${appId}:state`)
-- **Cloud:** Server → Supabase (user = `x-device-id` header)
+- **Cloud:** Server → Supabase. User ID = JWT `sub` (when logged in) or `x-device-id` (anonymous)
 - **Sync:** App writes locally immediately; cloud sync is debounced (2s) and best-effort
+
+### 6.5 Auth Flow
+
+```
+First launch → Onboarding (tiles) → Get started → Auth (Login/Signup)
+Logged in → Main (Library, Create, Profile tabs)
+Sign out → Auth
+```
 
 ---
 
@@ -410,10 +450,12 @@ MiniAppRenderer loads spec from getState(spec.appId)
 - `ANTHROPIC_API_KEY` — Required for Claude
 - `HUGGINGFACE_API_KEY` — For HuggingFace endpoints
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — For cloud storage
+- `SUPABASE_JWT_SECRET` — For verifying auth tokens (Supabase Dashboard → Settings → API → JWT Secret)
 - `PORT` — Default 3001
 
-**App:**
-- Uses `__DEV__` to switch BASE_URL (dev vs prod)
+**App (via `swissknife.config.js` or env):**
+- `apiBaseUrl` — API URL (set in config)
+- `supabaseUrl`, `supabaseAnonKey` — Supabase credentials
 
 ### 7.7 File Naming Conventions
 
@@ -428,15 +470,26 @@ MiniAppRenderer loads spec from getState(spec.appId)
 
 | What | Path |
 |------|------|
+| Root config | `swissknife.config.js` |
 | MiniApp schema | `shared/src/schema.ts` |
 | API types | `shared/src/types.ts` |
+| App config | `app/src/config.ts` |
+| Auth | `app/src/auth/supabaseAuth.ts`, `app/src/context/AuthContext.tsx` |
 | Renderer engine | `app/src/components/MiniAppRenderer.tsx` |
 | Generation logic | `server/src/services/claudeService.ts` |
 | Master prompt | `server/src/prompts/masterPrompt.ts` |
 | Validation | `server/src/validation/schemaValidator.ts` |
+| Server auth | `server/src/utils/auth.ts` |
 | Storage (app) | `app/src/storage/storageLayer.ts` |
 | Storage (server) | `server/src/services/supabaseClient.ts` |
 | Per-app endpoints | `server/src/services/subServerManager.ts` |
+
+## Setup
+
+1. **Config:** Edit `swissknife.config.js` — set `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`.
+2. **Server:** Add `.env` with `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`.
+3. **Supabase:** Run `docs/supabase_schema.sql` in Supabase SQL Editor. Enable Email auth in Dashboard.
+4. **Run:** `npm run server` and `npm run app`. Use `npx expo start -c` if config changes don't apply.
 
 ---
 

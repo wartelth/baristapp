@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   headerBtnText: {
-    color: "#4f46e5",
+    color: "#1e40af",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#4f46e5",
+    backgroundColor: "#1e40af",
     alignItems: "center",
   },
   submitBtnDisabled: {

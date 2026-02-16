@@ -1,0 +1,6 @@
+An app to track keyboard prices
+
+Additional context from user:
+- Where do keyboard prices come from—websites you visit, or do you manually enter prices? → App should check websites automatically
+- What keyboard details matter most to track? → Price history over time
+- How many keyboards do you typically track at once? → 5–10

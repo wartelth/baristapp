@@ -1,0 +1,134 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/-844": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---aba-d70"
+    }
+  },
+  "/-20a": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---22-d-307"
+  },
+  "/-f1f": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/app/navigation-126": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---app-navigation-36-c-f5a"
+  },
+  "/app/overview-c09": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---app-overview-64-d-769"
+  },
+  "/app/renderer-f3f": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---app-rendererf-7-c-e7b"
+  },
+  "/app/storage-0b2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---app-storagea-61-96c"
+  },
+  "/architecture/data-flow-250": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-data-flow-9-ba-46d"
+  },
+  "/architecture/overview-f3c": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-overview-0-b-1-d38"
+  },
+  "/architecture/security-027": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-securitye-7-b-ef2"
+  },
+  "/guides/adding-actions-fd0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-adding-actionsaa-5-6c9"
+  },
+  "/guides/adding-components-292": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-adding-componentsae-6-d96"
+  },
+  "/guides/environment-d90": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-environment-52-b-2bd"
+  },
+  "/guides/getting-started-86d": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-getting-startedc-9-e-e62"
+  },
+  "/schema/actions-dec": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---schema-actions-808-b93"
+  },
+  "/schema/capabilities-d84": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---schema-capabilitiesb-61-659"
+  },
+  "/schema/components-f09": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---schema-components-52-a-a20"
+  },
+  "/schema/effects-e8b": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---schema-effects-1-f-3-2f3"
+  },
+  "/server/endpoints-e96": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---server-endpoints-7-ea-34e"
+  },
+  "/server/generation-6cc": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---server-generation-53-d-8f0"
+  },
+  "/server/overview-1ff": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---server-overviewb-10-26d"
+  },
+  "/-7da": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---0-e-3-279"
+  }
+}

@@ -1,40 +1,79 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Animated, Easing, StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { useGeneration } from "../context/GenerationContext";
 
-/** Small spinning circle in the nav header. Tap to open/close the progress overlay. */
+/** Animated spinner + label in the nav header. Tap to open/close the progress overlay. */
 export function HeaderSpinner() {
   const { busy, toggleProgress } = useGeneration();
   const spinAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const enterAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const prevBusy = useRef(false);
 
   useEffect(() => {
-    if (busy) {
-      Animated.timing(opacityAnim, {
+    if (busy && !prevBusy.current) {
+      // -- Entering busy: scale-bounce + fade in --
+      enterAnim.setValue(0);
+      Animated.spring(enterAnim, {
         toValue: 1,
-        duration: 200,
+        tension: 120,
+        friction: 8,
         useNativeDriver: true,
       }).start();
+
+      // Start spinning
+      spinAnim.setValue(0);
       Animated.loop(
         Animated.timing(spinAnim, {
           toValue: 1,
-          duration: 1200,
+          duration: 1000,
           easing: Easing.linear,
           useNativeDriver: true,
         })
       ).start();
-    } else {
-      Animated.timing(opacityAnim, {
+
+      // Gentle pulse on the ring
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.15,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else if (!busy && prevBusy.current) {
+      // -- Leaving busy: fade out --
+      Animated.timing(enterAnim, {
         toValue: 0,
-        duration: 200,
+        duration: 300,
         useNativeDriver: true,
       }).start();
+      pulseAnim.setValue(1);
     }
+    prevBusy.current = busy;
   }, [busy]);
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
+  });
+
+  const scale = enterAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+
+  const labelTranslateX = enterAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [40, 0],
   });
 
   return (
@@ -44,9 +83,30 @@ export function HeaderSpinner() {
       disabled={!busy}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
-      <Animated.View style={[styles.wrap, { opacity: opacityAnim }]}>
-        <Animated.View style={[styles.ring, { transform: [{ rotate: spin }] }]}>
-          <View style={styles.arc} />
+      <Animated.View
+        style={[
+          styles.wrap,
+          {
+            opacity: enterAnim,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        {/* Label */}
+        <Animated.View
+          style={{
+            opacity: enterAnim,
+            transform: [{ translateX: labelTranslateX }],
+          }}
+        >
+          <Text style={styles.label}>Generating...</Text>
+        </Animated.View>
+
+        {/* Spinning ring */}
+        <Animated.View style={[styles.ringWrap, { transform: [{ scale: pulseAnim }] }]}>
+          <Animated.View style={[styles.ring, { transform: [{ rotate: spin }] }]}>
+            <View style={styles.arc} />
+          </Animated.View>
         </Animated.View>
       </Animated.View>
     </TouchableOpacity>
@@ -55,9 +115,19 @@ export function HeaderSpinner() {
 
 const styles = StyleSheet.create({
   wrap: {
-    width: 24,
-    height: 24,
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 12,
+    gap: 8,
+  },
+  label: {
+    color: "#1e40af",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  ringWrap: {
+    width: 22,
+    height: 22,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -77,6 +147,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2.5,
     borderColor: "transparent",
-    borderTopColor: "#4f46e5",
+    borderTopColor: "#1e40af",
   },
 });

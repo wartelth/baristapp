@@ -1,0 +1,27 @@
+{
+  "id": "architecture/security",
+  "title": "Security Model",
+  "description": "SwissKnife is designed with security as a first-class concern. The declarative architecture eliminates entire categories of vulnerabilities.",
+  "source": "@site/docs/architecture/security.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/security",
+  "permalink": "/architecture/security",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Security Model"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Data Flow",
+    "permalink": "/architecture/data-flow"
+  },
+  "next": {
+    "title": "Components",
+    "permalink": "/schema/components"
+  }
+}

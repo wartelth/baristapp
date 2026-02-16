@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 3,
     borderColor: "transparent",
-    borderTopColor: "#4f46e5",
+    borderTopColor: "#1e40af",
   },
 
   // Phase text
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#22c55e",
   },
   stepActive: {
-    backgroundColor: "#4f46e5",
+    backgroundColor: "#1e40af",
   },
   stepPending: {
     backgroundColor: "#333",

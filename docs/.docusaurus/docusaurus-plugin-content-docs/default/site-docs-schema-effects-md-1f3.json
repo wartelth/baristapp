@@ -1,0 +1,27 @@
+{
+  "id": "schema/effects",
+  "title": "Effects",
+  "description": "Effects are lifecycle hooks that run actions automatically — on mount, on interval, or when state changes. They are defined per-screen in the effects property.",
+  "source": "@site/docs/schema/effects.md",
+  "sourceDirName": "schema",
+  "slug": "/schema/effects",
+  "permalink": "/schema/effects",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Effects"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Actions",
+    "permalink": "/schema/actions"
+  },
+  "next": {
+    "title": "Capabilities",
+    "permalink": "/schema/capabilities"
+  }
+}
