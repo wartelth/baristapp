@@ -23,7 +23,7 @@ From the monorepo root:
 npm install
 ```
 
-This installs all three workspace packages (`shared`, `server`, `app`).
+This installs all workspace packages (`shared`, `server`, `app`, `docs`).
 
 ## 2. Configure
 
@@ -53,7 +53,8 @@ PORT=3001
 
 # Optional: Supabase (for cloud storage)
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+SUPABASE_SECRET_KEY=sb_secret_...
+# SUPABASE_SERVICE_ROLE_KEY=eyJ...  # optional legacy fallback
 SUPABASE_JWT_SECRET=your-jwt-secret
 
 # Optional: HuggingFace (for ML endpoints)
@@ -62,12 +63,9 @@ HUGGINGFACE_API_KEY=hf_...
 
 ## 4. Supabase Setup (Optional)
 
-If using cloud sync, run the schema SQL in the Supabase SQL Editor:
+If using cloud sync, run `supabase_setup.sql` in the Supabase SQL Editor:
 
-```bash
-# The schema file is at the root
-cat supabase_setup.sql
-```
+The script creates base storage + social/library tables and seeds starter official templates.
 
 Enable **Email auth** in Supabase Dashboard → Authentication → Providers.
 

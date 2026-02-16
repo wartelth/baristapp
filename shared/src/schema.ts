@@ -106,6 +106,15 @@ export const CopyToClipboardAction = z.object({
   value: z.string().optional(),
 });
 
+export const GetLocationAction = z.object({
+  type: z.literal("getLocation"),
+  resultKey: z.string(),
+  latitudeKey: z.string().optional(),
+  longitudeKey: z.string().optional(),
+  loadingKey: z.string().optional(),
+  errorKey: z.string().optional(),
+});
+
 // Forward-declare Action as ZodType for recursive references
 export type ActionType = z.infer<typeof Action>;
 export const Action: z.ZodType = z.lazy(() =>
@@ -122,6 +131,7 @@ export const Action: z.ZodType = z.lazy(() =>
     ServerCallAction,
     HapticAction,
     CopyToClipboardAction,
+    GetLocationAction,
     // recursive actions
     TimerAction,
     ConditionalAction,
