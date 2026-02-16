@@ -146,9 +146,12 @@ Each endpoint has:
 **Screens:**
 - `OnboardingScreen` — Portfolio-style tiles, "Get started" → Auth
 - `LoginScreen` / `SignupScreen` — Email + password (Supabase Auth)
-- `HomeScreen` (Library tab) — Grid of saved mini-apps, search, delete, modify
-- `CreateScreen` (Create tab) — Prompt input → clarify → questions → generate (background)
-- `ProfileScreen` (Profile tab) — User email, stats, Sign out
+- `HomeScreen` (My Apps tab) — Grid of saved mini-apps, search, modify/delete/report/share
+- `SocialScreen` (Social tab) — Friend avatars, shared-with-you list, code/QR import
+- `CreateScreen` (center tab) — Prompt input → clarify → questions → generate (background)
+- `DeveloperLibraryScreen` (Official tab) — Curated templates, add/ignore/open
+- `ProfileScreen` (Profile tab) — Profile edit, support/legal, data controls, sign out
+- `LegalScreen` — In-app privacy policy and support details
 - `MiniAppScreen` — Renders a single mini-app via `MiniAppRenderer`
 
 ### 4.2 App Structure
@@ -184,12 +187,20 @@ app/src/
 │   ├── LoginScreen.tsx
 │   ├── SignupScreen.tsx
 │   ├── HomeScreen.tsx
+│   ├── SocialScreen.tsx
+│   ├── DeveloperLibraryScreen.tsx
 │   ├── CreateScreen.tsx
 │   ├── ProfileScreen.tsx
+│   ├── LegalScreen.tsx
 │   └── MiniAppScreen.tsx
 ├── storage/
 │   ├── storageLayer.ts       # AsyncStorage + in-memory cache
 │   └── onboardingStorage.ts # hasSeenOnboarding, setOnboardingSeen
+├── privacy/
+│   └── dataConsentFlow.ts
+├── utils/
+│   ├── avatars.ts
+│   └── shareCode.ts
 └── types/
     └── navigation.ts         # RootStackParamList, AuthStackParamList, TabParamList
 ```
@@ -259,7 +270,11 @@ Examples:
 **File:** `app/src/api/client.ts`
 
 - Uses `config.apiBaseUrl` (from `swissknife.config.js`)
-- `clarifyPrompt`, `generateMiniApp`, `modifyMiniApp`, `callServerEndpoint`
+- Generation/runtime: `clarifyPrompt`, `generateMiniApp`, `modifyMiniApp`, `callServerEndpoint`
+- Safety/privacy: `reportMiniApp`, `deleteMyCloudData`
+- Social sharing: `createShareCode`, `importSharedAppByCode`, `listInstalledSharedApps`, `listSharedWithMe`
+- Social profile/badges: `getMySocialProfile`, `saveMySocialProfile`, `listMyBadges`
+- Official library: `listFeaturedLibraryApps`, `addFeaturedLibraryApp`, `ignoreFeaturedLibraryApp`
 
 ### 4.10 Supabase Client (App-Side)
 
@@ -293,6 +308,17 @@ Examples:
   - `ALL /api/apps/:appId/endpoints/:endpointId` — Per-app endpoints
   - `GET/PUT /api/storage/apps/:appId/spec` — App spec
   - `GET/PUT /api/storage/apps/:appId/state` — App state
+  - `DELETE /api/storage/me` — Delete all cloud data for current user
+  - `POST /api/reports` — Report user-generated mini-app content
+  - `GET/PUT /api/social/profile` — Social profile
+  - `POST /api/social/share/:appId` — Create/rotate share code
+  - `POST /api/social/import/:shareCode` — Import from shared code
+  - `GET /api/social/installed` — Shared apps already imported
+  - `GET /api/social/shared-with-me` — Shared app feed with owner metadata
+  - `GET /api/social/badges` — User badge/progress data
+  - `GET /api/library/featured` — Curated official templates
+  - `POST /api/library/featured/:featuredAppId/add` — Add template to user library
+  - `POST /api/library/featured/:featuredAppId/ignore` — Hide template
   - `GET /api/sessions` — Debug: list saved sessions
 
 ### 5.2 Routes
@@ -304,6 +330,9 @@ Examples:
 | `modify.ts` | `modifyMiniApp` | Modify existing spec |
 | `apps.ts` | Dynamic | Dispatch to per-app router |
 | `storage.ts` | Supabase | Load/save spec and state (user_id from JWT or x-device-id) |
+| `reports.ts` | Reports | Persist user reports for moderation |
+| `social.ts` | Social APIs | Profile, short share codes, import, shared lists, badges |
+| `library.ts` | Featured APIs | Curated templates list/add/ignore |
 
 ### 5.3 Services
 
@@ -314,7 +343,7 @@ Examples:
 | `modifyService.ts` | `modifyMiniApp` — Claude Agent SDK, preserves appId |
 | `subServerManager.ts` | `mountAppEndpoints`, `unmountAppEndpoints`, `getAppRouter` — In-memory router registry |
 | `sessionStore.ts` | `saveSession`, `listSessions` — Save to `server/tmp/` for debugging |
-| `supabaseClient.ts` | `saveAppSpec`, `loadAppSpec`, `saveAppState`, `loadAppState` — Cloud persistence |
+| `supabaseClient.ts` | Cloud persistence + social sharing + featured templates + profile/badges helpers |
 
 **Auth:** `server/src/utils/auth.ts` — `getUserId(req)` extracts user ID from JWT (verifies with `SUPABASE_JWT_SECRET`) or falls back to `x-device-id`.
 
@@ -403,8 +432,22 @@ MiniAppRenderer loads spec from getState(spec.appId)
 
 ```
 First launch → Onboarding (tiles) → Get started → Auth (Login/Signup)
-Logged in → Main (Library, Create, Profile tabs)
+Logged in → Main (My Apps, Social, Create, Official, Profile tabs)
 Sign out → Auth
+```
+
+### 6.6 Share/Import Flow (Short Code + QR)
+
+```
+User taps Share on a mini-app card (My Apps)
+    → App: POST /api/social/share/:appId
+    → Server: create/rotate short code (format: abc-def-ghi)
+    → App: show share modal with code + QR payload (swissknife://import?code=...)
+Friend opens Social tab
+    → Import modal: type code OR scan QR
+    → App: normalize/extract code and POST /api/social/import/:shareCode
+    → Server: copy owner spec into installer's library, track install metadata
+    → App: save imported spec + owner metadata; show in My Apps + Social feed
 ```
 
 ---
@@ -490,7 +533,8 @@ Sign out → Auth
 
 1. **Config:** Edit `swissknife.config.js` — set `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`.
 2. **Server:** Add `.env` with `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (or legacy `SUPABASE_SERVICE_ROLE_KEY`), `SUPABASE_JWT_SECRET`.
-3. **Supabase:** Run `docs/supabase_schema.sql` in Supabase SQL Editor. Enable Email auth in Dashboard.
+3. **Supabase:** Run `supabase_setup.sql` (or `markdown/supabase_schema.sql`) in Supabase SQL Editor.
+   This creates social/library tables and seeds official templates.
 4. **Run:** `npm run server` and `npm run app`. Use `npx expo start -c` if config changes don't apply.
 
 ---

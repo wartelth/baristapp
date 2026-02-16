@@ -6,9 +6,20 @@ title: App Overview
 # App Package
 
 **Location:** `app/src/`
-**Stack:** React Native, Expo 52, React Navigation v7, TypeScript
+**Stack:** React Native, Expo 54, React Navigation v7, TypeScript
 
 The app is a generic mini-app player. It loads JSON specs from storage, renders interactive UIs, manages per-app state, and syncs to the cloud.
+
+## Product Screens
+
+- `HomeScreen` (My Apps)
+- `SocialScreen`
+- `CreateScreen`
+- `DeveloperLibraryScreen` (Official)
+- `ProfileScreen`
+- `LegalScreen`
+- `MiniAppScreen`
+- plus onboarding/auth screens
 
 ## Directory Structure
 
@@ -23,7 +34,7 @@ graph TD
     App --> Ctx["context/<br/>Auth, Generation, Onboarding"]
     App --> Hooks["hooks/<br/>useConditional"]
     App --> Nav["navigation/<br/>Auth stack"]
-    App --> Screens["screens/<br/>6 screens"]
+    App --> Screens["screens/<br/>core product screens"]
     App --> Storage["storage/<br/>AsyncStorage layer"]
     App --> Types["types/<br/>Navigation types"]
 

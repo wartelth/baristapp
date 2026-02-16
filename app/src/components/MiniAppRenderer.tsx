@@ -402,6 +402,49 @@ export function MiniAppRenderer({ spec, initialScreenId }: MiniAppRendererProps)
       return;
     }
 
+    // --- Device location (async, reads device sensors) ---
+    if (a.type === "getLocation") {
+      (async () => {
+        const { resultKey, latitudeKey, longitudeKey, loadingKey, errorKey } = a;
+        if (loadingKey) setState((prev) => ({ ...prev, [loadingKey]: true }));
+        if (errorKey) setState((prev) => ({ ...prev, [errorKey]: "" }));
+
+        try {
+          const Location = require("expo-location");
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== "granted") {
+            throw new Error("Location permission denied");
+          }
+
+          const pos = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+
+          setState((prev) => ({
+            ...prev,
+            [resultKey]: {
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              accuracy: pos.coords.accuracy,
+              timestamp: pos.timestamp,
+            },
+            ...(latitudeKey ? { [latitudeKey]: pos.coords.latitude } : {}),
+            ...(longitudeKey ? { [longitudeKey]: pos.coords.longitude } : {}),
+            ...(loadingKey ? { [loadingKey]: false } : {}),
+          }));
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "Unable to get current location";
+          setState((prev) => ({
+            ...prev,
+            ...(errorKey ? { [errorKey]: message } : {}),
+            ...(loadingKey ? { [loadingKey]: false } : {}),
+          }));
+        }
+      })();
+      return;
+    }
+
     // --- Server call (async, reads stateRef) ---
     if (a.type === "serverCall") {
       (async () => {

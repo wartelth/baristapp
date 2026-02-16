@@ -863,6 +863,211 @@ VALUES
     }
     $book$::jsonb,
     true
+  ),
+  (
+    'official-stargazing-weather',
+    'Stargazing Weather',
+    'Track local sky conditions with live weather from your city or current location.',
+    '🌌',
+    $stars$
+    {
+      "appId": "official-stargazing-weather",
+      "title": "Stargazing Weather",
+      "icon": "🌌",
+      "version": 2,
+      "capabilities": ["localStorage", "network", "location", "haptics"],
+      "theme": {
+        "backgroundColor": "#070b17",
+        "surfaceColor": "#11192f",
+        "primaryColor": "#7c8bff",
+        "textColor": "#eef2ff",
+        "secondaryTextColor": "#9fb0da",
+        "borderColor": "#2a3860",
+        "successColor": "#22c55e"
+      },
+      "initialState": {
+        "locationQuery": "",
+        "weatherLoading": false,
+        "weatherError": "",
+        "geocodeRaw": {},
+        "weatherRequest": {},
+        "weatherRaw": {},
+        "weatherSummary": { "summary": "Search a city or use current location to begin." },
+        "lastUpdated": "-"
+      },
+      "serverEndpoints": [
+        {
+          "id": "geocodeToRequest",
+          "method": "POST",
+          "processing": {
+            "type": "transform",
+            "template": {
+              "latitude": "{{results[0].latitude}}",
+              "longitude": "{{results[0].longitude}}",
+              "place": "{{results[0].name}}, {{results[0].country}}"
+            }
+          }
+        },
+        {
+          "id": "weatherNow",
+          "method": "POST",
+          "processing": {
+            "type": "proxy",
+            "targetUrl": "https://api.open-meteo.com/v1/forecast?latitude={{latitude}}&longitude={{longitude}}&current=temperature_2m,apparent_temperature,weather_code,cloud_cover,wind_speed_10m,is_day&hourly=precipitation_probability&timezone=auto"
+          }
+        },
+        {
+          "id": "weatherToSummary",
+          "method": "POST",
+          "processing": {
+            "type": "transform",
+            "template": {
+              "summary": "Lat {{latitude}}, Lon {{longitude}} | Temp {{current.temperature_2m}}°C (feels {{current.apparent_temperature}}°C) | Wind {{current.wind_speed_10m}} km/h | Cloud {{current.cloud_cover}}% | Rain chance {{hourly.precipitation_probability[0]}}%"
+            }
+          }
+        }
+      ],
+      "effects": [
+        {
+          "trigger": "onStateChange",
+          "stateKey": "geocodeRaw",
+          "action": {
+            "type": "serverCall",
+            "endpointId": "geocodeToRequest",
+            "dataKey": "geocodeRaw",
+            "resultKey": "weatherRequest",
+            "loadingKey": "weatherLoading",
+            "errorKey": "weatherError"
+          }
+        },
+        {
+          "trigger": "onStateChange",
+          "stateKey": "weatherRequest",
+          "action": {
+            "type": "serverCall",
+            "endpointId": "weatherNow",
+            "dataKey": "weatherRequest",
+            "resultKey": "weatherRaw",
+            "loadingKey": "weatherLoading",
+            "errorKey": "weatherError"
+          }
+        },
+        {
+          "trigger": "onStateChange",
+          "stateKey": "weatherRaw",
+          "action": {
+            "type": "batch",
+            "actions": [
+              {
+                "type": "serverCall",
+                "endpointId": "weatherToSummary",
+                "dataKey": "weatherRaw",
+                "resultKey": "weatherSummary",
+                "loadingKey": "weatherLoading",
+                "errorKey": "weatherError"
+              },
+              { "type": "compute", "operation": "now", "key": "lastUpdated" },
+              { "type": "haptic", "style": "light" }
+            ]
+          }
+        }
+      ],
+      "screens": [
+        {
+          "id": "main",
+          "title": "Sky",
+          "components": [
+            { "type": "text", "id": "title", "props": { "content": "Stargazing Weather", "variant": "title" } },
+            { "type": "text", "id": "subtitle", "props": { "content": "Check if the sky is clear before heading out tonight." } },
+            { "type": "input", "id": "locationInput", "props": { "stateKey": "locationQuery", "placeholder": "Enter a city (for example, Lisbon)" } },
+            {
+              "type": "container",
+              "id": "actionsRow",
+              "props": {
+                "direction": "row",
+                "gap": 10,
+                "children": [
+                  {
+                    "type": "button",
+                    "id": "cityButton",
+                    "props": {
+                      "label": "Update from city",
+                      "action": {
+                        "type": "batch",
+                        "actions": [
+                          { "type": "setState", "key": "weatherError", "value": "" },
+                          {
+                            "type": "http",
+                            "url": "https://geocoding-api.open-meteo.com/v1/search?name={{locationQuery}}&count=1&language=en&format=json",
+                            "method": "GET",
+                            "resultKey": "geocodeRaw",
+                            "loadingKey": "weatherLoading",
+                            "errorKey": "weatherError"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "id": "locationButton",
+                    "props": {
+                      "label": "Use current location",
+                      "action": {
+                        "type": "batch",
+                        "actions": [
+                          { "type": "setState", "key": "weatherError", "value": "" },
+                          {
+                            "type": "getLocation",
+                            "resultKey": "weatherRequest",
+                            "loadingKey": "weatherLoading",
+                            "errorKey": "weatherError"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "text",
+              "id": "loadingText",
+              "props": { "content": "Updating weather..." },
+              "visibleWhen": { "stateKey": "weatherLoading", "operator": "truthy" }
+            },
+            {
+              "type": "text",
+              "id": "errorText",
+              "props": { "content": "", "stateKey": "weatherError", "variant": "caption" },
+              "visibleWhen": { "stateKey": "weatherError", "operator": "truthy" }
+            },
+            { "type": "divider", "id": "divider1", "props": { "marginVertical": 10 } },
+            { "type": "text", "id": "summaryTitle", "props": { "content": "Current Sky Snapshot", "variant": "subtitle" } },
+            { "type": "text", "id": "summaryText", "props": { "content": "", "stateKey": "weatherSummary.summary" } },
+            { "type": "text", "id": "updatedAtLabel", "props": { "content": "Last updated" } },
+            { "type": "text", "id": "updatedAtValue", "props": { "content": "-", "stateKey": "lastUpdated", "variant": "caption" } },
+            {
+              "type": "button",
+              "id": "refreshBtn",
+              "props": {
+                "label": "Refresh weather",
+                "action": {
+                  "type": "serverCall",
+                  "endpointId": "weatherNow",
+                  "dataKey": "weatherRequest",
+                  "resultKey": "weatherRaw",
+                  "loadingKey": "weatherLoading",
+                  "errorKey": "weatherError"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+    $stars$::jsonb,
+    true
   )
 ON CONFLICT (slug) DO UPDATE
 SET

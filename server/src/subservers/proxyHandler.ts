@@ -9,6 +9,8 @@ interface ProxyProcessing {
 const ALLOWED_DOMAINS = [
   "api-inference.huggingface.co",
   "api.openweathermap.org",
+  "api.open-meteo.com",
+  "geocoding-api.open-meteo.com",
   "jsonplaceholder.typicode.com",
   "pokeapi.co",
   "api.github.com",

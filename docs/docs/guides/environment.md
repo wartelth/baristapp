@@ -17,11 +17,12 @@ SwissKnife uses two configuration layers: `swissknife.config.js` for app/build-t
 | `PORT` | No | `3001` | Server listen port |
 | `HUGGINGFACE_API_KEY` | For ML | — | HuggingFace Inference API key |
 | `SUPABASE_URL` | For storage | — | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | For storage | — | Supabase service role key (not the anon key) |
+| `SUPABASE_SECRET_KEY` | Preferred for storage | — | Supabase secret key (`sb_secret_...`) for server access |
+| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback | — | Legacy JWT service role key |
 | `SUPABASE_JWT_SECRET` | For auth | — | JWT secret for verifying auth tokens |
 
 :::danger Secret Management
-Never commit `.env` to version control. The `.gitignore` should already exclude it. The `SUPABASE_SERVICE_ROLE_KEY` has full database access — treat it like a root password.
+Never commit `.env` to version control. The `.gitignore` should already exclude it. Your Supabase server key (`SUPABASE_SECRET_KEY` or legacy `SUPABASE_SERVICE_ROLE_KEY`) has elevated database access — treat it like a root password.
 :::
 
 ## App Config
@@ -84,6 +85,7 @@ To enable cloud sync, you need:
 3. Enable Email auth in Dashboard → Authentication → Providers
 4. Copy credentials:
    - **Project URL** → `SUPABASE_URL` + `supabaseUrl`
-   - **Service Role Key** → `SUPABASE_SERVICE_ROLE_KEY`
+   - **Secret Key** (`sb_secret_...`) → `SUPABASE_SECRET_KEY` (preferred)
+   - **Legacy Service Role Key** (optional fallback) → `SUPABASE_SERVICE_ROLE_KEY`
    - **Anon Key** → `supabaseAnonKey`
    - **JWT Secret** (Settings → API) → `SUPABASE_JWT_SECRET`

@@ -20,7 +20,10 @@ flowchart TD
         Generate["POST /api/generate"]
         Modify["POST /api/modify"]
         Endpoints["ALL /api/apps/:appId/endpoints/:endpointId"]
-        StorageR["GET|PUT /api/storage/..."]
+        StorageR["GET|PUT|DELETE /api/storage/..."]
+        Reports["POST /api/reports"]
+        Social["/api/social/*"]
+        Library["/api/library/*"]
     end
 
     subgraph Services
@@ -72,7 +75,19 @@ flowchart TD
 | `PUT` | `/api/storage/apps/:appId/spec` | `storage.ts` | Save app spec |
 | `GET` | `/api/storage/apps/:appId/state` | `storage.ts` | Load app state |
 | `PUT` | `/api/storage/apps/:appId/state` | `storage.ts` | Save app state |
-| `GET` | `/api/sessions` | `storage.ts` | List debug sessions |
+| `DELETE` | `/api/storage/me` | `storage.ts` | Delete all user cloud data |
+| `POST` | `/api/reports` | `reports.ts` | Report mini-app content |
+| `GET` | `/api/social/profile` | `social.ts` | Load social profile + billing |
+| `PUT` | `/api/social/profile` | `social.ts` | Save social profile |
+| `POST` | `/api/social/share/:appId` | `social.ts` | Create short share code |
+| `POST` | `/api/social/import/:shareCode` | `social.ts` | Import shared app |
+| `GET` | `/api/social/installed` | `social.ts` | List imported app installs |
+| `GET` | `/api/social/shared-with-me` | `social.ts` | Shared feed with owner metadata |
+| `GET` | `/api/social/badges` | `social.ts` | User badges and progress |
+| `GET` | `/api/library/featured` | `library.ts` | Curated template list |
+| `POST` | `/api/library/featured/:featuredAppId/add` | `library.ts` | Add template to user library |
+| `POST` | `/api/library/featured/:featuredAppId/ignore` | `library.ts` | Ignore template |
+| `GET` | `/api/sessions` | `index.ts` | List debug sessions |
 
 ## Services
 
@@ -83,7 +98,7 @@ flowchart TD
 | Modification | `modifyService.ts` | Modify specs via Agent SDK |
 | Subserver Manager | `subServerManager.ts` | Per-app endpoint registry |
 | Session Store | `sessionStore.ts` | Debug session persistence |
-| Supabase Client | `supabaseClient.ts` | Cloud storage operations |
+| Supabase Client | `supabaseClient.ts` | Cloud storage, social sharing, featured templates |
 
 ## Middleware
 
@@ -112,6 +127,7 @@ Every request gets a unique ID and is logged with timing:
 | `ANTHROPIC_API_KEY` | Yes | Claude API access |
 | `HUGGINGFACE_API_KEY` | For ML endpoints | HuggingFace Inference API |
 | `SUPABASE_URL` | For storage | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | For storage | Supabase service role key |
+| `SUPABASE_SECRET_KEY` | Preferred | Supabase secret server key (`sb_secret_...`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback | Old JWT service role key |
 | `SUPABASE_JWT_SECRET` | For auth | JWT verification secret |
 | `PORT` | No | Server port (default: 3001) |
