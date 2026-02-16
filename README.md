@@ -449,7 +449,9 @@ Sign out → Auth
 **Server:**
 - `ANTHROPIC_API_KEY` — Required for Claude
 - `HUGGINGFACE_API_KEY` — For HuggingFace endpoints
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — For cloud storage
+- `SUPABASE_URL` — Supabase project URL
+- `SUPABASE_SECRET_KEY` — Preferred server key (`sb_secret_...`) for backend access
+- `SUPABASE_SERVICE_ROLE_KEY` — Legacy fallback only (JWT-based)
 - `SUPABASE_JWT_SECRET` — For verifying auth tokens (Supabase Dashboard → Settings → API → JWT Secret)
 - `PORT` — Default 3001
 
@@ -487,7 +489,7 @@ Sign out → Auth
 ## Setup
 
 1. **Config:** Edit `swissknife.config.js` — set `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`.
-2. **Server:** Add `.env` with `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`.
+2. **Server:** Add `.env` with `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (or legacy `SUPABASE_SERVICE_ROLE_KEY`), `SUPABASE_JWT_SECRET`.
 3. **Supabase:** Run `docs/supabase_schema.sql` in Supabase SQL Editor. Enable Email auth in Dashboard.
 4. **Run:** `npm run server` and `npm run app`. Use `npx expo start -c` if config changes don't apply.
 

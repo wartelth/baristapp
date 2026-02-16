@@ -4,6 +4,7 @@ import {
   loadAppSpec,
   saveAppState,
   loadAppState,
+  deleteAllUserData,
 } from "../services/supabaseClient";
 import { getUserId } from "../utils/auth";
 import L from "../utils/logger";
@@ -80,6 +81,23 @@ router.put("/apps/:appId/state", async (req: Request, res: Response) => {
   await saveAppState(userId, appId, state);
   L.success("STORAGE", `Saved state — user=${userId} app=${appId} (${keys} keys)`);
   res.json({ success: true });
+});
+
+// ---------------------------------------------------------------------------
+// User data deletion
+// ---------------------------------------------------------------------------
+
+router.delete("/me", async (req: Request, res: Response) => {
+  const userId = getUserId(req);
+  L.warn("STORAGE", `DELETE me — user=${userId}`);
+
+  const result = await deleteAllUserData(userId);
+  L.success(
+    "STORAGE",
+    `Deleted user data — user=${userId} apps=${result.deletedApps} states=${result.deletedStates}`
+  );
+
+  res.json({ success: true, ...result });
 });
 
 export default router;

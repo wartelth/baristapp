@@ -9,6 +9,11 @@ import L, { fmtMs, fmtCost } from "../utils/logger";
 interface ModifySuccess {
   success: true;
   miniApp: MiniApp;
+  usage: {
+    modelName: string;
+    costUsd: number;
+    numTurns: number;
+  };
 }
 
 interface ModifyFailure {
@@ -120,7 +125,15 @@ export async function modifyMiniApp(
       L.detail("VALIDATE", "screens", data.screens.length);
 
       saveSession(data.appId, `[MODIFY] ${modifyPrompt}`, data);
-      return { success: true, miniApp: data };
+      return {
+        success: true,
+        miniApp: data,
+        usage: {
+          modelName: model,
+          costUsd,
+          numTurns,
+        },
+      };
     }
 
     L.error("VALIDATE", `Modify validation failed with ${validation.errors.length} error(s)`);

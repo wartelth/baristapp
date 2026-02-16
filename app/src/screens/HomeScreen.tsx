@@ -13,16 +13,25 @@ import {
   Platform,
   Animated,
   Easing,
+  Share,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { MiniApp } from "@swissknife/shared";
-import { listApps, deleteApp, clearState } from "../storage/storageLayer";
+import { listApps, deleteApp, clearState, getAppMeta, saveAppMeta } from "../storage/storageLayer";
 import { MiniAppCard } from "../components/MiniAppCard";
 import { useGeneration } from "../context/GenerationContext";
 import { useAppTheme } from "../context/AppThemeContext";
-import type { LibraryScreenProps } from "../types/navigation";
+import type { AppsScreenProps } from "../types/navigation";
+import {
+  createShareCode,
+  listInstalledSharedApps,
+  reportMiniApp,
+} from "../api/client";
+import { getAvatarUrl } from "../utils/avatars";
+import QRCode from "react-native-qrcode-svg";
+import { formatShareCode } from "../utils/shareCode";
 
-type Props = LibraryScreenProps;
+type Props = AppsScreenProps;
 
 const CARD_GAP = 12;
 
@@ -65,13 +74,33 @@ export function HomeScreen({ navigation }: Props) {
   const [modifyTarget, setModifyTarget] = useState<MiniApp | null>(null);
   const [modifyText, setModifyText] = useState("");
   const modifyInputRef = useRef<TextInput>(null);
+  const [shareVisible, setShareVisible] = useState(false);
+  const [sharePayload, setSharePayload] = useState<{ appTitle: string; shareCode: string } | null>(null);
 
-  const loadApps = useCallback(() => {
+  const loadApps = useCallback(async () => {
+    try {
+      const social = await listInstalledSharedApps();
+      if (social.success && social.installed) {
+        for (const item of social.installed) {
+          saveAppMeta(item.installedAppId, {
+            ownerUserId: item.ownerUserId,
+            ownerDisplayName: item.ownerDisplayName,
+            ownerAvatarIndex: item.ownerAvatarIndex,
+          });
+        }
+      }
+    } catch {
+      // best effort
+    }
     setApps(listApps());
   }, []);
 
   // Reload on every focus (e.g. after creating a new app)
-  useFocusEffect(loadApps);
+  useFocusEffect(
+    useCallback(() => {
+      void loadApps();
+    }, [loadApps])
+  );
 
   const handleDelete = (appId: string) => {
     deleteApp(appId);
@@ -88,9 +117,63 @@ export function HomeScreen({ navigation }: Props) {
     setModifyText("");
   };
 
+  const handleReport = (app: MiniApp) => {
+    const submitReason = async (reason: string) => {
+      try {
+        const result = await reportMiniApp(app.appId, reason);
+        if (!result.success) {
+          Alert.alert("Report failed", result.error ?? "Could not submit report.");
+          return;
+        }
+        Alert.alert("Thanks", "Report submitted. We will review it shortly.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        Alert.alert("Report failed", message);
+      }
+    };
+
+    Alert.alert("Report mini-app", "What is the issue?", [
+      { text: "Offensive content", onPress: () => void submitReason("offensive_content") },
+      { text: "Unsafe instructions", onPress: () => void submitReason("unsafe_instructions") },
+      { text: "Other", onPress: () => void submitReason("other") },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
   const handleModifyClose = () => {
     setModifyTarget(null);
     setModifyText("");
+  };
+
+  const handleShare = async (app: MiniApp) => {
+    try {
+      const result = await createShareCode(app.appId);
+      if (!result.success || !result.shareCode) {
+        Alert.alert("Share failed", result.error ?? "Could not create share code.");
+        return;
+      }
+      setSharePayload({
+        appTitle: app.title,
+        shareCode: formatShareCode(result.shareCode),
+      });
+      setShareVisible(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      Alert.alert("Share failed", message);
+    }
+  };
+
+  const handleShareNative = async () => {
+    if (!sharePayload) return;
+    const qrValue = `swissknife://import?code=${sharePayload.shareCode}`;
+    try {
+      await Share.share({
+        title: `Share ${sharePayload.appTitle}`,
+        message: `Import this mini-app in SwissKnife.\nCode: ${sharePayload.shareCode}\n${qrValue}`,
+      });
+    } catch {
+      // best effort
+    }
   };
 
   const handleModifySubmit = () => {
@@ -116,11 +199,14 @@ export function HomeScreen({ navigation }: Props) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Library</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>My Apps</Text>
         {apps.length > 0 && (
           <Text style={[styles.headerCount, { color: colors.secondaryText }]}>{apps.length}</Text>
         )}
       </View>
+      <Text style={[styles.subHeader, { color: colors.secondaryText }]}>
+        Your personal apps. Import from Social or browse templates in Official.
+      </Text>
 
       {/* Search bar */}
       <View style={styles.searchContainer}>
@@ -136,7 +222,7 @@ export function HomeScreen({ navigation }: Props) {
       </View>
 
       {/* Generating banner */}
-      <Animated.View
+      {busy && <Animated.View
         style={[
           styles.banner,
           {
@@ -159,7 +245,6 @@ export function HomeScreen({ navigation }: Props) {
             ],
           },
         ]}
-        pointerEvents={busy ? "auto" : "none"}
       >
         <Animated.View
           style={[
@@ -189,7 +274,7 @@ export function HomeScreen({ navigation }: Props) {
             This may take a moment
           </Text>
         </View>
-      </Animated.View>
+      </Animated.View>}
 
       {apps.length === 0 ? (
         <View style={styles.empty}>
@@ -206,6 +291,10 @@ export function HomeScreen({ navigation }: Props) {
           numColumns={2}
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
+            (() => {
+              const meta = getAppMeta(item.appId);
+              const friendAvatarUrl = meta ? getAvatarUrl(meta.ownerAvatarIndex) : undefined;
+              return (
             <MiniAppCard
               app={item}
               onPress={() =>
@@ -213,7 +302,13 @@ export function HomeScreen({ navigation }: Props) {
               }
               onDelete={() => handleDelete(item.appId)}
               onModify={() => handleModifyOpen(item)}
+              onReport={() => handleReport(item)}
+              onShare={() => handleShare(item)}
+              friendAvatarUrl={friendAvatarUrl}
+              friendName={meta?.ownerDisplayName}
             />
+              );
+            })()
           )}
           contentContainerStyle={styles.grid}
           refreshControl={
@@ -277,6 +372,54 @@ export function HomeScreen({ navigation }: Props) {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* Share Modal */}
+      <Modal
+        visible={shareVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShareVisible(false)}
+      >
+        <View style={[styles.modalOverlay, { backgroundColor: colors.modalOverlay }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Share "{sharePayload?.appTitle}"</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>
+              Your friend can scan this QR or type the code in Social.
+            </Text>
+
+            {!!sharePayload && (
+              <View style={[styles.qrCard, { backgroundColor: colors.background, borderColor: colors.borderAlt }]}>
+                <QRCode
+                  value={`swissknife://import?code=${sharePayload.shareCode}`}
+                  size={160}
+                  color="#111111"
+                  backgroundColor="#ffffff"
+                />
+              </View>
+            )}
+
+            <Text style={[styles.shareCodeLabel, { color: colors.secondaryText }]}>Share code</Text>
+            <Text style={[styles.shareCodeValue, { color: colors.text }]}>
+              {sharePayload?.shareCode ?? ""}
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.cancelBtn, { backgroundColor: colors.borderAlt }]}
+                onPress={() => setShareVisible(false)}
+              >
+                <Text style={[styles.cancelBtnText, { color: colors.secondaryText }]}>Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                onPress={handleShareNative}
+              >
+                <Text style={styles.submitBtnText}>Share</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -289,7 +432,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 6,
     paddingBottom: 4,
     gap: 8,
   },
@@ -301,9 +444,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+  subHeader: {
+    fontSize: 13,
+    marginTop: 2,
+    marginBottom: 6,
+    paddingHorizontal: 16,
+  },
   searchContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 6,
+    paddingBottom: 10,
   },
   searchInput: {
     borderRadius: 12,
@@ -426,5 +576,25 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 15,
     fontWeight: "600",
+  },
+  qrCard: {
+    alignSelf: "center",
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+  },
+  shareCodeLabel: {
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  shareCodeValue: {
+    fontSize: 24,
+    fontWeight: "700",
+    letterSpacing: 1.6,
+    textAlign: "center",
+    marginBottom: 14,
   },
 });

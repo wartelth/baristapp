@@ -11,7 +11,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { CreateScreen } from "./src/screens/CreateScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
+import { SocialScreen } from "./src/screens/SocialScreen";
+import { DeveloperLibraryScreen } from "./src/screens/DeveloperLibraryScreen";
 import { MiniAppScreen } from "./src/screens/MiniAppScreen";
+import { LegalScreen } from "./src/screens/LegalScreen";
 import { OnboardingScreen } from "./src/screens/OnboardingScreen";
 import { AuthStack } from "./src/navigation/AuthStack";
 import { initStorage } from "./src/storage/storageLayer";
@@ -92,10 +95,10 @@ function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Library"
+        name="Apps"
         component={HomeScreen}
         options={{
-          title: "Library",
+          title: "My Apps",
           headerTitle: "",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
@@ -103,14 +106,36 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
+        name="Social"
+        component={SocialScreen}
+        options={{
+          title: "Social",
+          headerTitle: "",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Create"
         component={CreateScreen}
         options={{
-          title: "New App",
+          title: "Create",
           tabBarLabel: () => null,
           tabBarIcon: () => null,
           tabBarButton: (props) => (
             <CreateTabButton onPress={props.onPress as () => void} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Library"
+        component={DeveloperLibraryScreen}
+        options={{
+          title: "Official",
+          headerTitle: "",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="library-outline" size={size} color={color} />
           ),
         }}
       />
@@ -215,6 +240,13 @@ function AppNavigator() {
           name="MiniApp"
           component={MiniAppScreen}
           options={{ title: "Loading..." }}
+        />
+        <Stack.Screen
+          name="Legal"
+          component={LegalScreen}
+          options={({ route }) => ({
+            title: route.params.section === "privacy" ? "Privacy Policy" : "Support",
+          })}
         />
       </Stack.Navigator>
       <NotificationToast onTapAppId={handleTapApp} />

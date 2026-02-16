@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
+import Svg, { Polyline, Circle } from "react-native-svg";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
@@ -83,23 +84,51 @@ export function ChartRenderer({ component, state }: RendererProps) {
     const minVal = Math.min(...values, 0);
     const range = maxVal - minVal || 1;
 
+    const padX = 16;
+    const padY = 16;
+    const svgWidth = chartWidth;
+    const svgHeight = height - 20;
+    const plotW = svgWidth - padX * 2;
+    const plotH = svgHeight - padY * 2;
+
+    const points = values.map((val, i) => {
+      const x = padX + (i / Math.max(values.length - 1, 1)) * plotW;
+      const y = padY + plotH - ((val - minVal) / range) * plotH;
+      return { x, y };
+    });
+
+    const pointsStr = points.map((p) => `${p.x},${p.y}`).join(" ");
+    const lineColor = barColor;
+
     return (
       <View style={[styles.wrapper, { height }]}>
-        <View style={[styles.lineChart, { height: height - 20 }]}>
-          {values.map((val, i) => {
-            const y = ((val - minVal) / range) * (height - 40);
+        <Svg width={svgWidth} height={svgHeight}>
+          <Polyline
+            points={pointsStr}
+            fill="none"
+            stroke={lineColor}
+            strokeWidth={2.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          {points.map((p, i) => (
+            <Circle
+              key={i}
+              cx={p.x}
+              cy={p.y}
+              r={4}
+              fill={lineColor}
+            />
+          ))}
+        </Svg>
+        {/* X labels */}
+        <View style={styles.xLabels}>
+          {data.map((d, i) => {
+            const label = xKey ? String(d[xKey]) : String(d.x ?? d.label ?? i);
             return (
-              <View
-                key={i}
-                style={[
-                  styles.lineDot,
-                  {
-                    backgroundColor: barColor,
-                    bottom: y,
-                    left: (i / Math.max(values.length - 1, 1)) * (chartWidth - 16),
-                  },
-                ]}
-              />
+              <Text key={i} style={[styles.xLabel, { color: theme.secondaryTextColor }]} numberOfLines={1}>
+                {label}
+              </Text>
             );
           })}
         </View>
@@ -136,11 +165,10 @@ const styles = StyleSheet.create({
   pieColor: { width: 14, height: 14, borderRadius: 3, marginRight: 8 },
   pieLabel: { flex: 1, fontSize: 14 },
   piePct: { fontSize: 14, fontWeight: "600" },
-  lineChart: { position: "relative" },
-  lineDot: {
-    position: "absolute",
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  xLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
+  xLabel: { fontSize: 10, textAlign: "center", flex: 1 },
 });

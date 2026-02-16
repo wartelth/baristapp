@@ -1,0 +1,889 @@
+{
+  "appId": "salary-negotiation-prep",
+  "title": "Salary Negotiation Prep",
+  "icon": "💰",
+  "version": 2,
+  "capabilities": [
+    "localStorage",
+    "clipboard"
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "title": "Salary Negotiation Prep",
+      "components": [
+        {
+          "type": "tabs",
+          "id": "main-tabs",
+          "props": {
+            "stateKey": "activeTab",
+            "tabs": [
+              {
+                "label": "Benchmarks",
+                "value": "benchmarks",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "current-salary-card",
+                    "props": {
+                      "title": "Your Current Situation",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "current-salary-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "current-label",
+                                "props": {
+                                  "content": "Current Salary",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "current-salary-input",
+                                "props": {
+                                  "placeholder": "e.g., 75000",
+                                  "stateKey": "currentSalary",
+                                  "inputType": "number"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "id": "years-label",
+                                "props": {
+                                  "content": "Years at Company",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "slider",
+                                "id": "years-slider",
+                                "props": {
+                                  "stateKey": "yearsAtCompany",
+                                  "min": 0,
+                                  "max": 30,
+                                  "step": 1,
+                                  "label": "Years"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-1",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "market-research-card",
+                    "props": {
+                      "title": "Market Research",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "market-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "job-title-label",
+                                "props": {
+                                  "content": "Your Job Title",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "job-title-input",
+                                "props": {
+                                  "placeholder": "e.g., Senior Software Engineer",
+                                  "stateKey": "jobTitle"
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "id": "market-range-label",
+                                "props": {
+                                  "content": "Market Salary Range",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "container",
+                                "id": "range-container",
+                                "props": {
+                                  "children": [
+                                    {
+                                      "type": "input",
+                                      "id": "market-low-input",
+                                      "props": {
+                                        "placeholder": "Min",
+                                        "stateKey": "marketLow",
+                                        "inputType": "number"
+                                      }
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "range-separator",
+                                      "props": {
+                                        "content": "—",
+                                        "variant": "body",
+                                        "align": "center"
+                                      }
+                                    },
+                                    {
+                                      "type": "input",
+                                      "id": "market-high-input",
+                                      "props": {
+                                        "placeholder": "Max",
+                                        "stateKey": "marketHigh",
+                                        "inputType": "number"
+                                      }
+                                    }
+                                  ],
+                                  "direction": "row",
+                                  "gap": 8
+                                }
+                              },
+                              {
+                                "type": "divider",
+                                "id": "divider-1",
+                                "props": {
+                                  "marginVertical": 12
+                                }
+                              },
+                              {
+                                "type": "text",
+                                "id": "gap-label",
+                                "props": {
+                                  "content": "Your Target Salary",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "target-salary-input",
+                                "props": {
+                                  "placeholder": "e.g., 95000",
+                                  "stateKey": "targetSalary",
+                                  "inputType": "number"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-2",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "sources-card",
+                    "props": {
+                      "title": "Research Sources",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "sources-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "input",
+                                "id": "source-input",
+                                "props": {
+                                  "placeholder": "e.g., Glassdoor: $80k-$100k",
+                                  "stateKey": "newSource"
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "add-source-btn",
+                                "props": {
+                                  "label": "Add Source",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "append",
+                                        "key": "sources",
+                                        "fromKey": "newSource"
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "newSource",
+                                        "value": ""
+                                      }
+                                    ]
+                                  },
+                                  "variant": "secondary"
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "id": "sources-list",
+                                "props": {
+                                  "dataKey": "sources",
+                                  "emptyText": "Add salary research sources",
+                                  "renderItem": {
+                                    "components": [
+                                      {
+                                        "type": "container",
+                                        "id": "source-item-container",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "source-text",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "body",
+                                                "stateKey": "_itemValue"
+                                              }
+                                            },
+                                            {
+                                              "type": "button",
+                                              "id": "delete-source-btn",
+                                              "props": {
+                                                "label": "✕",
+                                                "action": {
+                                                  "type": "remove",
+                                                  "key": "sources",
+                                                  "index": 0
+                                                },
+                                                "variant": "danger"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "row",
+                                          "align": "center",
+                                          "justify": "space-between"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Achievements",
+                "value": "achievements",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "achievements-intro-card",
+                    "props": {
+                      "title": "Document Your Impact",
+                      "subtitle": "Build your case with concrete accomplishments",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "achievements-tip",
+                          "props": {
+                            "content": "Focus on quantifiable results: revenue generated, costs saved, projects delivered, team growth, etc.",
+                            "variant": "caption"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-3",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "add-achievement-card",
+                    "props": {
+                      "title": "Add Achievement",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "add-achievement-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "input",
+                                "id": "achievement-title-input",
+                                "props": {
+                                  "placeholder": "Title (e.g., Led Q4 Product Launch)",
+                                  "stateKey": "achievementTitle"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "achievement-details-input",
+                                "props": {
+                                  "placeholder": "Details and impact...",
+                                  "stateKey": "achievementDetails",
+                                  "multiline": true
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "add-achievement-btn",
+                                "props": {
+                                  "label": "Add Achievement",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "append",
+                                        "key": "achievements",
+                                        "value": null
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "achievementTitle",
+                                        "value": ""
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "achievementDetails",
+                                        "value": ""
+                                      }
+                                    ]
+                                  },
+                                  "variant": "primary"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-4",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "list",
+                    "id": "achievements-list",
+                    "props": {
+                      "dataKey": "achievements",
+                      "emptyText": "No achievements added yet",
+                      "renderItem": {
+                        "components": [
+                          {
+                            "type": "card",
+                            "id": "achievement-card",
+                            "props": {
+                              "children": [
+                                {
+                                  "type": "container",
+                                  "id": "achievement-item-container",
+                                  "props": {
+                                    "children": [
+                                      {
+                                        "type": "container",
+                                        "id": "achievement-header",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "achievement-title-text",
+                                              "props": {
+                                                "content": "",
+                                                "variant": "subtitle",
+                                                "stateKey": "title"
+                                              }
+                                            },
+                                            {
+                                              "type": "button",
+                                              "id": "delete-achievement-btn",
+                                              "props": {
+                                                "label": "✕",
+                                                "action": {
+                                                  "type": "remove",
+                                                  "key": "achievements",
+                                                  "index": 0
+                                                },
+                                                "variant": "danger"
+                                              }
+                                            }
+                                          ],
+                                          "direction": "row",
+                                          "align": "center",
+                                          "justify": "space-between"
+                                        }
+                                      },
+                                      {
+                                        "type": "text",
+                                        "id": "achievement-details-text",
+                                        "props": {
+                                          "content": "",
+                                          "variant": "body",
+                                          "stateKey": "details"
+                                        }
+                                      }
+                                    ],
+                                    "direction": "column",
+                                    "gap": 8
+                                  }
+                                }
+                              ],
+                              "elevation": 1
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Script",
+                "value": "script",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "script-intro-card",
+                    "props": {
+                      "title": "Conversation Script",
+                      "subtitle": "Prepare what you'll say",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "script-tip",
+                          "props": {
+                            "content": "Write and refine your opening, key points, and responses to potential objections.",
+                            "variant": "caption"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-5",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "opening-card",
+                    "props": {
+                      "title": "Opening Statement",
+                      "children": [
+                        {
+                          "type": "input",
+                          "id": "opening-input",
+                          "props": {
+                            "placeholder": "How will you start the conversation?",
+                            "stateKey": "opening",
+                            "multiline": true
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-6",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "key-points-card",
+                    "props": {
+                      "title": "Key Points to Make",
+                      "children": [
+                        {
+                          "type": "input",
+                          "id": "key-points-input",
+                          "props": {
+                            "placeholder": "List your main arguments...",
+                            "stateKey": "keyPoints",
+                            "multiline": true
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-7",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "objections-card",
+                    "props": {
+                      "title": "Handling Objections",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "objections-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "input",
+                                "id": "objection-input",
+                                "props": {
+                                  "placeholder": "Possible objection...",
+                                  "stateKey": "newObjection"
+                                }
+                              },
+                              {
+                                "type": "input",
+                                "id": "response-input",
+                                "props": {
+                                  "placeholder": "Your response...",
+                                  "stateKey": "newResponse",
+                                  "multiline": true
+                                }
+                              },
+                              {
+                                "type": "button",
+                                "id": "add-objection-btn",
+                                "props": {
+                                  "label": "Add Objection & Response",
+                                  "action": {
+                                    "type": "batch",
+                                    "actions": [
+                                      {
+                                        "type": "append",
+                                        "key": "objections",
+                                        "value": null
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "newObjection",
+                                        "value": ""
+                                      },
+                                      {
+                                        "type": "setState",
+                                        "key": "newResponse",
+                                        "value": ""
+                                      }
+                                    ]
+                                  },
+                                  "variant": "secondary"
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "id": "objections-list",
+                                "props": {
+                                  "dataKey": "objections",
+                                  "emptyText": "Add potential objections and your responses",
+                                  "renderItem": {
+                                    "components": [
+                                      {
+                                        "type": "card",
+                                        "id": "objection-card",
+                                        "props": {
+                                          "children": [
+                                            {
+                                              "type": "container",
+                                              "id": "objection-item-container",
+                                              "props": {
+                                                "children": [
+                                                  {
+                                                    "type": "container",
+                                                    "id": "objection-header",
+                                                    "props": {
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "objection-text",
+                                                          "props": {
+                                                            "content": "",
+                                                            "variant": "subtitle",
+                                                            "stateKey": "objection"
+                                                          }
+                                                        },
+                                                        {
+                                                          "type": "button",
+                                                          "id": "delete-objection-btn",
+                                                          "props": {
+                                                            "label": "✕",
+                                                            "action": {
+                                                              "type": "remove",
+                                                              "key": "objections",
+                                                              "index": 0
+                                                            },
+                                                            "variant": "danger"
+                                                          }
+                                                        }
+                                                      ],
+                                                      "direction": "row",
+                                                      "align": "center",
+                                                      "justify": "space-between"
+                                                    }
+                                                  },
+                                                  {
+                                                    "type": "text",
+                                                    "id": "response-text",
+                                                    "props": {
+                                                      "content": "",
+                                                      "variant": "body",
+                                                      "stateKey": "response"
+                                                    }
+                                                  }
+                                                ],
+                                                "direction": "column",
+                                                "gap": 8
+                                              }
+                                            }
+                                          ],
+                                          "elevation": 1
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-8",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "closing-card",
+                    "props": {
+                      "title": "Closing & Next Steps",
+                      "children": [
+                        {
+                          "type": "input",
+                          "id": "closing-input",
+                          "props": {
+                            "placeholder": "How will you wrap up and ask for next steps?",
+                            "stateKey": "closing",
+                            "multiline": true
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "label": "Notes",
+                "value": "notes",
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "notes-card",
+                    "props": {
+                      "title": "Meeting Notes & Strategy",
+                      "subtitle": "Keep track of conversations and next steps",
+                      "children": [
+                        {
+                          "type": "input",
+                          "id": "notes-input",
+                          "props": {
+                            "placeholder": "Meeting notes, timing considerations, manager's feedback, company performance, etc.",
+                            "stateKey": "notes",
+                            "multiline": true
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-9",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "timeline-card",
+                    "props": {
+                      "title": "Timeline",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "timeline-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "text",
+                                "id": "target-date-label",
+                                "props": {
+                                  "content": "Target Conversation Date",
+                                  "variant": "caption"
+                                }
+                              },
+                              {
+                                "type": "datePicker",
+                                "id": "target-date-picker",
+                                "props": {
+                                  "stateKey": "targetDate",
+                                  "mode": "date"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "spacer",
+                    "id": "spacer-10",
+                    "props": {
+                      "height": 16
+                    }
+                  },
+                  {
+                    "type": "card",
+                    "id": "checklist-card",
+                    "props": {
+                      "title": "Pre-Meeting Checklist",
+                      "children": [
+                        {
+                          "type": "container",
+                          "id": "checklist-container",
+                          "props": {
+                            "children": [
+                              {
+                                "type": "toggle",
+                                "id": "research-toggle",
+                                "props": {
+                                  "stateKey": "researchComplete",
+                                  "label": "Research market rates complete"
+                                }
+                              },
+                              {
+                                "type": "toggle",
+                                "id": "achievements-toggle",
+                                "props": {
+                                  "stateKey": "achievementsDocumented",
+                                  "label": "Achievements documented"
+                                }
+                              },
+                              {
+                                "type": "toggle",
+                                "id": "script-toggle",
+                                "props": {
+                                  "stateKey": "scriptPrepared",
+                                  "label": "Script prepared and practiced"
+                                }
+                              },
+                              {
+                                "type": "toggle",
+                                "id": "meeting-toggle",
+                                "props": {
+                                  "stateKey": "meetingScheduled",
+                                  "label": "Meeting scheduled with manager"
+                                }
+                              },
+                              {
+                                "type": "toggle",
+                                "id": "mindset-toggle",
+                                "props": {
+                                  "stateKey": "mindsetReady",
+                                  "label": "Confident and ready"
+                                }
+                              }
+                            ],
+                            "direction": "column",
+                            "gap": 12
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "initialState": {
+    "activeTab": "benchmarks",
+    "currentSalary": "",
+    "yearsAtCompany": 2,
+    "jobTitle": "",
+    "marketLow": "",
+    "marketHigh": "",
+    "targetSalary": "",
+    "newSource": "",
+    "sources": [],
+    "achievementTitle": "",
+    "achievementDetails": "",
+    "achievements": [],
+    "opening": "",
+    "keyPoints": "",
+    "newObjection": "",
+    "newResponse": "",
+    "objections": [],
+    "closing": "",
+    "notes": "",
+    "targetDate": "",
+    "researchComplete": false,
+    "achievementsDocumented": false,
+    "scriptPrepared": false,
+    "meetingScheduled": false,
+    "mindsetReady": false
+  },
+  "theme": {
+    "backgroundColor": "#111118",
+    "surfaceColor": "#1e1e2e",
+    "primaryColor": "#1e40af",
+    "textColor": "#ffffff",
+    "secondaryTextColor": "#888888",
+    "borderColor": "#333333",
+    "dangerColor": "#dc2626",
+    "successColor": "#22c55e"
+  }
+}

@@ -14,16 +14,20 @@ export type RootStackParamList = {
   Auth: undefined;
   MainTabs: NavigatorScreenParams<TabParamList>;
   MiniApp: { appId: string };
+  Legal: { section: "privacy" | "support" };
 };
 
 export type AuthStackParamList = {
+  AuthLanding: undefined;
   Login: undefined;
   Signup: undefined;
 };
 
 export type TabParamList = {
-  Library: undefined;
+  Apps: undefined;
   Create: undefined;
+  Social: undefined;
+  Library: undefined;
   Profile: undefined;
 };
 
@@ -31,8 +35,8 @@ export type TabParamList = {
 // Screen props (composite so tab screens can navigate to stack screens)
 // ---------------------------------------------------------------------------
 
-export type LibraryScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<TabParamList, "Library">,
+export type AppsScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, "Apps">,
   NativeStackScreenProps<RootStackParamList>
 >;
 
@@ -43,6 +47,16 @@ export type CreateScreenProps = CompositeScreenProps<
 
 export type ProfileScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, "Profile">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type SocialScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, "Social">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type LibraryScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, "Library">,
   NativeStackScreenProps<RootStackParamList>
 >;
 

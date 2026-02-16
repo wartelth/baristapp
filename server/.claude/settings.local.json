@@ -3,7 +3,9 @@
     "allow": [
       "mcp__ide__getDiagnostics",
       "WebSearch",
-      "WebFetch(domain:openclaw.ai)"
+      "WebFetch(domain:openclaw.ai)",
+      "Bash(npx expo install:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

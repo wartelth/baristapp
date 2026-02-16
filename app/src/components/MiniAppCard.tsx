@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Image,
 } from "react-native";
 import type { MiniApp } from "@swissknife/shared";
 import { getCardColor } from "../utils/colors";
@@ -23,14 +24,29 @@ interface MiniAppCardProps {
   onPress: () => void;
   onDelete: () => void;
   onModify: () => void;
+  onReport: () => void;
+  friendAvatarUrl?: string;
+  friendName?: string;
+  onShare?: () => void;
 }
 
-export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardProps) {
+export function MiniAppCard({
+  app,
+  onPress,
+  onDelete,
+  onModify,
+  onReport,
+  friendAvatarUrl,
+  friendName,
+  onShare,
+}: MiniAppCardProps) {
   const bgColor = getCardColor(app.appId);
 
   const handleLongPress = () => {
     Alert.alert(app.title, undefined, [
       { text: "Modify", onPress: onModify },
+      ...(onShare ? [{ text: "Share", onPress: onShare }] : []),
+      { text: "Report", onPress: onReport },
       { text: "Delete", style: "destructive", onPress: onDelete },
       { text: "Cancel", style: "cancel" },
     ]);
@@ -39,6 +55,8 @@ export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardPro
   const handleMenu = () => {
     Alert.alert(app.title, undefined, [
       { text: "Modify", onPress: onModify },
+      ...(onShare ? [{ text: "Share", onPress: onShare }] : []),
+      { text: "Report", onPress: onReport },
       { text: "Delete", style: "destructive", onPress: onDelete },
       { text: "Cancel", style: "cancel" },
     ]);
@@ -64,6 +82,14 @@ export function MiniAppCard({ app, onPress, onDelete, onModify }: MiniAppCardPro
         <Text style={styles.title} numberOfLines={2}>
           {app.title}
         </Text>
+        {!!friendAvatarUrl && (
+          <View style={styles.friendBadge}>
+            <Image source={{ uri: friendAvatarUrl }} style={styles.friendAvatar} />
+            <Text style={styles.friendText} numberOfLines={1}>
+              {friendName ? `by ${friendName}` : "friend"}
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -117,6 +143,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 18,
+  },
+  friendBadge: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  friendAvatar: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  friendText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 11,
+    maxWidth: CARD_WIDTH - 60,
   },
   addCard: {
     borderWidth: 2,

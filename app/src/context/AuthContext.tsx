@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../auth/supabaseAuth";
+import { initRevenueCat, syncRevenueCatIdentity } from "../billing/revenueCat";
 
 interface AuthContextValue {
   session: Session | null;
@@ -18,15 +19,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    initRevenueCat().catch(() => {});
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      syncRevenueCatIdentity().catch(() => {});
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      syncRevenueCatIdentity().catch(() => {});
     });
 
     return () => subscription.unsubscribe();

@@ -9,6 +9,11 @@ import L, { fmtMs, fmtCost } from "../utils/logger";
 interface GenerationSuccess {
   success: true;
   miniApp: MiniApp;
+  usage: {
+    modelName: string;
+    costUsd: number;
+    numTurns: number;
+  };
 }
 
 interface GenerationFailure {
@@ -179,7 +184,15 @@ export async function generateMiniApp(
       if (effects > 0) L.detail("VALIDATE", "effects", effects);
 
       saveSession(data.appId, userPrompt, data);
-      return { success: true, miniApp: data };
+      return {
+        success: true,
+        miniApp: data,
+        usage: {
+          modelName: model,
+          costUsd,
+          numTurns,
+        },
+      };
     }
 
     L.error("VALIDATE", `Failed with ${validation.errors.length} error(s):`);

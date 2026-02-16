@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from "react";
 import type { MiniApp } from "@swissknife/shared";
-import { generateMiniApp, modifyMiniApp, clarifyPrompt } from "../api/client";
+import { generateMiniApp, modifyMiniApp } from "../api/client";
 import { saveApp, clearState } from "../storage/storageLayer";
 import { requestAllCapabilities } from "../capabilities/capabilityManager";
+import { ensureDataConsentInteractive } from "../privacy/dataConsentFlow";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,6 +13,7 @@ export interface Notification {
   message: string;
   success: boolean;
   appId?: string;
+  event?: "generate_complete" | "modify_complete" | "error";
 }
 
 interface GenerationContextValue {
@@ -68,6 +70,10 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
     if (notifTimer.current) clearTimeout(notifTimer.current);
   }, []);
 
+  const ensureDataConsent = useCallback(async (): Promise<boolean> => {
+    return ensureDataConsentInteractive();
+  }, []);
+
   // -------------------------------------------------------------------------
   // Generate
   // -------------------------------------------------------------------------
@@ -84,6 +90,15 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
 
       (async () => {
         try {
+          const consented = await ensureDataConsent();
+          if (!consented) {
+            showNotification({
+              message: "Consent required to generate mini-apps.",
+              success: false,
+            });
+            return;
+          }
+
           const result = await generateMiniApp(prompt, clarifications);
 
           if (!result.success) {
@@ -101,10 +116,11 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
             message: `"${result.miniApp.title}" is ready!`,
             success: true,
             appId: result.miniApp.appId,
+            event: "generate_complete",
           });
         } catch (err) {
           const msg = err instanceof Error ? err.message : "Unknown error";
-          showNotification({ message: `Generation failed: ${msg}`, success: false });
+          showNotification({ message: `Generation failed: ${msg}`, success: false, event: "error" });
         } finally {
           setBusy(false);
           setBusyLabel("");
@@ -112,7 +128,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
         }
       })();
     },
-    [busy, showNotification]
+    [busy, ensureDataConsent, showNotification]
   );
 
   // -------------------------------------------------------------------------
@@ -128,6 +144,15 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
 
       (async () => {
         try {
+          const consented = await ensureDataConsent();
+          if (!consented) {
+            showNotification({
+              message: "Consent required to modify mini-apps.",
+              success: false,
+            });
+            return;
+          }
+
           const result = await modifyMiniApp(spec, prompt);
 
           if (!result.success) {
@@ -141,10 +166,11 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
             message: `"${result.miniApp.title}" updated!`,
             success: true,
             appId: result.miniApp.appId,
+            event: "modify_complete",
           });
         } catch (err) {
           const msg = err instanceof Error ? err.message : "Unknown error";
-          showNotification({ message: `Modification failed: ${msg}`, success: false });
+          showNotification({ message: `Modification failed: ${msg}`, success: false, event: "error" });
         } finally {
           setBusy(false);
           setBusyLabel("");
@@ -152,7 +178,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
         }
       })();
     },
-    [busy, showNotification]
+    [busy, ensureDataConsent, showNotification]
   );
 
   return (
