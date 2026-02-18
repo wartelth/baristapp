@@ -20,13 +20,14 @@ export async function clarifyPrompt(prompt: string): Promise<ClarifyResult> {
 /** Step 2: Generate the mini-app with optional clarification answers */
 export async function generateMiniApp(
   prompt: string,
-  clarifications?: { questionId: string; answer: string }[]
+  clarifications?: { questionId: string; answer: string }[],
+  additionalContext?: string
 ): Promise<GenerateResult> {
   const headers = await getAuthHeaders();
   const response = await fetch(`${BASE_URL}/api/generate`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ prompt, clarifications }),
+    body: JSON.stringify({ prompt, clarifications, additionalContext }),
   });
 
   const data = await response.json();

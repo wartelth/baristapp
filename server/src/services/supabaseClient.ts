@@ -128,6 +128,234 @@ export async function loadAnyAppSpec(
 }
 
 // ---------------------------------------------------------------------------
+// App versioning + deployments
+// ---------------------------------------------------------------------------
+
+export interface MiniAppVersionRecord {
+  id: string;
+  userId: string;
+  appId: string;
+  parentVersionId: string | null;
+  sourceRequestType: "generate" | "modify" | "rollback";
+  commitMessage: string;
+  diffSummary: string | null;
+  testsPassed: boolean;
+  spec: unknown;
+  createdAt: string;
+}
+
+export interface MiniAppDeploymentRecord {
+  id: string;
+  userId: string;
+  appId: string;
+  versionId: string;
+  provider: string;
+  status: "deployed" | "failed" | "skipped";
+  previewUrl: string | null;
+  runtimeId: string | null;
+  healthStatus: string | null;
+  createdAt: string;
+}
+
+export async function saveAppVersion(input: {
+  userId: string;
+  appId: string;
+  parentVersionId?: string | null;
+  sourceRequestType: "generate" | "modify" | "rollback";
+  commitMessage: string;
+  diffSummary?: string | null;
+  testsPassed: boolean;
+  spec: unknown;
+}): Promise<MiniAppVersionRecord | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("mini_app_versions")
+    .insert({
+      user_id: input.userId,
+      app_id: input.appId,
+      parent_version_id: input.parentVersionId ?? null,
+      source_request_type: input.sourceRequestType,
+      commit_message: input.commitMessage,
+      diff_summary: input.diffSummary ?? null,
+      tests_passed: input.testsPassed,
+      spec: input.spec,
+      created_at: new Date().toISOString(),
+    })
+    .select(
+      "id, user_id, app_id, parent_version_id, source_request_type, commit_message, diff_summary, tests_passed, spec, created_at"
+    )
+    .single();
+
+  if (error) {
+    L.error("SUPABASE", `saveAppVersion failed — ${error.message}`);
+    return null;
+  }
+
+  return {
+    id: String(data.id),
+    userId: String(data.user_id),
+    appId: String(data.app_id),
+    parentVersionId: data.parent_version_id ? String(data.parent_version_id) : null,
+    sourceRequestType: String(data.source_request_type) as "generate" | "modify" | "rollback",
+    commitMessage: String(data.commit_message),
+    diffSummary: data.diff_summary ? String(data.diff_summary) : null,
+    testsPassed: Boolean(data.tests_passed),
+    spec: data.spec,
+    createdAt: String(data.created_at),
+  };
+}
+
+export async function listAppVersions(
+  userId: string,
+  appId: string
+): Promise<MiniAppVersionRecord[]> {
+  const sb = getSupabase();
+  if (!sb) return [];
+  const { data, error } = await sb
+    .from("mini_app_versions")
+    .select(
+      "id, user_id, app_id, parent_version_id, source_request_type, commit_message, diff_summary, tests_passed, spec, created_at"
+    )
+    .eq("user_id", userId)
+    .eq("app_id", appId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    L.error("SUPABASE", `listAppVersions failed — ${error.message}`);
+    return [];
+  }
+  return (data ?? []).map((row: any) => ({
+    id: String(row.id),
+    userId: String(row.user_id),
+    appId: String(row.app_id),
+    parentVersionId: row.parent_version_id ? String(row.parent_version_id) : null,
+    sourceRequestType: String(row.source_request_type) as "generate" | "modify" | "rollback",
+    commitMessage: String(row.commit_message ?? ""),
+    diffSummary: row.diff_summary ? String(row.diff_summary) : null,
+    testsPassed: Boolean(row.tests_passed),
+    spec: row.spec,
+    createdAt: String(row.created_at),
+  }));
+}
+
+export async function loadAppVersion(
+  userId: string,
+  appId: string,
+  versionId: string
+): Promise<MiniAppVersionRecord | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("mini_app_versions")
+    .select(
+      "id, user_id, app_id, parent_version_id, source_request_type, commit_message, diff_summary, tests_passed, spec, created_at"
+    )
+    .eq("user_id", userId)
+    .eq("app_id", appId)
+    .eq("id", versionId)
+    .single();
+  if (error && error.code !== "PGRST116") {
+    L.error("SUPABASE", `loadAppVersion failed — ${error.message}`);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    id: String(data.id),
+    userId: String(data.user_id),
+    appId: String(data.app_id),
+    parentVersionId: data.parent_version_id ? String(data.parent_version_id) : null,
+    sourceRequestType: String(data.source_request_type) as "generate" | "modify" | "rollback",
+    commitMessage: String(data.commit_message ?? ""),
+    diffSummary: data.diff_summary ? String(data.diff_summary) : null,
+    testsPassed: Boolean(data.tests_passed),
+    spec: data.spec,
+    createdAt: String(data.created_at),
+  };
+}
+
+export async function saveAppDeployment(input: {
+  userId: string;
+  appId: string;
+  versionId: string;
+  provider: string;
+  status: "deployed" | "failed" | "skipped";
+  previewUrl?: string | null;
+  runtimeId?: string | null;
+  healthStatus?: string | null;
+}): Promise<MiniAppDeploymentRecord | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("mini_app_deployments")
+    .insert({
+      user_id: input.userId,
+      app_id: input.appId,
+      version_id: input.versionId,
+      provider: input.provider,
+      status: input.status,
+      preview_url: input.previewUrl ?? null,
+      runtime_id: input.runtimeId ?? null,
+      health_status: input.healthStatus ?? null,
+      created_at: new Date().toISOString(),
+    })
+    .select(
+      "id, user_id, app_id, version_id, provider, status, preview_url, runtime_id, health_status, created_at"
+    )
+    .single();
+  if (error) {
+    L.error("SUPABASE", `saveAppDeployment failed — ${error.message}`);
+    return null;
+  }
+  return {
+    id: String(data.id),
+    userId: String(data.user_id),
+    appId: String(data.app_id),
+    versionId: String(data.version_id),
+    provider: String(data.provider),
+    status: String(data.status) as "deployed" | "failed" | "skipped",
+    previewUrl: data.preview_url ? String(data.preview_url) : null,
+    runtimeId: data.runtime_id ? String(data.runtime_id) : null,
+    healthStatus: data.health_status ? String(data.health_status) : null,
+    createdAt: String(data.created_at),
+  };
+}
+
+export async function loadLatestDeployment(
+  userId: string,
+  appId: string
+): Promise<MiniAppDeploymentRecord | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb
+    .from("mini_app_deployments")
+    .select(
+      "id, user_id, app_id, version_id, provider, status, preview_url, runtime_id, health_status, created_at"
+    )
+    .eq("user_id", userId)
+    .eq("app_id", appId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    L.error("SUPABASE", `loadLatestDeployment failed — ${error.message}`);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    id: String(data.id),
+    userId: String(data.user_id),
+    appId: String(data.app_id),
+    versionId: String(data.version_id),
+    provider: String(data.provider),
+    status: String(data.status) as "deployed" | "failed" | "skipped",
+    previewUrl: data.preview_url ? String(data.preview_url) : null,
+    runtimeId: data.runtime_id ? String(data.runtime_id) : null,
+    healthStatus: data.health_status ? String(data.health_status) : null,
+    createdAt: String(data.created_at),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Mini-app state CRUD
 // ---------------------------------------------------------------------------
 

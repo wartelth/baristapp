@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { clarifyPrompt } from "../services/clarifyService";
+import { getLLMProvider } from "../services/llm/providerFactory";
 import L from "../utils/logger";
 import { moderateUserText } from "../utils/contentModeration";
 import { getUserId } from "../utils/auth";
@@ -58,7 +58,9 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
   L.log("CLARIFY", `#${reqId} Clarifying: "${prompt.trim().slice(0, 80)}..."`);
 
   try {
-    const result = await clarifyPrompt(prompt.trim());
+    const provider = getLLMProvider();
+    L.detail("CLARIFY", "Provider", provider.providerName);
+    const result = await provider.clarifyPrompt(prompt.trim());
     res.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

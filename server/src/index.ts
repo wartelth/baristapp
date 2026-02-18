@@ -88,7 +88,18 @@ app.listen(PORT, () => {
 
   L.banner("SwissKnife Server v2");
   L.detail("BOOT", "Port", PORT as number);
+  L.detail("BOOT", "LLM_PROVIDER", process.env.LLM_PROVIDER ?? "claude");
+  L.detail(
+    "BOOT",
+    "OPENAI_CODING_MODEL",
+    process.env.OPENAI_CODING_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-5.1"
+  );
+  L.detail("BOOT", "OPENAI_SMALL_MODEL", process.env.OPENAI_SMALL_MODEL ?? "gpt-5-mini");
   L.detail("BOOT", "ANTHROPIC_API_KEY", process.env.ANTHROPIC_API_KEY ? "set" : "MISSING ⚠");
+  L.detail("BOOT", "OPENAI_API_KEY", process.env.OPENAI_API_KEY ? "set" : "not set");
+  if ((process.env.LLM_PROVIDER ?? "claude") === "openai" && !process.env.OPENAI_API_KEY) {
+    L.warn("BOOT", "LLM_PROVIDER=openai but OPENAI_API_KEY is missing");
+  }
   L.detail("BOOT", "SUPABASE_URL", process.env.SUPABASE_URL ? "set" : "not set");
   L.detail(
     "BOOT",
@@ -101,5 +112,9 @@ app.listen(PORT, () => {
   );
   L.detail("BOOT", "REVENUECAT_SECRET_API_KEY", process.env.REVENUECAT_SECRET_API_KEY ? "set" : "not set");
   L.detail("BOOT", "REVENUECAT_WEBHOOK_AUTH", process.env.REVENUECAT_WEBHOOK_AUTH ? "set" : "not set");
+  L.detail("BOOT", "DAYTONA_API_URL", process.env.DAYTONA_API_URL ? "set" : "not set");
+  L.detail("BOOT", "DAYTONA_API_KEY", process.env.DAYTONA_API_KEY ? "set" : "not set");
+  L.detail("BOOT", "SANDBOX_RUNTIME_MODE", process.env.SANDBOX_RUNTIME_MODE ?? "auto");
+  L.detail("BOOT", "SERVER_PUBLIC_BASE_URL", process.env.SERVER_PUBLIC_BASE_URL ?? "http://localhost:3001");
   L.separator();
 });

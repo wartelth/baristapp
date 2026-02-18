@@ -174,6 +174,7 @@ export type ModifyResult = ModifyResponse | ModifyError;
 export interface GenerateRequest {
   prompt: string;
   clarifications?: { questionId: string; answer: string }[];
+  additionalContext?: string;
 }
 
 export interface GenerateResponse {

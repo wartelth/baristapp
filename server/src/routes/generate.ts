@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { generateMiniApp } from "../services/claudeService";
+import { createMiniAppWithOrchestrator } from "../services/orchestrator/appCreatorOrchestrator";
 import { mountAppEndpoints } from "../services/subServerManager";
 import L, { fmtMs } from "../utils/logger";
 import { moderateUserText } from "../utils/contentModeration";
@@ -48,7 +48,7 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { prompt, clarifications } = req.body;
+  const { prompt, clarifications, additionalContext } = req.body;
 
   const allowance = await checkGenerationAllowance(userId);
   if (!allowance.allowed) {
@@ -98,12 +98,16 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     enrichedPrompt += `\n\nAdditional context from user:\n${answers}`;
     L.detail("GENERATE", "Clarifications", `${clarifications.length} answer(s) attached`);
   }
+  if (typeof additionalContext === "string" && additionalContext.trim().length > 0) {
+    enrichedPrompt += `\n\nAdditional user context:\n${additionalContext.trim()}`;
+    L.detail("GENERATE", "Extra context", `${additionalContext.trim().length} chars attached`);
+  }
 
   L.detail("GENERATE", "Prompt", `"${enrichedPrompt.slice(0, 120)}${enrichedPrompt.length > 120 ? "..." : ""}" (${enrichedPrompt.length} chars)`);
-  L.log("GENERATE", `#${reqId} Calling Claude agent...`);
+  L.log("GENERATE", `#${reqId} Calling app creator orchestrator...`);
 
   try {
-    const result = await generateMiniApp(enrichedPrompt);
+    const result = await createMiniAppWithOrchestrator(userId, enrichedPrompt);
     const elapsed = Date.now() - startTime;
 
     if (result.success) {
@@ -125,6 +129,10 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
       L.detail("GENERATE", "screens", app.screens.length);
       L.detail("GENERATE", "spec size", `${(specSize / 1024).toFixed(1)}KB`);
       L.detail("GENERATE", "model cost", `$${result.usage.costUsd.toFixed(4)}`);
+      if (result.previewUrl) {
+        L.detail("GENERATE", "preview", result.previewUrl);
+      }
+      L.detail("GENERATE", "tests passed", result.testReport.passed);
 
       // Auto-mount server endpoints for v2 apps
       const v2 = app as any;

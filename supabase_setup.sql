@@ -133,6 +133,34 @@ CREATE TABLE IF NOT EXISTS app_usage_totals (
   PRIMARY KEY (user_id, app_id)
 );
 
+-- Immutable version history for generated mini-app specs
+CREATE TABLE IF NOT EXISTS mini_app_versions (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id text NOT NULL,
+  app_id text NOT NULL,
+  parent_version_id uuid REFERENCES mini_app_versions(id) ON DELETE SET NULL,
+  source_request_type text NOT NULL CHECK (source_request_type IN ('generate', 'modify', 'rollback')),
+  commit_message text NOT NULL DEFAULT '',
+  diff_summary text,
+  tests_passed boolean NOT NULL DEFAULT false,
+  spec jsonb NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Deployment records for sandbox/runtime tracking
+CREATE TABLE IF NOT EXISTS mini_app_deployments (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id text NOT NULL,
+  app_id text NOT NULL,
+  version_id uuid NOT NULL REFERENCES mini_app_versions(id) ON DELETE CASCADE,
+  provider text NOT NULL,
+  status text NOT NULL CHECK (status IN ('deployed', 'failed', 'skipped')),
+  preview_url text,
+  runtime_id text,
+  health_status text,
+  created_at timestamptz DEFAULT now()
+);
+
 -- --------------------------------------------------------------------------
 -- 2. Indexes for fast lookups
 -- --------------------------------------------------------------------------
@@ -166,6 +194,12 @@ CREATE INDEX IF NOT EXISTS idx_model_usage_events_user_type_created
 
 CREATE INDEX IF NOT EXISTS idx_model_usage_events_user_app
   ON model_usage_events (user_id, app_id);
+
+CREATE INDEX IF NOT EXISTS idx_mini_app_versions_user_app_created
+  ON mini_app_versions (user_id, app_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_mini_app_deployments_user_app_created
+  ON mini_app_deployments (user_id, app_id, created_at DESC);
 
 -- --------------------------------------------------------------------------
 -- 3. Auto-update updated_at on row changes
@@ -322,6 +356,8 @@ ALTER TABLE user_subscription_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE model_usage_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_usage_totals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_usage_totals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mini_app_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mini_app_deployments ENABLE ROW LEVEL SECURITY;
 
 -- Allow the service_role key (used by the server) full access.
 -- The server proxies all requests and sets x-device-id as user_id,
@@ -402,6 +438,20 @@ CREATE POLICY "service_role_all_user_usage_totals"
 DROP POLICY IF EXISTS "service_role_all_app_usage_totals" ON app_usage_totals;
 CREATE POLICY "service_role_all_app_usage_totals"
   ON app_usage_totals
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "service_role_all_mini_app_versions" ON mini_app_versions;
+CREATE POLICY "service_role_all_mini_app_versions"
+  ON mini_app_versions
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "service_role_all_mini_app_deployments" ON mini_app_deployments;
+CREATE POLICY "service_role_all_mini_app_deployments"
+  ON mini_app_deployments
   FOR ALL
   USING (true)
   WITH CHECK (true);
@@ -1094,3 +1144,5 @@ SELECT * FROM user_subscription_state LIMIT 0;
 SELECT * FROM model_usage_events LIMIT 0;
 SELECT * FROM user_usage_totals LIMIT 0;
 SELECT * FROM app_usage_totals LIMIT 0;
+SELECT * FROM mini_app_versions LIMIT 0;
+SELECT * FROM mini_app_deployments LIMIT 0;
