@@ -5,7 +5,7 @@ title: Components
 
 # Component Reference
 
-SwissKnife v2 defines **20 component types** organized into 6 categories. All components support optional `visibleWhen` for conditional rendering.
+SwissKnife v2 defines **21 component types** organized into 7 categories. All components support optional `visibleWhen` for conditional rendering.
 
 ## Component Map
 
@@ -38,6 +38,8 @@ mindmap
     Data Viz
       chart
       mapView
+    WebView
+      webView
 ```
 
 ## Display Components
@@ -484,3 +486,51 @@ Every component supports `visibleWhen` to conditionally show/hide:
 ```
 
 **Operators:** `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `truthy`, `falsy`, `contains`
+
+---
+
+## WebView Component
+
+### `webView`
+
+Renders HTML/CSS/JavaScript content in a sandboxed WebView. Supports bidirectional communication with the native app through a controlled bridge API. Compliant with Apple App Store Guideline 4.7 (HTML5 mini-apps).
+
+```json
+{
+  "type": "webView",
+  "props": {
+    "html": "<div>Hello World</div>",
+    "height": 400,
+    "stateKeys": ["user", "items"],
+    "allowBridge": true,
+    "onMessage": {
+      "type": "setState",
+      "key": "webViewData",
+      "value": "{{__webViewMessage}}"
+    }
+  }
+}
+```
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `html` | string | No | Inline HTML content to render |
+| `htmlKey` | string | No | State key containing HTML content (alternative to `html`) |
+| `height` | number | No | Height in pixels (default: 400) |
+| `stateKeys` | string[] | No | State keys to inject into WebView (accessible via `window.SwissKnife.getState()`) |
+| `allowBridge` | boolean | No | Enable bridge API (default: true) |
+| `onMessage` | Action | No | Action to dispatch when WebView sends a message |
+
+**Bridge API:** When `allowBridge` is enabled, the WebView can access:
+
+- `window.SwissKnife.getState(key?)` — Read state values
+- `window.SwissKnife.setState(key, value)` — Update state
+- `window.SwissKnife.dispatch(action)` — Dispatch a declarative action
+- `window.SwissKnife.sendMessage(data)` — Send custom message to native
+- `window.SwissKnife.onStateUpdate(callback)` — Listen for state updates
+
+**Security:** The WebView runs in a sandboxed environment with:
+- No external navigation (blocks all URLs except inline HTML)
+- No file system access
+- Validated bridge messages only
+- No access to native APIs (camera, location, etc.) from WebView JavaScript

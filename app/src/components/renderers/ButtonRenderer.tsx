@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 
 const VARIANT_COLORS = {
@@ -8,11 +9,15 @@ const VARIANT_COLORS = {
   danger: "#dc2626",
 };
 
-export function ButtonRenderer({ component, dispatch, onNavigate }: RendererProps) {
+export function ButtonRenderer({ component, state, dispatch, onNavigate }: RendererProps) {
   if (component.type !== "button") return null;
-  const { label, action, variant = "primary" } = component.props;
+  const { label, action, variant = "primary", disabled } = component.props;
+
+  const resolvedLabel = String(resolveTemplate(label, state) ?? label);
+  const isDisabled = typeof disabled === "string" ? !!state[disabled] : !!disabled;
 
   const handlePress = () => {
+    if (isDisabled) return;
     if (action.type === "navigate") {
       onNavigate(action.screenId);
     } else {
@@ -22,11 +27,16 @@ export function ButtonRenderer({ component, dispatch, onNavigate }: RendererProp
 
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: VARIANT_COLORS[variant as keyof typeof VARIANT_COLORS] }]}
+      style={[
+        styles.button,
+        { backgroundColor: VARIANT_COLORS[variant as keyof typeof VARIANT_COLORS] },
+        isDisabled && styles.disabled,
+      ]}
       onPress={handlePress}
       activeOpacity={0.7}
+      disabled={isDisabled}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>{resolvedLabel}</Text>
     </TouchableOpacity>
   );
 }
@@ -38,6 +48,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginVertical: 6,
+  },
+  disabled: {
+    opacity: 0.5,
   },
   label: {
     color: "#fff",

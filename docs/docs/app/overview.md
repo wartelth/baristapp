@@ -39,7 +39,7 @@ graph TD
     App --> Types["types/<br/>Navigation types"]
 
     Comp --> MR["MiniAppRenderer.tsx<br/>(core engine)"]
-    Comp --> Rend["renderers/<br/>20 component files"]
+    Comp --> Rend["renderers/<br/>21 component files"]
 
     style App fill:#4f46e5,color:#fff,stroke:none
     style MR fill:#dc2626,color:#fff,stroke:none

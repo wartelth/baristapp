@@ -74,16 +74,44 @@ export const HttpAction = z.object({
 export const ComputeAction = z.object({
   type: z.literal("compute"),
   operation: z.enum([
-    "add", "subtract", "multiply", "divide",
-    "concat", "length",
-    "increment", "decrement", "toggle",
-    "round", "random", "now",
-    "min", "max",
-    "toUpperCase", "toLowerCase",
+    // Arithmetic
+    "add", "subtract", "multiply", "divide", "modulo",
+    "increment", "decrement",
+    "round", "ceil", "floor", "abs", "random", "pow", "sqrt",
+    "min", "max", "clamp",
+    // String
+    "concat", "toUpperCase", "toLowerCase", "trim",
+    "replace", "split", "join", "padStart", "padEnd",
+    "substring", "capitalize",
+    // Array
+    "length", "push", "pop", "shift", "unshift",
+    "reverse", "sort", "unique", "flatten",
+    "sum", "avg", "pluck",
+    // Boolean
+    "toggle",
+    // Date/Time
+    "now", "formatDate", "dateDiff",
+    // Type conversion
+    "toNumber", "toString", "toBoolean",
+    // JSON
+    "jsonParse", "jsonStringify",
   ]),
   key: z.string(),
   operands: z.array(z.unknown()).optional(),
   resultKey: z.string().optional(),
+});
+
+/** Transform action — evaluate an expression and store the result */
+export const TransformAction = z.object({
+  type: z.literal("transform"),
+  expression: z.string(),
+  resultKey: z.string(),
+});
+
+/** SetMultiple — set many state keys at once */
+export const SetMultipleAction = z.object({
+  type: z.literal("setMultiple"),
+  values: z.record(z.string(), z.unknown()),
 });
 
 export const ServerCallAction = z.object({
@@ -132,6 +160,9 @@ export const Action: z.ZodType = z.lazy(() =>
     HapticAction,
     CopyToClipboardAction,
     GetLocationAction,
+    // v3 expression-powered actions
+    TransformAction,
+    SetMultipleAction,
     // recursive actions
     TimerAction,
     ConditionalAction,
@@ -193,6 +224,8 @@ export const Component: z.ZodType = z.lazy(() =>
     ChartComponent,
     ProgressComponent,
     MapViewComponent,
+    // v3 webview
+    WebViewComponent,
   ])
 );
 
@@ -407,6 +440,28 @@ export const AudioRecorderComponent = z.object({
     stateKey: z.string(),
     maxDuration: z.number().optional(),
     onRecordComplete: z.lazy((): z.ZodType => Action).optional(),
+  }),
+  visibleWhen: VisibleWhen.optional(),
+});
+
+// --- v3 webview component (Apple 4.7 compliant HTML5 mini-apps) ---
+
+export const WebViewComponent = z.object({
+  type: z.literal("webView"),
+  id: z.string(),
+  props: z.object({
+    /** Inline HTML content to render in the WebView */
+    html: z.string().optional(),
+    /** State key containing HTML content */
+    htmlKey: z.string().optional(),
+    /** Height of the WebView in pixels */
+    height: z.number().optional(),
+    /** State keys to inject into the WebView as window.__SWISSKNIFE_STATE__ */
+    stateKeys: z.array(z.string()).optional(),
+    /** Whether to allow the WebView to communicate back via postMessage */
+    allowBridge: z.boolean().optional(),
+    /** Action to dispatch when WebView sends a message */
+    onMessage: z.lazy((): z.ZodType => Action).optional(),
   }),
   visibleWhen: VisibleWhen.optional(),
 });

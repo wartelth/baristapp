@@ -66,6 +66,7 @@ const RENDERERS: Record<string, React.FC<RendererProps>> = {
   datePicker:    DatePickerRenderer,
   chart:         ChartRenderer,
   mapView:       MapViewRenderer,
+  webView:       WebViewRenderer,
 };
 ```
 
@@ -100,7 +101,7 @@ flowchart LR
 
 ## Action Dispatch
 
-The `dispatch` function is a large switch statement handling all 13 action types:
+The `dispatch` function is a large switch statement handling all 15 action types:
 
 ### Sync Actions
 Processed immediately, update state in a single `setState` call:
@@ -108,7 +109,9 @@ Processed immediately, update state in a single `setState` call:
 - **`setState`** — Direct key-value assignment
 - **`append`** — Push to array
 - **`remove`** — Splice from array by index
-- **`compute`** — Math/string operations (increment, concat, now, etc.)
+- **`compute`** — Math/string/array operations (40+ operations: increment, concat, now, formatDate, sum, avg, etc.)
+- **`transform`** — Evaluate expression using the expression engine, store result
+- **`setMultiple`** — Set multiple state keys at once
 
 ### Async Actions
 Fire network requests, then update state on completion:
@@ -129,6 +132,24 @@ Meta-actions that dispatch other actions:
 
 - **`conditional`** — Evaluate condition, dispatch `then` or `else`
 - **`batch`** — Collect sync actions → single setState → then dispatch async
+
+## Expression Engine
+
+The renderer uses the expression engine (`shared/src/expressions.ts`) to resolve dynamic values in component props and actions. Expressions use `{{path}}` syntax and are evaluated safely without `eval()` or code execution.
+
+**Expression Resolution:**
+- `TextRenderer` resolves `text` and `stateKey` values through `resolveTemplate()`
+- `ButtonRenderer` resolves `label` through `resolveTemplate()`
+- `transform` action evaluates expressions and stores results
+- `setMultiple` action resolves values in the `values` object
+
+**Supported Features:**
+- Path access: `{{user.profile.name}}`, `{{items[0].title}}`
+- Array methods: `.filter()`, `.map()`, `.sort()`, `.reduce()`, `.find()`, `.some()`, `.every()`, `.count()`
+- String methods: `.toUpperCase()`, `.toLowerCase()`, `.trim()`, `.slice()`, `.includes()`, `.replace()`, `.split()`
+- Math: `+`, `-`, `*`, `/`, `%`, comparisons, ternary
+- Pipes: `| toFixed(2)`, `| uppercase`, `| date`, `| timeAgo`, `| sum("key")`, etc.
+- Safe built-ins: Math, JSON, Date, Array, String, Number, Object (whitelisted methods only)
 
 ## Rendering Pipeline
 

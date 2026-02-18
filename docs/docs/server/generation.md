@@ -122,8 +122,8 @@ sequenceDiagram
 **File:** `server/src/prompts/masterPrompt.ts` (570 lines)
 
 The master prompt documents:
-- All 20 component types with property details
-- All 13 action types with usage patterns
+- All 21 component types with property details
+- All 15 action types with usage patterns
 - Theme system
 - Effects system
 - Server endpoints

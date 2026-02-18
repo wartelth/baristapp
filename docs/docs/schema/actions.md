@@ -5,7 +5,7 @@ title: Actions
 
 # Action Reference
 
-Actions are declarative objects that describe what happens in response to user interactions. The renderer's `dispatch` function processes them. SwissKnife v2 supports **13 action types**.
+Actions are declarative objects that describe what happens in response to user interactions. The renderer's `dispatch` function processes them. SwissKnife v2 supports **15 action types**.
 
 ## Action Flow
 
@@ -16,7 +16,7 @@ flowchart TD
 
     Dispatch --> Cat{"Category?"}
 
-    Cat -->|State| State["setState / append / remove / compute"]
+    Cat -->|State| State["setState / append / remove / compute / transform / setMultiple"]
     Cat -->|Async| Async["http / serverCall"]
     Cat -->|Navigation| Nav["navigate"]
     Cat -->|Side Effect| Side["haptic / copyToClipboard / timer"]
@@ -89,32 +89,76 @@ Remove an item from an array by index.
 
 ### `compute`
 
-Perform math/string operations on state.
+Perform math/string/array operations on state. Supports **40+ operations** across multiple categories.
 
 ```json
 {
   "type": "compute",
   "operation": "increment",
-  "target": "count",
-  "by": 1
+  "key": "count",
+  "operands": [1]
 }
 ```
 
 **Operations:**
 
-| Operation | Description | Properties |
-|-----------|-------------|------------|
-| `add` | Add two values | `a`, `b`, `target` |
-| `subtract` | Subtract | `a`, `b`, `target` |
-| `multiply` | Multiply | `a`, `b`, `target` |
-| `divide` | Divide | `a`, `b`, `target` |
-| `increment` | Add to existing | `target`, `by` |
-| `decrement` | Subtract from existing | `target`, `by` |
-| `concat` | Join strings | `a`, `b`, `target` |
-| `now` | Current timestamp | `target` |
-| `formatDate` | Format a date | `source`, `format`, `target` |
-| `length` | Array/string length | `source`, `target` |
-| `round` | Round number | `source`, `target`, `decimals` |
+**Arithmetic:** `add`, `subtract`, `multiply`, `divide`, `modulo`, `increment`, `decrement`, `round`, `ceil`, `floor`, `abs`, `random`, `pow`, `sqrt`, `min`, `max`, `clamp`
+
+**String:** `concat`, `toUpperCase`, `toLowerCase`, `trim`, `replace`, `split`, `join`, `padStart`, `padEnd`, `substring`, `capitalize`
+
+**Array:** `length`, `push`, `pop`, `shift`, `unshift`, `reverse`, `sort`, `unique`, `flatten`, `sum`, `avg`, `pluck`
+
+**Boolean:** `toggle`
+
+**Date/Time:** `now`, `formatDate`, `dateDiff`
+
+**Type Conversion:** `toNumber`, `toString`, `toBoolean`
+
+**JSON:** `jsonParse`, `jsonStringify`
+
+### `transform`
+
+Evaluate an expression using the expression engine and store the result. Supports path access, array/string methods, math, comparisons, ternary operators, and pipes.
+
+```json
+{
+  "type": "transform",
+  "expression": "items.filter('done').length",
+  "resultKey": "completedCount"
+}
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `expression` | string | Expression to evaluate (supports `{{path}}` syntax) |
+| `resultKey` | string | State key to store the result |
+
+**Expression Features:**
+- Path access: `{{user.profile.name}}`, `{{items[0].title}}`
+- Array methods: `.filter()`, `.map()`, `.sort()`, `.reduce()`, `.find()`, `.some()`, `.every()`, `.count()`
+- String methods: `.toUpperCase()`, `.toLowerCase()`, `.trim()`, `.slice()`, `.includes()`, `.replace()`, `.split()`
+- Math: `+`, `-`, `*`, `/`, `%`, comparisons, ternary
+- Pipes: `| toFixed(2)`, `| uppercase`, `| date`, `| timeAgo`, `| sum("key")`, etc.
+- Safe built-ins: Math, JSON, Date, Array, String, Number, Object (whitelisted methods only)
+
+### `setMultiple`
+
+Set multiple state keys at once. Useful for initializing multiple values or updating related state.
+
+```json
+{
+  "type": "setMultiple",
+  "values": {
+    "name": "{{firstName}} {{lastName}}",
+    "count": 0,
+    "isActive": true
+  }
+}
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `values` | object | Map of state keys to values (supports `{{expression}}` syntax) |
 
 ---
 

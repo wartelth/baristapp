@@ -74,10 +74,13 @@ npm run docs
 Every component and action is defined in `shared/src/schema.ts`. The schema is the contract between AI generation and app rendering.
 
 ### Component Registry
-The app has 20 built-in component types (text, button, input, list, chart, camera, etc.) registered in a renderer map. Claude generates specs using only these components.
+The app has 21 built-in component types (text, button, input, list, chart, camera, webView, etc.) registered in a renderer map. Claude generates specs using only these components.
 
 ### Declarative Actions
-All interactivity is expressed as action objects — `setState`, `navigate`, `http`, `compute`, `timer`, etc. — dispatched by the renderer engine. **13 action types** cover everything from state updates to API calls.
+All interactivity is expressed as action objects — `setState`, `navigate`, `http`, `compute`, `transform`, `setMultiple`, `timer`, etc. — dispatched by the renderer engine. **15 action types** cover everything from state updates to API calls.
+
+### Expression Engine
+SwissKnife includes a safe expression evaluator that supports dynamic values in component props and actions. Expressions use `{{path}}` syntax and support path access, array/string methods, math operations, comparisons, ternary operators, and pipes. All evaluation happens without `eval()` or code execution — it's a hand-written recursive-descent parser operating on a token stream.
 
 ### Dual Storage
 Apps persist locally (AsyncStorage) for instant access and sync to the cloud (Supabase) for cross-device availability.
