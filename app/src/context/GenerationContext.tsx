@@ -34,7 +34,8 @@ interface GenerationContextValue {
   /** Start a full generation (clarify → generate) */
   startGenerate: (
     prompt: string,
-    clarifications?: { questionId: string; answer: string }[]
+    clarifications?: { questionId: string; answer: string }[],
+    additionalContext?: string
   ) => void;
 
   /** Start a modification of an existing app */
@@ -81,7 +82,8 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   const startGenerate = useCallback(
     (
       prompt: string,
-      clarifications?: { questionId: string; answer: string }[]
+      clarifications?: { questionId: string; answer: string }[],
+      additionalContext?: string
     ) => {
       if (busy) return;
       setBusy(true);
@@ -99,7 +101,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
             return;
           }
 
-          const result = await generateMiniApp(prompt, clarifications);
+          const result = await generateMiniApp(prompt, clarifications, additionalContext);
 
           if (!result.success) {
             showNotification({ message: result.error, success: false });

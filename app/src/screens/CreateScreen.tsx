@@ -35,6 +35,7 @@ export function CreateScreen({ navigation }: Props) {
   const [questions, setQuestions] = useState<ClarificationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [freeformAnswers, setFreeformAnswers] = useState<Record<string, string>>({});
+  const [additionalContext, setAdditionalContext] = useState("");
 
   const scrollRef = useRef<ScrollView>(null);
 
@@ -45,6 +46,7 @@ export function CreateScreen({ navigation }: Props) {
     setQuestions([]);
     setAnswers({});
     setFreeformAnswers({});
+    setAdditionalContext("");
   };
 
   // -------------------------------------------------------------------------
@@ -107,7 +109,7 @@ export function CreateScreen({ navigation }: Props) {
     });
 
     // Fire-and-forget — context handles the API call, notification, and saving
-    startGenerate(prompt.trim(), clarifications);
+    startGenerate(prompt.trim(), clarifications, additionalContext.trim() || undefined);
     resetForm();
     navigation.navigate("Apps");
   };
@@ -263,6 +265,19 @@ export function CreateScreen({ navigation }: Props) {
               )}
             </View>
           ))}
+
+          <View style={[styles.questionCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
+            <Text style={[styles.questionNumber, { color: colors.primary }]}>Optional</Text>
+            <Text style={[styles.questionText, { color: colors.text }]}>Anything else we should know?</Text>
+            <TextInput
+              style={[styles.freeformInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              placeholder="Add extra constraints, style details, APIs, edge-cases..."
+              placeholderTextColor={colors.searchPlaceholder}
+              value={additionalContext}
+              onChangeText={setAdditionalContext}
+              multiline
+            />
+          </View>
 
           {/* Actions */}
           <TouchableOpacity

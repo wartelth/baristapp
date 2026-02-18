@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { modifyMiniApp } from "../services/modifyService";
+import { modifyMiniAppWithOrchestrator } from "../services/orchestrator/appCreatorOrchestrator";
 import { mountAppEndpoints } from "../services/subServerManager";
 import L, { fmtMs } from "../utils/logger";
 import { moderateUserText } from "../utils/contentModeration";
@@ -71,7 +71,11 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
   L.detail("GENERATE", "Prompt", `"${modifyPrompt.slice(0, 120)}${modifyPrompt.length > 120 ? "..." : ""}"`);
 
   try {
-    const result = await modifyMiniApp(currentSpec, modifyPrompt.trim());
+    const result = await modifyMiniAppWithOrchestrator(
+      userId,
+      currentSpec,
+      modifyPrompt.trim()
+    );
     const elapsed = Date.now() - startTime;
 
     if (result.success) {
@@ -86,6 +90,9 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
       });
       L.success("GENERATE", `#${reqId} App modified in ${fmtMs(elapsed)}`);
       L.detail("GENERATE", "model cost", `$${result.usage.costUsd.toFixed(4)}`);
+      if (result.previewUrl) {
+        L.detail("GENERATE", "preview", result.previewUrl);
+      }
 
       // Re-mount server endpoints for v2 apps
       const v2 = app as any;
