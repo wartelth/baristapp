@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import type { MiniApp, MiniAppComponent, MiniAppAction } from "@swissknife/shared";
+import { resolveTemplate, evaluate } from "@swissknife/shared";
 import type { RendererProps } from "../types";
 import { getState, setFullState } from "../storage/storageLayer";
 import { saveCloudState, loadCloudState } from "../api/supabaseClient";
@@ -38,6 +39,9 @@ import { DatePickerRenderer } from "./renderers/DatePickerRenderer";
 import { ChartRenderer } from "./renderers/ChartRenderer";
 import { MapViewRenderer } from "./renderers/MapViewRenderer";
 
+// v3 webview renderer
+import { WebViewRenderer } from "./renderers/WebViewRenderer";
+
 // ---------------------------------------------------------------------------
 // Component registry — 20 total
 // ---------------------------------------------------------------------------
@@ -63,6 +67,7 @@ const RENDERERS: Record<string, React.FC<RendererProps>> = {
   datePicker: DatePickerRenderer,
   chart: ChartRenderer,
   mapView: MapViewRenderer,
+  webView: WebViewRenderer,
 };
 
 function renderSingleComponent(
@@ -96,6 +101,7 @@ setRenderComponent(renderSingleComponent);
 
 // ---------------------------------------------------------------------------
 // Pure compute handler — operates on state snapshot, returns new state
+// Supports 40+ operations across arithmetic, string, array, date, and type
 // ---------------------------------------------------------------------------
 
 function applyCompute(
@@ -106,58 +112,154 @@ function applyCompute(
   const { operation, key, operands = [], resultKey } = action;
   const target = resultKey ?? key;
   const current = state[key];
+  const op0 = operands[0];
+  const op1 = operands[1];
 
   switch (operation) {
-    case "increment":
-      next[target] = (Number(current) || 0) + 1;
-      break;
-    case "decrement":
-      next[target] = (Number(current) || 0) - 1;
-      break;
-    case "toggle":
-      next[target] = !current;
-      break;
-    case "add":
-      next[target] = operands.reduce((s: number, v: unknown) => s + Number(v), Number(current) || 0);
-      break;
-    case "subtract":
-      next[target] = operands.reduce((s: number, v: unknown) => s - Number(v), Number(current) || 0);
-      break;
-    case "multiply":
-      next[target] = operands.reduce((s: number, v: unknown) => s * Number(v), Number(current) || 1);
-      break;
-    case "divide": {
-      const divisor = Number(operands[0]);
-      next[target] = divisor !== 0 ? (Number(current) || 0) / divisor : 0;
+    // --- Arithmetic ---
+    case "increment": next[target] = (Number(current) || 0) + (Number(op0) || 1); break;
+    case "decrement": next[target] = (Number(current) || 0) - (Number(op0) || 1); break;
+    case "add": next[target] = operands.reduce((s: number, v: unknown) => s + Number(v), Number(current) || 0); break;
+    case "subtract": next[target] = operands.reduce((s: number, v: unknown) => s - Number(v), Number(current) || 0); break;
+    case "multiply": next[target] = operands.reduce((s: number, v: unknown) => s * Number(v), Number(current) || 1); break;
+    case "divide": { const d = Number(op0); next[target] = d !== 0 ? (Number(current) || 0) / d : 0; break; }
+    case "modulo": { const m = Number(op0); next[target] = m !== 0 ? (Number(current) || 0) % m : 0; break; }
+    case "round": next[target] = Math.round(Number(current) || 0); break;
+    case "ceil": next[target] = Math.ceil(Number(current) || 0); break;
+    case "floor": next[target] = Math.floor(Number(current) || 0); break;
+    case "abs": next[target] = Math.abs(Number(current) || 0); break;
+    case "pow": next[target] = Math.pow(Number(current) || 0, Number(op0) || 2); break;
+    case "sqrt": next[target] = Math.sqrt(Number(current) || 0); break;
+    case "random": next[target] = Math.random(); break;
+    case "min": next[target] = Math.min(Number(current) || 0, ...operands.map(Number)); break;
+    case "max": next[target] = Math.max(Number(current) || 0, ...operands.map(Number)); break;
+    case "clamp": next[target] = Math.min(Math.max(Number(current) || 0, Number(op0) || 0), Number(op1) || 100); break;
+
+    // --- String ---
+    case "concat": next[target] = String(current ?? "") + operands.map(String).join(""); break;
+    case "toUpperCase": next[target] = String(current ?? "").toUpperCase(); break;
+    case "toLowerCase": next[target] = String(current ?? "").toLowerCase(); break;
+    case "trim": next[target] = String(current ?? "").trim(); break;
+    case "replace": next[target] = String(current ?? "").split(String(op0 ?? "")).join(String(op1 ?? "")); break;
+    case "split": next[target] = String(current ?? "").split(String(op0 ?? ",")); break;
+    case "join": next[target] = Array.isArray(current) ? current.join(String(op0 ?? ", ")) : String(current ?? ""); break;
+    case "padStart": next[target] = String(current ?? "").padStart(Number(op0) || 2, String(op1 ?? "0")); break;
+    case "padEnd": next[target] = String(current ?? "").padEnd(Number(op0) || 2, String(op1 ?? " ")); break;
+    case "substring": next[target] = String(current ?? "").substring(Number(op0) || 0, op1 != null ? Number(op1) : undefined); break;
+    case "capitalize": {
+      const s = String(current ?? "");
+      next[target] = s.charAt(0).toUpperCase() + s.slice(1);
       break;
     }
-    case "concat":
-      next[target] = String(current ?? "") + operands.map(String).join("");
+
+    // --- Array ---
+    case "length": next[target] = Array.isArray(current) ? current.length : String(current ?? "").length; break;
+    case "push": {
+      const arr = Array.isArray(current) ? [...current] : [];
+      arr.push(op0);
+      next[target] = arr;
       break;
-    case "length":
-      next[target] = Array.isArray(current) ? current.length : String(current ?? "").length;
+    }
+    case "pop": {
+      const arr = Array.isArray(current) ? [...current] : [];
+      arr.pop();
+      next[target] = arr;
       break;
-    case "round":
-      next[target] = Math.round(Number(current) || 0);
+    }
+    case "shift": {
+      const arr = Array.isArray(current) ? [...current] : [];
+      arr.shift();
+      next[target] = arr;
       break;
-    case "random":
-      next[target] = Math.random();
+    }
+    case "unshift": {
+      const arr = Array.isArray(current) ? [...current] : [];
+      arr.unshift(op0);
+      next[target] = arr;
       break;
-    case "now":
-      next[target] = new Date().toISOString();
+    }
+    case "reverse": next[target] = Array.isArray(current) ? [...current].reverse() : current; break;
+    case "sort": {
+      if (!Array.isArray(current)) break;
+      const sorted = [...current];
+      const sortKey = op0 != null ? String(op0) : null;
+      const dir = op1 === "desc" ? -1 : 1;
+      if (sortKey) {
+        sorted.sort((a: any, b: any) => {
+          const va = a?.[sortKey] ?? 0;
+          const vb = b?.[sortKey] ?? 0;
+          return va < vb ? -dir : va > vb ? dir : 0;
+        });
+      } else {
+        sorted.sort((a, b) => (a as number) < (b as number) ? -dir : (a as number) > (b as number) ? dir : 0);
+      }
+      next[target] = sorted;
       break;
-    case "min":
-      next[target] = Math.min(Number(current) || 0, ...operands.map(Number));
+    }
+    case "unique": next[target] = Array.isArray(current) ? [...new Set(current)] : current; break;
+    case "flatten": next[target] = Array.isArray(current) ? current.flat(Number(op0) || 1) : current; break;
+    case "sum": {
+      if (!Array.isArray(current)) { next[target] = 0; break; }
+      const sumKey = op0 != null ? String(op0) : null;
+      next[target] = sumKey
+        ? current.reduce((s: number, item: any) => s + (Number(item?.[sumKey]) || 0), 0)
+        : current.reduce((s: number, v: any) => s + (Number(v) || 0), 0);
       break;
-    case "max":
-      next[target] = Math.max(Number(current) || 0, ...operands.map(Number));
+    }
+    case "avg": {
+      if (!Array.isArray(current) || current.length === 0) { next[target] = 0; break; }
+      const avgKey = op0 != null ? String(op0) : null;
+      const total = avgKey
+        ? current.reduce((s: number, item: any) => s + (Number(item?.[avgKey]) || 0), 0)
+        : current.reduce((s: number, v: any) => s + (Number(v) || 0), 0);
+      next[target] = total / current.length;
       break;
-    case "toUpperCase":
-      next[target] = String(current ?? "").toUpperCase();
+    }
+    case "pluck": {
+      if (!Array.isArray(current)) { next[target] = []; break; }
+      const pluckKey = String(op0 ?? "");
+      next[target] = current.map((item: any) => item?.[pluckKey]);
       break;
-    case "toLowerCase":
-      next[target] = String(current ?? "").toLowerCase();
+    }
+
+    // --- Boolean ---
+    case "toggle": next[target] = !current; break;
+
+    // --- Date/Time ---
+    case "now": next[target] = new Date().toISOString(); break;
+    case "formatDate": {
+      try {
+        const d = new Date(current as string | number);
+        const fmt = String(op0 ?? "short");
+        if (fmt === "iso") next[target] = d.toISOString();
+        else if (fmt === "time") next[target] = d.toLocaleTimeString();
+        else if (fmt === "long") next[target] = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+        else next[target] = d.toLocaleDateString();
+      } catch { next[target] = String(current); }
       break;
+    }
+    case "dateDiff": {
+      try {
+        const d1 = new Date(current as string | number);
+        const d2 = op0 ? new Date(op0 as string | number) : new Date();
+        const unit = String(op1 ?? "days");
+        const diffMs = d2.getTime() - d1.getTime();
+        if (unit === "seconds") next[target] = Math.floor(diffMs / 1000);
+        else if (unit === "minutes") next[target] = Math.floor(diffMs / 60000);
+        else if (unit === "hours") next[target] = Math.floor(diffMs / 3600000);
+        else next[target] = Math.floor(diffMs / 86400000);
+      } catch { next[target] = 0; }
+      break;
+    }
+
+    // --- Type conversion ---
+    case "toNumber": next[target] = Number(current) || 0; break;
+    case "toString": next[target] = String(current ?? ""); break;
+    case "toBoolean": next[target] = Boolean(current); break;
+
+    // --- JSON ---
+    case "jsonParse": { try { next[target] = JSON.parse(String(current)); } catch { next[target] = null; } break; }
+    case "jsonStringify": next[target] = JSON.stringify(current); break;
   }
 
   return next;
@@ -209,14 +311,29 @@ function applySyncAction(
   state: Record<string, unknown>
 ): Record<string, unknown> | null {
   switch (action.type) {
-    case "setState":
-      return { ...state, [action.key]: action.value };
+    case "setState": {
+      const val = typeof action.value === "string"
+        ? resolveTemplate(action.value, state)
+        : action.value;
+      return { ...state, [action.key]: val };
+    }
     case "append":
       return applyAppend(action, state);
     case "remove":
       return applyRemove(action, state);
     case "compute":
       return applyCompute(action, state);
+    case "transform": {
+      const result = evaluate(action.expression, state);
+      return { ...state, [action.resultKey]: result };
+    }
+    case "setMultiple": {
+      const next = { ...state };
+      for (const [k, v] of Object.entries(action.values)) {
+        next[k] = typeof v === "string" ? resolveTemplate(v, state) : v;
+      }
+      return next;
+    }
     default:
       return null; // not a sync action
   }
@@ -362,7 +479,26 @@ export function MiniAppRenderer({ spec, initialScreenId }: MiniAppRendererProps)
       return;
     }
 
-    // --- HTTP (async, reads stateRef) ---
+    // --- Transform (expression-powered state computation) ---
+    if (a.type === "transform") {
+      const result = evaluate(a.expression, stateRef.current);
+      setState((prev) => ({ ...prev, [a.resultKey]: result }));
+      return;
+    }
+
+    // --- SetMultiple (set many keys at once) ---
+    if (a.type === "setMultiple") {
+      setState((prev) => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(a.values)) {
+          next[k] = typeof v === "string" ? resolveTemplate(v, prev) : v;
+        }
+        return next;
+      });
+      return;
+    }
+
+    // --- HTTP (async, reads stateRef, supports full expression interpolation) ---
     if (a.type === "http") {
       (async () => {
         const { url, method = "GET", headers = {}, bodyKey, resultKey, loadingKey, errorKey } = a;
@@ -371,9 +507,8 @@ export function MiniAppRenderer({ spec, initialScreenId }: MiniAppRendererProps)
         if (errorKey) setState((prev) => ({ ...prev, [errorKey]: null }));
 
         try {
-          const interpolatedUrl = url.replace(/\{\{(\w+)\}\}/g, (_: string, key: string) =>
-            encodeURIComponent(String(stateRef.current[key] ?? ""))
-          );
+          // Use expression engine for URL interpolation (supports paths, expressions)
+          const interpolatedUrl = String(resolveTemplate(url, stateRef.current));
           const options: RequestInit = {
             method,
             headers: { "Content-Type": "application/json", ...headers },

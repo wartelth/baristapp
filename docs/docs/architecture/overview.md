@@ -112,6 +112,7 @@ When Claude generates a mini-app spec, the server validates it against the Zod s
 |---------|-----------|---------|----------|
 | **v1** | 5 basic | 4 basic | Screens, simple state |
 | **v2** | 20 total | 13 total | Theme, effects, server endpoints, capabilities |
+| **v3** | 21 total | 15 total | Expression engine, WebView component |
 
 The unified `MiniAppSchema` is a union of both versions for backward compatibility.
 

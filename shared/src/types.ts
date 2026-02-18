@@ -52,6 +52,11 @@ import {
   HapticAction,
   CopyToClipboardAction,
   GetLocationAction,
+  // v3 actions
+  TransformAction,
+  SetMultipleAction,
+  // v3 components
+  WebViewComponent,
 } from "./schema";
 
 // Top-level app types
@@ -93,6 +98,7 @@ export type AudioRecorderComponentType = z.infer<typeof AudioRecorderComponent>;
 export type ChartComponentType = z.infer<typeof ChartComponent>;
 export type ProgressComponentType = z.infer<typeof ProgressComponent>;
 export type MapViewComponentType = z.infer<typeof MapViewComponent>;
+export type WebViewComponentType = z.infer<typeof WebViewComponent>;
 
 // Individual action types
 export type NavigateActionType = z.infer<typeof NavigateAction>;
@@ -109,6 +115,8 @@ export type ServerCallActionType = z.infer<typeof ServerCallAction>;
 export type HapticActionType = z.infer<typeof HapticAction>;
 export type CopyToClipboardActionType = z.infer<typeof CopyToClipboardAction>;
 export type GetLocationActionType = z.infer<typeof GetLocationAction>;
+export type TransformActionType = z.infer<typeof TransformAction>;
+export type SetMultipleActionType = z.infer<typeof SetMultipleAction>;
 
 // ---------------------------------------------------------------------------
 // Clarification API types

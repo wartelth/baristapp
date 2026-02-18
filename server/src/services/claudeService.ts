@@ -27,27 +27,83 @@ type GenerationResult = GenerationSuccess | GenerationFailure;
 // Two-tier model selection
 // ---------------------------------------------------------------------------
 
-const COMPLEX_KEYWORDS = [
-  "camera", "photo", "capture", "scan",
-  "classify", "identify", "recognize", "detect",
-  "chart", "graph", "visualize", "dashboard",
-  "map", "location", "gps", "navigate",
-  "timer", "countdown", "stopwatch", "pomodoro",
-  "api", "fetch", "http", "endpoint",
-  "ml", "machine learning", "ai", "model",
-  "record", "audio", "microphone", "voice",
-  "tabs", "modal", "multi-screen",
-  "track", "analyze", "monitor",
+// ---------------------------------------------------------------------------
+// Complexity scoring — weighted signals instead of naive keyword count
+// ---------------------------------------------------------------------------
+
+/** Features that add complexity weight */
+const COMPLEXITY_SIGNALS: { keywords: string[]; weight: number; tag: string }[] = [
+  // Hardware / media (need capabilities + extra components)
+  { keywords: ["camera", "photo", "capture", "scan", "qr code"], weight: 3, tag: "camera" },
+  { keywords: ["record", "audio", "microphone", "voice", "speech"], weight: 3, tag: "audio" },
+  { keywords: ["map", "location", "gps", "nearby", "directions"], weight: 3, tag: "location" },
+
+  // ML / AI inference
+  { keywords: ["classify", "identify", "recognize", "detect", "predict"], weight: 3, tag: "ml" },
+  { keywords: ["machine learning", "ml model", "inference", "huggingface"], weight: 3, tag: "ml-explicit" },
+
+  // Data visualization
+  { keywords: ["chart", "graph", "visualize", "visualization", "dashboard", "analytics"], weight: 2, tag: "dataviz" },
+
+  // Multi-screen / complex UI
+  { keywords: ["tabs", "modal", "multi-screen", "multiple screens", "pages", "navigation"], weight: 2, tag: "multi-ui" },
+  { keywords: ["onboarding", "wizard", "step by step", "multi-step", "flow"], weight: 2, tag: "wizard" },
+
+  // Timers / real-time
+  { keywords: ["timer", "countdown", "stopwatch", "pomodoro", "real-time", "live", "interval"], weight: 2, tag: "timer" },
+
+  // External data
+  { keywords: ["api", "fetch", "http", "endpoint", "external", "weather", "news"], weight: 2, tag: "api" },
+
+  // Gamification / social (implies scoring, progress, multiple states)
+  { keywords: ["game", "quiz", "trivia", "score", "points", "leaderboard", "achievement", "badge", "streak", "level"], weight: 2, tag: "gamification" },
+  { keywords: ["duolingo", "kahoot", "wordle", "flashcard"], weight: 3, tag: "game-reference" },
+  { keywords: ["multiplayer", "shared", "friends", "social", "compete", "versus", "challenge"], weight: 2, tag: "social" },
+
+  // Tracking / logging (implies lists, history, persistence)
+  { keywords: ["track", "tracker", "log", "journal", "diary", "history", "habit", "routine", "streak"], weight: 2, tag: "tracking" },
+  { keywords: ["analyze", "monitor", "statistics", "stats", "progress", "report"], weight: 2, tag: "analytics" },
+
+  // Rich content
+  { keywords: ["recipe", "cookbook", "meal plan", "workout plan", "training plan", "curriculum", "course", "lesson"], weight: 2, tag: "structured-content" },
+  { keywords: ["calendar", "schedule", "planner", "agenda", "booking", "reservation"], weight: 2, tag: "calendar" },
+  { keywords: ["canvas", "draw", "paint", "sketch", "editor", "rich text"], weight: 3, tag: "canvas" },
+
+  // WebView-worthy
+  { keywords: ["html", "webview", "web view", "interactive diagram", "animation"], weight: 2, tag: "webview" },
+
+  // Simple signals (low weight, need many to trigger)
+  { keywords: ["list", "todo", "note", "counter", "calculator"], weight: 1, tag: "simple" },
 ];
+
+/** Threshold: total weight >= this → COMPLEX (use Opus) */
+const COMPLEXITY_THRESHOLD = 4;
 
 function isComplexPrompt(prompt: string): { complex: boolean; matchedKeywords: string[] } {
   const lower = prompt.toLowerCase();
-  const matchedKeywords = COMPLEX_KEYWORDS.filter((kw) => lower.includes(kw));
+  let totalWeight = 0;
+  const matchedKeywords: string[] = [];
 
-  if (matchedKeywords.length >= 2) return { complex: true, matchedKeywords };
-  if (prompt.length > 500) return { complex: true, matchedKeywords };
+  for (const signal of COMPLEXITY_SIGNALS) {
+    const matched = signal.keywords.some((kw) => lower.includes(kw));
+    if (matched) {
+      totalWeight += signal.weight;
+      matchedKeywords.push(signal.tag);
+    }
+  }
 
-  return { complex: false, matchedKeywords };
+  // Long prompts with clarifications are inherently more detailed
+  if (prompt.length > 300) totalWeight += 1;
+  if (prompt.length > 600) totalWeight += 1;
+
+  // Multiple sentences suggest a more detailed spec
+  const sentenceCount = (prompt.match(/[.!?]\s/g) || []).length + 1;
+  if (sentenceCount >= 4) totalWeight += 1;
+
+  return {
+    complex: totalWeight >= COMPLEXITY_THRESHOLD,
+    matchedKeywords: [...matchedKeywords, `weight=${totalWeight}`],
+  };
 }
 
 /**

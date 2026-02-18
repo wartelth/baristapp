@@ -112,3 +112,51 @@ flowchart TD
 - Storage is namespaced: `app:{appId}:state`
 - Server endpoints are scoped: `/api/apps/{appId}/endpoints/{endpointId}`
 - Apps cannot access each other's state or endpoints
+
+## WebView Security
+
+The `webView` component renders HTML/CSS/JavaScript in a sandboxed WebView (WKWebView on iOS, WebView on Android). Security is enforced at multiple layers:
+
+### Sandbox Constraints
+
+```mermaid
+flowchart TD
+    HTML["HTML Content"] --> WebView["Sandboxed WebView"]
+    WebView --> Bridge{"Bridge Enabled?"}
+    Bridge -->|Yes| Validate["Validate Message Type"]
+    Bridge -->|No| Block["No Communication"]
+    Validate -->|Valid| Process["Process Action"]
+    Validate -->|Invalid| Reject["Reject Message"]
+    
+    WebView -.-x Nav["External Navigation"]
+    WebView -.-x File["File System"]
+    WebView -.-x Native["Native APIs"]
+    
+    style WebView fill:#4f46e5,color:#fff,stroke:none
+    style Block fill:#dc2626,color:#fff,stroke:none
+    style Reject fill:#dc2626,color:#fff,stroke:none
+    style Process fill:#16a34a,color:#fff,stroke:none
+```
+
+**Navigation Restrictions:**
+- All external URLs are blocked (`onShouldStartLoadWithRequest` returns `false`)
+- Only inline HTML (`data:` URIs) and `about:blank` are allowed
+- No redirects to external domains
+
+**File Access:**
+- `allowFileAccess={false}` — No local file system access
+- `allowFileAccessFromFileURLs={false}` — No file:// URL access
+- `allowUniversalAccessFromFileURLs={false}` — No cross-origin file access
+
+**Bridge API:**
+- Only whitelisted message types: `setState`, `dispatch`, `message`, `bridgeReady`
+- All bridge messages are validated before processing
+- State updates are limited to declared `stateKeys` (if provided)
+- Actions dispatched from WebView must match the schema (validated by renderer)
+
+**Apple Guideline 4.7 Compliance:**
+The WebView implementation follows Apple's guidelines for HTML5 mini-apps:
+- Content is generated dynamically (not pre-packaged HTML files)
+- No access to native device features from WebView JavaScript
+- All native interactions go through the validated bridge API
+- WebView content cannot access camera, location, contacts, etc. directly

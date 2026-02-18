@@ -66,7 +66,55 @@ THEME (optional)
 }
 
 ═══════════════════════════════════════
-20 COMPONENT TYPES
+EXPRESSION ENGINE (NEW — use in any string value)
+═══════════════════════════════════════
+
+Any string value in the schema can contain {{expressions}} that are evaluated at runtime.
+If the entire value is a single {{expression}}, the raw typed value is returned (number, boolean, array, etc.).
+If mixed with text, the result is a string: "Hello {{name}}, you have {{items.length}} items".
+
+Supported syntax:
+- Path access:        {{user.profile.name}}, {{items[0].title}}
+- Array methods:      {{items.length}}, {{items.filter("done").length}}, {{items.map("name").join(", ")}}
+- String methods:     {{name.toUpperCase()}}, {{text.trim()}}, {{text.slice(0, 5)}}
+- Math:               {{price * quantity}}, {{total + tax}}, {{score / max * 100}}
+- Comparisons:        {{score > 80}}, {{status == "active"}}
+- Ternary:            {{score >= 50 ? "Pass" : "Fail"}}
+- Pipes:              {{price | toFixed(2)}}, {{name | uppercase}}, {{date | timeAgo}}
+- Negation:           {{!isLoading}}, {{-offset}}
+
+Array methods (called on arrays):
+  .filter("key")          — keep items where item[key] is truthy
+  .filter("key", value)   — keep items where item[key] === value
+  .map("key")             — extract property from each item
+  .find("key", value)     — first item where item[key] === value
+  .sort("key")            — sort ascending by property
+  .sort("key", "desc")    — sort descending
+  .reduce("key")          — sum a numeric property
+  .some("key")            — true if any item[key] is truthy
+  .every("key")           — true if all item[key] are truthy
+  .count("key", value)    — count items matching condition
+  .slice(start, end)      — sub-array
+  .includes(value)        — contains check
+  .join(separator)        — join to string
+  .reverse()              — reversed copy
+  .length                 — array length
+
+Pipe functions (applied with |):
+  | toFixed(2)     | uppercase      | lowercase      | trim
+  | capitalize     | truncate(50)   | number         | string
+  | date           | date("long")   | timeAgo        | json
+  | sum("key")     | avg("key")     | count          | first | last
+  | round          | ceil           | floor          | abs
+
+EXAMPLES of expressions in component props:
+  "content": "Total: \${{cart | sum('price') | toFixed(2)}}"
+  "content": "{{items.filter('done').length}} / {{items.length}} completed"
+  "content": "{{score >= 50 ? 'Pass' : 'Fail'}}"
+  "content": "Last updated: {{updatedAt | timeAgo}}"
+
+═══════════════════════════════════════
+21 COMPONENT TYPES
 ═══════════════════════════════════════
 
 All components have:
@@ -302,8 +350,40 @@ Marker format: { "latitude": 37.7, "longitude": -122.4, "title": "Name", "descri
   }
 }
 
+── WEBVIEW (Apple 4.7 compliant) ──
+
+21. WEBVIEW — Render HTML/CSS/JS in a sandboxed WebView
+Use this for complex UIs that cannot be expressed with declarative components:
+games, canvas visualizations, rich text editors, interactive diagrams, custom animations.
+
+{
+  "type": "webView", "id": "...",
+  "props": {
+    "html": "<full HTML string>",
+    "htmlKey": "<state key containing HTML>",
+    "height": 400,
+    "stateKeys": ["score", "playerName"],
+    "allowBridge": true,
+    "onMessage": <optional Action>
+  }
+}
+
+The WebView provides a bridge API to the HTML content:
+  window.SwissKnife.getState("key")       — read a state value
+  window.SwissKnife.setState("key", value) — update native state
+  window.SwissKnife.dispatch(action)       — dispatch a native action
+  window.SwissKnife.sendMessage(data)      — send custom data to native
+  window.SwissKnife.onStateUpdate(fn)      — listen for state changes from native
+
+RULES for WebView HTML:
+- Must be self-contained (inline CSS/JS, no external scripts)
+- Use window.SwissKnife for communication, not direct DOM manipulation of native UI
+- Keep HTML compact — it's stored in JSON
+- Use for: canvas games, SVG animations, rich editors, complex visualizations
+- Do NOT use for: simple forms, lists, buttons (use native components instead)
+
 ═══════════════════════════════════════
-13 ACTION TYPES
+15 ACTION TYPES
 ═══════════════════════════════════════
 
 ── Basic ──
@@ -336,14 +416,25 @@ URL supports {{stateKey}} interpolation.
   "tickAction": <Action to run each tick>
 }
 
-8. COMPUTE — Math, string, and utility operations
+8. COMPUTE — Math, string, array, and utility operations
 {
   "type": "compute",
-  "operation": "increment"|"decrement"|"toggle"|"add"|"subtract"|"multiply"|"divide"|"concat"|"length"|"round"|"random"|"now"|"min"|"max"|"toUpperCase"|"toLowerCase",
+  "operation": "<see list below>",
   "key": "<source state key>",
   "operands": [<values>],
   "resultKey": "<optional target key, defaults to key>"
 }
+Operations:
+  Arithmetic: increment, decrement, add, subtract, multiply, divide, modulo,
+              round, ceil, floor, abs, pow, sqrt, random, min, max, clamp
+  String:     concat, toUpperCase, toLowerCase, trim, replace, split, join,
+              padStart, padEnd, substring, capitalize
+  Array:      length, push, pop, shift, unshift, reverse, sort, unique,
+              flatten, sum, avg, pluck
+  Boolean:    toggle
+  Date:       now, formatDate, dateDiff
+  Type:       toNumber, toString, toBoolean
+  JSON:       jsonParse, jsonStringify
 
 9. CONDITIONAL — If/else on state
 {
@@ -383,6 +474,30 @@ URL supports {{stateKey}} interpolation.
   "fromKey": "<state key to copy>",
   "value": "<or direct string>"
 }
+
+14. TRANSFORM — Evaluate an expression and store the result
+{
+  "type": "transform",
+  "expression": "items.filter('done').length",
+  "resultKey": "completedCount"
+}
+Use this for derived/computed values. The expression has access to all state keys.
+Examples:
+  "expression": "items.filter('done').length"     → count completed items
+  "expression": "cart.reduce('price') * 1.2"      → total with tax
+  "expression": "name.toUpperCase()"              → transform a string
+  "expression": "score >= 50 ? 'Pass' : 'Fail'"  → conditional value
+
+15. SET_MULTIPLE — Set many state keys at once
+{
+  "type": "setMultiple",
+  "values": {
+    "name": "{{firstName}} {{lastName}}",
+    "isValid": true,
+    "count": 0
+  }
+}
+String values support {{expression}} interpolation. Non-string values are set directly.
 
 ═══════════════════════════════════════
 SERVER ENDPOINTS (optional)
@@ -427,6 +542,12 @@ RULES
 12. Always include an appropriate emoji "icon".
 13. capabilities must include "localStorage" plus any features used.
 14. version must be 2.
+15. Use {{expressions}} in text content for dynamic values: "{{items.length}} items", "{{score | toFixed(1)}} pts".
+16. Use "transform" action for derived state: computing filtered counts, aggregations, formatted values.
+17. Use "setMultiple" to update several state keys in one action (cleaner than batch of setStates).
+18. Use "webView" component ONLY when native components can't handle the use case (games, canvas, rich editors, complex SVG).
+19. For webView: keep HTML self-contained, use window.SwissKnife bridge for state communication.
+20. Prefer native components over webView for better performance and native feel.
 
 ═══════════════════════════════════════
 EXAMPLE 1: Counter with Haptics
