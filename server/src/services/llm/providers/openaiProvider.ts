@@ -3,7 +3,6 @@ import type { MiniApp } from "@swissknife/shared";
 import { MASTER_PROMPT } from "../../../prompts/masterPrompt";
 import { CLARIFY_PROMPT } from "../../../prompts/clarifyPrompt";
 import { buildModifyPrompt } from "../../../prompts/modifyPrompt";
-import { MiniAppJSONSchema } from "../../../validation/jsonSchema";
 import { extractJSON, validateMiniApp } from "../../../validation/schemaValidator";
 import L from "../../../utils/logger";
 import type {
@@ -20,7 +19,8 @@ const OPENAI_GENERATE_FALLBACK_MODEL = process.env.OPENAI_GENERATE_FALLBACK_MODE
 const OPENAI_CLARIFY_FALLBACK_MODEL =
   process.env.OPENAI_CLARIFY_FALLBACK_MODEL ?? "gpt-4.1-mini";
 const OPENAI_MODIFY_FALLBACK_MODEL = process.env.OPENAI_MODIFY_FALLBACK_MODEL ?? "gpt-4.1";
-const OPENAI_REQUEST_TIMEOUT_MS = Number(process.env.OPENAI_REQUEST_TIMEOUT_MS ?? 45_000);
+const OPENAI_REQUEST_TIMEOUT_MS = Number(process.env.OPENAI_REQUEST_TIMEOUT_MS ?? 120_000);
+const OPENAI_MAX_COMPLETION_TOKENS = Number(process.env.OPENAI_MAX_COMPLETION_TOKENS ?? 16384);
 
 function shouldRetryWithFallback(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
@@ -29,11 +29,6 @@ function shouldRetryWithFallback(error: unknown): boolean {
     message.includes("do not have access") ||
     message.includes("404")
   );
-}
-
-function isInvalidResponseSchemaError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.toLowerCase().includes("invalid schema for response_format");
 }
 
 function createOpenAIClient(): OpenAI {
@@ -74,6 +69,39 @@ function getTextFromChatContent(content: unknown): string {
     .trim();
 }
 
+function parseAndValidateMiniAppFromText(text: string): { ok: true; miniApp: MiniApp } | { ok: false; error: string } {
+  try {
+    const parsed = extractJSON(text);
+    const validation = validateMiniApp(parsed);
+    if (!validation.valid) {
+      return { ok: false, error: `Validation failed: ${validation.errors.join("; ")}` };
+    }
+    return { ok: true, miniApp: validation.data };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: message };
+  }
+}
+
+function parseClarifyPayload(text: string): { ok: true; summary: string; questions: any[] } | { ok: false; error: string } {
+  const cleaned = text.trim();
+  if (!cleaned) return { ok: false, error: "Model returned empty clarify output" };
+  try {
+    const parsed = extractJSON(cleaned) as any;
+    if (!parsed?.summary || !Array.isArray(parsed.questions)) {
+      return { ok: false, error: "Invalid clarification structure" };
+    }
+    return {
+      ok: true,
+      summary: String(parsed.summary),
+      questions: parsed.questions,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: message };
+  }
+}
+
 async function withTimeout<T>(fn: (signal: AbortSignal) => Promise<T>, timeoutMs: number): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -95,9 +123,11 @@ export class OpenAIProvider implements LLMProvider {
       L.detail("AGENT", "Provider", "openai");
       L.detail("AGENT", "Model", model);
       L.detail("AGENT", "Prompt chars", userPrompt.length);
+      L.detail("AGENT", "Max completion tokens", OPENAI_MAX_COMPLETION_TOKENS);
       let resolvedModel = model;
       let response;
-      const runGenerateRequest = async (targetModel: string, useJsonSchema: boolean) => {
+
+      const runGenerateRequest = async (targetModel: string, maxTokens: number) => {
         const strongJsonInstruction =
           "Return only one valid JSON object matching the mini app schema. No markdown, no prose.";
         return withTimeout(
@@ -109,63 +139,53 @@ export class OpenAIProvider implements LLMProvider {
                   { role: "system", content: `${MASTER_PROMPT}\n\n${strongJsonInstruction}` },
                   { role: "user", content: userPrompt },
                 ],
-                max_completion_tokens: 3000,
+                max_completion_tokens: maxTokens,
                 stream: false,
-                ...(useJsonSchema
-                  ? {
-                      response_format: {
-                        type: "json_schema" as const,
-                        json_schema: {
-                          name: "mini_app_spec",
-                          schema: MiniAppJSONSchema as Record<string, unknown>,
-                        },
-                      },
-                    }
-                  : {
-                      response_format: {
-                        type: "json_object" as const,
-                      },
-                    }),
+                response_format: { type: "json_object" as const },
               },
               { signal }
             ),
           OPENAI_REQUEST_TIMEOUT_MS
         );
       };
+
       try {
-        try {
-          response = await runGenerateRequest(resolvedModel, true);
-        } catch (schemaErr) {
-          if (!isInvalidResponseSchemaError(schemaErr)) throw schemaErr;
-          L.warn("AGENT", "OpenAI rejected json_schema, retrying with json_object");
-          L.detail("AGENT", "Fallback request", "generate json_object started");
-          response = await runGenerateRequest(resolvedModel, false);
-          L.detail("AGENT", "Fallback request", "generate json_object completed");
-        }
+        response = await runGenerateRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
       } catch (err) {
         if (!shouldRetryWithFallback(err)) throw err;
         resolvedModel = OPENAI_GENERATE_FALLBACK_MODEL;
         if (resolvedModel === model) throw err;
         L.warn("AGENT", `Primary model unavailable, retrying generate with ${resolvedModel}`);
-        try {
-          response = await runGenerateRequest(resolvedModel, true);
-        } catch (schemaErr) {
-          if (!isInvalidResponseSchemaError(schemaErr)) throw schemaErr;
-          L.warn("AGENT", "Fallback model rejected json_schema, retrying with json_object");
-          L.detail("AGENT", "Fallback request", "generate json_object started");
-          response = await runGenerateRequest(resolvedModel, false);
-          L.detail("AGENT", "Fallback request", "generate json_object completed");
-        }
+        response = await runGenerateRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
       }
 
-      const text = getTextFromChatContent(response.choices[0]?.message?.content);
-      const parsed = extractJSON(text);
-      const validation = validateMiniApp(parsed);
-      if (!validation.valid) {
-        return {
-          success: false,
-          error: `Validation failed: ${validation.errors.join("; ")}`,
-        };
+      const finishReason = response.choices[0]?.finish_reason ?? "unknown";
+      let text = getTextFromChatContent(response.choices[0]?.message?.content);
+      L.detail("AGENT", "Finish reason", finishReason);
+      L.detail("AGENT", "Output chars", text.length);
+
+      if (finishReason === "length") {
+        L.warn("AGENT", "Response truncated (finish_reason=length), retrying with higher token limit");
+        const retryTokens = Math.min(OPENAI_MAX_COMPLETION_TOKENS * 2, 32768);
+        const retry = await runGenerateRequest(resolvedModel, retryTokens);
+        text = getTextFromChatContent(retry.choices[0]?.message?.content);
+        L.detail("AGENT", "Retry finish reason", retry.choices[0]?.finish_reason ?? "unknown");
+        L.detail("AGENT", "Retry output chars", text.length);
+      }
+
+      let parsedResult = parseAndValidateMiniAppFromText(text);
+      if (!parsedResult.ok) {
+        L.warn("AGENT", `Parse/validation failed, retrying once: ${parsedResult.error}`);
+        const retry = await runGenerateRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
+        const retryText = getTextFromChatContent(retry.choices[0]?.message?.content);
+        L.detail("AGENT", "Retry output chars", retryText.length);
+        parsedResult = parseAndValidateMiniAppFromText(retryText);
+        if (!parsedResult.ok) {
+          return {
+            success: false,
+            error: `Generation parse/validation failed: ${parsedResult.error}`,
+          };
+        }
       }
 
       const usage = response.usage;
@@ -176,7 +196,7 @@ export class OpenAIProvider implements LLMProvider {
       L.detail("AGENT", "Total tokens", totalTokens);
       return {
         success: true,
-        miniApp: validation.data,
+        miniApp: parsedResult.miniApp,
         usage: {
           modelName: resolvedModel,
           costUsd: 0,
@@ -198,65 +218,75 @@ export class OpenAIProvider implements LLMProvider {
       L.detail("CLARIFY", "Provider", "openai");
       L.detail("CLARIFY", "Model", model);
       L.detail("CLARIFY", "Prompt chars", userPrompt.length);
-      let resolvedModel = model;
-      let response;
-      try {
-        response = await withTimeout(
+      const runClarifyRequest = async (
+        targetModel: string,
+        useJsonObjectFormat: boolean,
+        attemptLabel: string
+      ) => {
+        L.detail("CLARIFY", "Attempt", `${attemptLabel} (${targetModel}, ${useJsonObjectFormat ? "json_object" : "plain"})`);
+        return withTimeout(
           (signal) =>
             client.chat.completions.create(
               {
-                model: resolvedModel,
+                model: targetModel,
                 messages: [
-                  { role: "system", content: CLARIFY_PROMPT },
+                  {
+                    role: "system",
+                    content: `${CLARIFY_PROMPT}\n\nReturn strictly one JSON object with keys: summary, questions.`,
+                  },
                   { role: "user", content: userPrompt },
                 ],
                 max_completion_tokens: 1000,
                 stream: false,
-                response_format: {
-                  type: "json_object",
-                },
+                ...(useJsonObjectFormat
+                  ? {
+                      response_format: {
+                        type: "json_object" as const,
+                      },
+                    }
+                  : {}),
               },
               { signal }
             ),
           OPENAI_REQUEST_TIMEOUT_MS
         );
+      };
+
+      let resolvedModel = model;
+      let response: Awaited<ReturnType<typeof runClarifyRequest>>;
+      try {
+        response = await runClarifyRequest(resolvedModel, true, "primary");
       } catch (err) {
         if (!shouldRetryWithFallback(err)) throw err;
         resolvedModel = OPENAI_CLARIFY_FALLBACK_MODEL;
         if (resolvedModel === model) throw err;
         L.warn("CLARIFY", `Primary clarify model unavailable, retrying with ${resolvedModel}`);
-        response = await withTimeout(
-          (signal) =>
-            client.chat.completions.create(
-              {
-                model: resolvedModel,
-                messages: [
-                  { role: "system", content: CLARIFY_PROMPT },
-                  { role: "user", content: userPrompt },
-                ],
-                max_completion_tokens: 1000,
-                stream: false,
-                response_format: {
-                  type: "json_object",
-                },
-              },
-              { signal }
-            ),
-          OPENAI_REQUEST_TIMEOUT_MS
-        );
+        response = await runClarifyRequest(resolvedModel, true, "fallback-model");
       }
 
-      const text = getTextFromChatContent(response.choices[0]?.message?.content);
-      const json = extractJSON(text) as any;
-      if (!json.summary || !Array.isArray(json.questions)) {
-        return { success: false, error: "Invalid clarification structure" };
+      const finishReason = response.choices[0]?.finish_reason ?? "unknown";
+      let text = getTextFromChatContent(response.choices[0]?.message?.content);
+      L.detail("CLARIFY", "Finish reason", finishReason);
+      L.detail("CLARIFY", "Output chars", text.length);
+
+      let parsed = parseClarifyPayload(text);
+      if (!parsed.ok) {
+        L.warn("CLARIFY", `Primary clarify parse failed, retrying plain response: ${parsed.error}`);
+        const retry = await runClarifyRequest(resolvedModel, false, "recovery-plain");
+        text = getTextFromChatContent(retry.choices[0]?.message?.content);
+        L.detail("CLARIFY", "Retry output chars", text.length);
+        parsed = parseClarifyPayload(text);
+        if (!parsed.ok) {
+          return { success: false, error: `Clarify parse failed: ${parsed.error}` };
+        }
       }
+
       L.success("CLARIFY", "OpenAI clarify completed");
-      L.detail("CLARIFY", "Questions", json.questions.length);
+      L.detail("CLARIFY", "Questions", parsed.questions.length);
       return {
         success: true,
-        summary: String(json.summary),
-        questions: json.questions.map((q: any, i: number) => ({
+        summary: parsed.summary,
+        questions: parsed.questions.map((q: any, i: number) => ({
           id: q.id ?? `q${i + 1}`,
           question: String(q.question ?? ""),
           type: ["single", "multiple", "freeform"].includes(q.type)
@@ -282,9 +312,11 @@ export class OpenAIProvider implements LLMProvider {
       L.detail("AGENT", "Model", model);
       L.detail("AGENT", "AppId", currentSpec.appId);
       L.detail("AGENT", "Prompt chars", modifyPrompt.length);
+      L.detail("AGENT", "Max completion tokens", OPENAI_MAX_COMPLETION_TOKENS);
       let resolvedModel = model;
       let response;
-      const runModifyRequest = async (targetModel: string, useJsonSchema: boolean) => {
+
+      const runModifyRequest = async (targetModel: string, maxTokens: number) => {
         const strongJsonInstruction =
           "Return only one valid JSON object matching the mini app schema. No markdown, no prose.";
         return withTimeout(
@@ -296,67 +328,57 @@ export class OpenAIProvider implements LLMProvider {
                   { role: "system", content: `${systemPrompt}\n\n${strongJsonInstruction}` },
                   { role: "user", content: modifyPrompt },
                 ],
-                max_completion_tokens: 3000,
+                max_completion_tokens: maxTokens,
                 stream: false,
-                ...(useJsonSchema
-                  ? {
-                      response_format: {
-                        type: "json_schema" as const,
-                        json_schema: {
-                          name: "mini_app_modified_spec",
-                          schema: MiniAppJSONSchema as Record<string, unknown>,
-                        },
-                      },
-                    }
-                  : {
-                      response_format: {
-                        type: "json_object" as const,
-                      },
-                    }),
+                response_format: { type: "json_object" as const },
               },
               { signal }
             ),
           OPENAI_REQUEST_TIMEOUT_MS
         );
       };
+
       try {
-        try {
-          response = await runModifyRequest(resolvedModel, true);
-        } catch (schemaErr) {
-          if (!isInvalidResponseSchemaError(schemaErr)) throw schemaErr;
-          L.warn("AGENT", "OpenAI rejected modify json_schema, retrying with json_object");
-          L.detail("AGENT", "Fallback request", "modify json_object started");
-          response = await runModifyRequest(resolvedModel, false);
-          L.detail("AGENT", "Fallback request", "modify json_object completed");
-        }
+        response = await runModifyRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
       } catch (err) {
         if (!shouldRetryWithFallback(err)) throw err;
         resolvedModel = OPENAI_MODIFY_FALLBACK_MODEL;
         if (resolvedModel === model) throw err;
         L.warn("AGENT", `Primary modify model unavailable, retrying with ${resolvedModel}`);
-        try {
-          response = await runModifyRequest(resolvedModel, true);
-        } catch (schemaErr) {
-          if (!isInvalidResponseSchemaError(schemaErr)) throw schemaErr;
-          L.warn("AGENT", "Fallback model rejected modify json_schema, retrying with json_object");
-          L.detail("AGENT", "Fallback request", "modify json_object started");
-          response = await runModifyRequest(resolvedModel, false);
-          L.detail("AGENT", "Fallback request", "modify json_object completed");
+        response = await runModifyRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
+      }
+
+      const finishReason = response.choices[0]?.finish_reason ?? "unknown";
+      let text = getTextFromChatContent(response.choices[0]?.message?.content);
+      L.detail("AGENT", "Finish reason", finishReason);
+      L.detail("AGENT", "Output chars", text.length);
+
+      if (finishReason === "length") {
+        L.warn("AGENT", "Modify response truncated (finish_reason=length), retrying with higher token limit");
+        const retryTokens = Math.min(OPENAI_MAX_COMPLETION_TOKENS * 2, 32768);
+        const retry = await runModifyRequest(resolvedModel, retryTokens);
+        text = getTextFromChatContent(retry.choices[0]?.message?.content);
+        L.detail("AGENT", "Retry finish reason", retry.choices[0]?.finish_reason ?? "unknown");
+        L.detail("AGENT", "Retry output chars", text.length);
+      }
+
+      let parsedResult = parseAndValidateMiniAppFromText(text);
+      if (!parsedResult.ok) {
+        L.warn("AGENT", `Modify parse/validation failed, retrying once: ${parsedResult.error}`);
+        const retry = await runModifyRequest(resolvedModel, OPENAI_MAX_COMPLETION_TOKENS);
+        const retryText = getTextFromChatContent(retry.choices[0]?.message?.content);
+        L.detail("AGENT", "Retry output chars", retryText.length);
+        parsedResult = parseAndValidateMiniAppFromText(retryText);
+        if (!parsedResult.ok) {
+          return {
+            success: false,
+            error: `Modify parse/validation failed: ${parsedResult.error}`,
+          };
         }
       }
 
-      const text = getTextFromChatContent(response.choices[0]?.message?.content);
-      const parsed = extractJSON(text);
-      const validation = validateMiniApp(parsed);
-      if (!validation.valid) {
-        return {
-          success: false,
-          error: `Validation failed: ${validation.errors.join("; ")}`,
-        };
-      }
-
-      if (validation.data.appId !== currentSpec.appId) {
-        (validation.data as any).appId = currentSpec.appId;
+      if (parsedResult.miniApp.appId !== currentSpec.appId) {
+        (parsedResult.miniApp as any).appId = currentSpec.appId;
       }
 
       const usage = response.usage;
@@ -367,7 +389,7 @@ export class OpenAIProvider implements LLMProvider {
       L.detail("AGENT", "Total tokens", totalTokens);
       return {
         success: true,
-        miniApp: validation.data,
+        miniApp: parsedResult.miniApp,
         usage: {
           modelName: resolvedModel,
           costUsd: 0,
