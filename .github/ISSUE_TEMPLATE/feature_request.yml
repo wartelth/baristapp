@@ -1,0 +1,48 @@
+name: Feature request
+description: Propose an improvement or new capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What user problem are you trying to solve?
+      placeholder: As a user, I want...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe your preferred approach
+      placeholder: We could add...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: Other options and trade-offs...
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Impacted area
+      options:
+        - app
+        - server
+        - shared
+        - docs
+        - website
+        - multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Mocks, references, architecture notes, constraints

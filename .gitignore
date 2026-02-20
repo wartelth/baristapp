@@ -6,3 +6,10 @@ dist/
 ios/
 android/
 server/logs/
+docs/.docusaurus/
+docs/build/
+server/tmp/
+.claude/
+app/.claude/
+server/.claude/
+*.env.local

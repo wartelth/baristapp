@@ -1,5 +1,6 @@
 {
   "name": "baristapp",
+  "license": "MIT",
   "private": true,
   "workspaces": [
     "shared",
