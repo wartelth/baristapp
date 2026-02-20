@@ -330,3 +330,9 @@ Main routes in `server/src/index.ts`:
    - implementation notes
    - test plan
    - screenshots/videos for UI changes
+
+---
+
+⭐ If this project helps you, please consider starring it:
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/wartelth/baristapp?style=social)](https://github.com/wartelth/baristapp)
