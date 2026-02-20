@@ -5,28 +5,28 @@ import Image from "next/image";
 
 const apps = [
   {
-    name: "Weather Dashboard",
-    prompt: "\"Show me the weather for Paris\"",
+    name: "Social Tab",
+    prompt: "\"Import shared app codes and see what friends shared with you\"",
     image: "/images/showcase/app-1.webp",
-    tags: ["weather", "live data"],
+    tags: ["social", "sharing"],
   },
   {
-    name: "Habit Tracker",
-    prompt: "\"A daily habit tracker with streaks\"",
+    name: "Create Flow",
+    prompt: "\"Describe what you need and generate a new mini-app\"",
     image: "/images/showcase/app-2.webp",
-    tags: ["state", "charts"],
+    tags: ["prompt", "generation"],
   },
   {
-    name: "Crypto Portfolio",
-    prompt: "\"Track my crypto with live prices\"",
+    name: "My Apps Grid",
+    prompt: "\"Browse your generated apps in a colorful card grid\"",
     image: "/images/showcase/app-3.webp",
-    tags: ["crypto", "live data"],
+    tags: ["library", "discovery"],
   },
   {
-    name: "Task Planner",
-    prompt: "\"A planner app with priorities and reminders\"",
+    name: "Profile & Plan",
+    prompt: "\"View account details, usage limits, and current plan\"",
     image: "/images/showcase/app-4.webp",
-    tags: ["productivity", "planner"],
+    tags: ["profile", "billing"],
   },
 ];
 

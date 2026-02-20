@@ -2,6 +2,14 @@
 
 Build mobile mini-apps from plain English.
 
+## Website Screenshots
+
+| Social Tab | Create Flow |
+| --- | --- |
+| <img src="website/public/images/showcase/app-1.webp" alt="Social tab screenshot" width="260" /> | <img src="website/public/images/showcase/app-2.webp" alt="Create flow screenshot" width="260" /> |
+| My Apps Grid | Profile & Plan |
+| <img src="website/public/images/showcase/app-3.webp" alt="My Apps grid screenshot" width="260" /> | <img src="website/public/images/showcase/app-4.webp" alt="Profile and plan screenshot" width="260" /> |
+
 - Repo: `https://github.com/wartelth/baristapp`
 - Monorepo: React Native app + Node/Express server + shared schema + docs + website
 - Core idea: AI generates declarative JSON specs, app renders them safely (no eval / no remote code execution)
