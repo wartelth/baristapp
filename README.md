@@ -1,6 +1,58 @@
+![Baristapp Logo](./logo.png)
+
 # Baristapp
 
-Build mobile mini-apps from plain English.
+### Phone ↔ Server Flow (How Barista Handles It)
+
+```mermaid
+sequenceDiagram
+    participant Phone as Phone App
+    participant API as Barista Server API
+    participant Core as Barista Orchestrator
+    participant LLM as LLM Provider
+    participant Safe as Schema + Safety Checks
+
+    Phone->>API: Send prompt / action request
+    API->>Core: Route request into Barista pipeline
+    Core->>LLM: Generate app spec draft
+    LLM-->>Core: Return JSON candidate
+    Core->>Safe: Validate schema + runtime safety
+    Safe-->>Core: Pass/fix/reject
+    Core-->>API: Return safe result
+    API-->>Phone: Deliver validated app response
+```
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/wartelth/baristapp?style=social)](https://github.com/wartelth/baristapp)
+[![GitHub forks](https://img.shields.io/github/forks/wartelth/baristapp)](https://github.com/wartelth/baristapp/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/wartelth/baristapp)](https://github.com/wartelth/baristapp/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/wartelth/baristapp)](https://github.com/wartelth/baristapp/commits)
+[![License](https://img.shields.io/github/license/wartelth/baristapp)](./LICENSE)
+
+Build mobile mini-apps from plain English prompts.
+
+Baristapp generates declarative JSON app specs, validates them with shared schemas, then renders them safely in the mobile app (no eval / no remote code execution).
+
+**Links:** [Repository](https://github.com/wartelth/baristapp) · [Issues](https://github.com/wartelth/baristapp/issues) · [Pull Requests](https://github.com/wartelth/baristapp/pulls) · [Actions](https://github.com/wartelth/baristapp/actions)
+
+> Status: Beta (active development)  
+> Platforms: Expo/React Native app + Node/Express API + docs/website monorepo
+
+### Quick Start (60 seconds)
+
+```bash
+npm install
+# create server/.env from server/.env.example and set at least one LLM key
+npm run server
+npm run app
+```
+
+## Website Screenshots
+
+| Social Tab | Create Flow |
+| --- | --- |
+| <img src="website/public/images/showcase/app-1.webp" alt="Social tab screenshot" width="260" /> | <img src="website/public/images/showcase/app-2.webp" alt="Create flow screenshot" width="260" /> |
+| My Apps Grid | Profile & Plan |
+| <img src="website/public/images/showcase/app-3.webp" alt="My Apps grid screenshot" width="260" /> | <img src="website/public/images/showcase/app-4.webp" alt="Profile and plan screenshot" width="260" /> |
 
 - Repo: `https://github.com/wartelth/baristapp`
 - Monorepo: React Native app + Node/Express server + shared schema + docs + website
