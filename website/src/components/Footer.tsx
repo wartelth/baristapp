@@ -26,7 +26,7 @@ export default function Footer() {
               Docs
             </a>
             <a
-              href="https://github.com/Baristapp/baristapp"
+              href="https://github.com/wartelth/baristapp"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-foreground transition-colors"

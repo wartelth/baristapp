@@ -6,12 +6,14 @@
     "shared",
     "server",
     "app",
-    "docs"
+    "docs",
+    "website"
   ],
   "scripts": {
     "server": "npm run dev --workspace=server",
     "app": "npm start --workspace=app",
     "docs": "npm start --workspace=docs",
+    "website": "npm run dev --workspace=website",
     "docs:build": "npm run build --workspace=docs",
     "typecheck": "npm exec --workspace=shared tsc -- --noEmit && npm exec --workspace=server tsc -- --noEmit"
   },

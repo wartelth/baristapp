@@ -50,7 +50,7 @@ export const config = {
   apiBaseUrl:
     extra.apiBaseUrl ??
     rootConfig.apiBaseUrl ??
-    (__DEV__ ? "http://192.168.2.223:3001" : "https://api.baristapp.app"),
+    (__DEV__ ? "http://localhost:3001" : "https://api.baristapp.app"),
   supabaseUrl: extra.supabaseUrl ?? rootConfig.supabaseUrl ?? "",
   supabaseAnonKey: extra.supabaseAnonKey ?? rootConfig.supabaseAnonKey ?? "",
   privacyPolicyUrl:

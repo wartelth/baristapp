@@ -61,7 +61,7 @@ export default function Navbar() {
             Docs
           </a>
           <a
-            href="https://github.com/Baristapp"
+            href="https://github.com/wartelth/baristapp"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
@@ -122,7 +122,7 @@ export default function Navbar() {
                   <BookOpen className="w-4 h-4" />
                   Docs
                 </a>
-                <a href="https://github.com/Baristapp" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground py-1">
+                <a href="https://github.com/wartelth/baristapp" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground py-1">
                   <Github className="w-4 h-4" />
                   GitHub
                 </a>

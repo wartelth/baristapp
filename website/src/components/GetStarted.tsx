@@ -40,7 +40,7 @@ export default function GetStarted() {
             <div className="p-5 space-y-1.5 text-sm">
               <div className="flex gap-3">
                 <span className="text-muted/60 select-none">$</span>
-                <span className="text-foreground/80">git clone https://github.com/Baristapp/baristapp.git</span>
+                <span className="text-foreground/80">git clone https://github.com/wartelth/baristapp.git</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-muted/60 select-none">$</span>
@@ -67,7 +67,7 @@ export default function GetStarted() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="https://github.com/Baristapp/baristapp"
+              href="https://github.com/wartelth/baristapp"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium bg-gradient-to-r from-amber-700 to-amber-900 hover:from-amber-600 hover:to-amber-800 text-amber-50 transition-all hover:shadow-xl hover:shadow-amber-800/20 hover:-translate-y-0.5"

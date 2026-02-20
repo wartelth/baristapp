@@ -76,9 +76,7 @@ Edit `baristapp.config.js`:
 
 ### 3) Configure server environment
 
-```bash
-cp server/.env.example server/.env
-```
+Create `server/.env` from `server/.env.example` (copy the file manually or with your shell command).
 
 Set at least one LLM key in `server/.env`:
 
