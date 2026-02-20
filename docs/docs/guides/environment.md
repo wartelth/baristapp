@@ -5,7 +5,7 @@ title: Environment Variables
 
 # Environment Variables
 
-SwissKnife uses two configuration layers: `swissknife.config.js` for app/build-time config, and `.env` for server secrets.
+Baristapp uses two configuration layers: `baristapp.config.js` for app/build-time config, and `.env` for server secrets.
 
 ## Server `.env`
 
@@ -27,7 +27,7 @@ Never commit `.env` to version control. The `.gitignore` should already exclude 
 
 ## App Config
 
-**Location:** `swissknife.config.js` (monorepo root)
+**Location:** `baristapp.config.js` (monorepo root)
 
 ```javascript
 module.exports = {
@@ -48,7 +48,7 @@ This file is read by:
 When testing on a physical device, `localhost` won't work. Use your machine's LAN IP:
 
 ```javascript
-// swissknife.config.js
+// baristapp.config.js
 module.exports = {
   apiBaseUrl: "http://192.168.1.42:3001",  // Your LAN IP
   // ...
@@ -63,7 +63,7 @@ Clear the Expo cache: `npx expo start -c`
 
 ```mermaid
 flowchart TD
-    Config["swissknife.config.js"]
+    Config["baristapp.config.js"]
     Config --> AppConfig["app/app.config.js"]
     AppConfig --> Extra["Expo Constants.extra"]
     Extra --> ConfigTS["app/src/config.ts"]

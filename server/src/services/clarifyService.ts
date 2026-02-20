@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CLARIFY_PROMPT } from "../prompts/clarifyPrompt";
 import L, { fmtMs, fmtCost } from "../utils/logger";
-import type { ClarificationQuestion } from "@swissknife/shared";
+import type { ClarificationQuestion } from "@baristapp/shared";
 
 interface ClarifySuccess {
   success: true;

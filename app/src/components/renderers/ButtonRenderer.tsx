@@ -1,12 +1,12 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import { resolveTemplate } from "@swissknife/shared";
+import { resolveTemplate } from "@baristapp/shared";
 import type { RendererProps } from "../../types";
 
 const VARIANT_COLORS = {
-  primary: "#1e40af",
-  secondary: "#374151",
-  danger: "#dc2626",
+  primary: "#C67C4E",
+  secondary: "#3D2E22",
+  danger: "#CC5A45",
 };
 
 export function ButtonRenderer({ component, state, dispatch, onNavigate }: RendererProps) {

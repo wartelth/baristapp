@@ -9,7 +9,7 @@ export async function ensureDataConsentInteractive(): Promise<boolean> {
   return new Promise((resolve) => {
     Alert.alert(
       "Data processing consent",
-      "SwissKnife sends your prompts to Anthropic Claude and stores generated mini-app specs/state in Supabase cloud storage. You can withdraw consent in Profile.",
+      "Baristapp sends your prompts to Anthropic Claude and stores generated mini-app specs/state in Supabase cloud storage. You can withdraw consent in Profile.",
       [
         {
           text: "Decline",

@@ -1,7 +1,7 @@
 {
   "id": "guides/getting-started",
   "title": "Getting Started",
-  "description": "This guide walks you through setting up SwissKnife for local development.",
+  "description": "This guide gets the full Baristapp stack running locally (server, app, docs, website) and verifies end-to-end generation.",
   "source": "@site/docs/guides/getting-started.md",
   "sourceDirName": "guides",
   "slug": "/guides/getting-started",
@@ -21,7 +21,7 @@
     "permalink": "/server/endpoints"
   },
   "next": {
-    "title": "Adding Components",
-    "permalink": "/guides/adding-components"
+    "title": "How to Use Baristapp",
+    "permalink": "/guides/how-to-use"
   }
 }

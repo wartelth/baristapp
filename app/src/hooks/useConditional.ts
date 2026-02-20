@@ -1,4 +1,4 @@
-import type { MiniAppVisibleWhen } from "@swissknife/shared";
+import type { MiniAppVisibleWhen } from "@baristapp/shared";
 
 export function evaluateVisibility(
   condition: MiniAppVisibleWhen | undefined,

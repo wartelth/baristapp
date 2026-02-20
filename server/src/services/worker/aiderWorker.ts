@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { spawn } from "child_process";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { MiniAppJSONSchema } from "../../validation/jsonSchema";
 import { extractJSON, validateMiniApp } from "../../validation/schemaValidator";
 import L from "../../utils/logger";
@@ -28,7 +28,7 @@ function timestampSlug(): string {
 
 function buildAiderTaskPrompt(userPrompt: string): string {
   return [
-    "You are generating a full mini app JSON spec for SwissKnife, a mobile micro-app platform.",
+    "You are generating a full mini app JSON spec for Baristapp, a mobile micro-app platform.",
     "Write only valid JSON into app_spec.json that matches the schema in mini_app.schema.json.",
     'IMPORTANT: The "version" field MUST be the integer 2 (not 1, not 1.0, not 2.0 — exactly 2).',
     "",
@@ -45,8 +45,8 @@ function buildAiderTaskPrompt(userPrompt: string): string {
     "Typography: h1 (28px), h2 (22px), h3 (18px), h4 (16px), p (15px), small (13px) — all pre-styled.",
     "",
     "Bridge API for state persistence:",
-    '  window.SwissKnife.getState("key"), window.SwissKnife.setState("key", value)',
-    "  window.SwissKnife.dispatch(action), window.SwissKnife.onStateUpdate(fn)",
+    '  window.Baristapp.getState("key"), window.Baristapp.setState("key", value)',
+    "  window.Baristapp.dispatch(action), window.Baristapp.onStateUpdate(fn)",
     "",
     "Design principles: use gradients for headers, inline SVG icons, generous whitespace,",
     "  .card for grouping, .stagger for list animations, :active transforms on tappable elements.",

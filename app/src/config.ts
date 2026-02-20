@@ -1,6 +1,6 @@
 /**
- * App config — reads from Expo extra (injected by app.config.js from swissknife.config.js).
- * Fallback: require swissknife.config.js when extra is empty (e.g. Metro cache, Expo Go).
+ * App config — reads from Expo extra (injected by app.config.js from baristapp.config.js).
+ * Fallback: require baristapp.config.js when extra is empty (e.g. Metro cache, Expo Go).
  */
 
 import Constants from "expo-constants";
@@ -40,7 +40,7 @@ let rootConfig: {
   };
 } = {};
 try {
-  rootConfig = require("../../swissknife.config.js");
+  rootConfig = require("../../baristapp.config.js");
 } catch {
   // ignore
 }
@@ -50,21 +50,21 @@ export const config = {
   apiBaseUrl:
     extra.apiBaseUrl ??
     rootConfig.apiBaseUrl ??
-    (__DEV__ ? "http://192.168.2.223:3001" : "https://api.swissknife.app"),
+    (__DEV__ ? "http://192.168.2.223:3001" : "https://api.baristapp.app"),
   supabaseUrl: extra.supabaseUrl ?? rootConfig.supabaseUrl ?? "",
   supabaseAnonKey: extra.supabaseAnonKey ?? rootConfig.supabaseAnonKey ?? "",
   privacyPolicyUrl:
     extra.privacyPolicyUrl ??
     rootConfig.privacyPolicyUrl ??
-    "https://swissknife.app/privacy",
+    "https://baristapp.app/privacy",
   supportUrl:
     extra.supportUrl ??
     rootConfig.supportUrl ??
-    "https://swissknife.app/support",
+    "https://baristapp.app/support",
   supportEmail:
     extra.supportEmail ??
     rootConfig.supportEmail ??
-    "support@swissknife.app",
+    "support@baristapp.app",
   revenueCat: extra.revenueCat ?? rootConfig.revenueCat ?? {
     entitlementPro: "pro",
     iosApiKey: "",

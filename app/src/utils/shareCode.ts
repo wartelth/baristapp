@@ -27,7 +27,7 @@ export function extractShareCodeFromText(raw: string): string {
   const text = raw.trim();
   if (!text) return "";
 
-  // Expected QR payload: swissknife://import?code=abc-def-ghi
+  // Expected QR payload: baristapp://import?code=abc-def-ghi
   const codeMatch = text.match(/[?&]code=([a-z0-9-]+)/i);
   if (codeMatch?.[1]) {
     return formatShareCode(codeMatch[1]);

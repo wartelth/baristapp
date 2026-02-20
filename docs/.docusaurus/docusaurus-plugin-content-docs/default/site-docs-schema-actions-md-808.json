@@ -1,7 +1,7 @@
 {
   "id": "schema/actions",
   "title": "Actions",
-  "description": "Actions are declarative objects that describe what happens in response to user interactions. The renderer's dispatch function processes them. SwissKnife v2 supports 13 action types.",
+  "description": "Actions are declarative objects that describe what happens in response to user interactions. The renderer's dispatch function processes them. SwissKnife v2 supports 15 action types.",
   "source": "@site/docs/schema/actions.md",
   "sourceDirName": "schema",
   "slug": "/schema/actions",

@@ -1,4 +1,4 @@
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { generateMiniApp as generateWithClaude } from "../../claudeService";
 import { clarifyPrompt as clarifyWithClaude } from "../../clarifyService";
 import { modifyMiniApp as modifyWithClaude } from "../../modifyService";

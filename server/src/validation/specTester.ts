@@ -1,4 +1,4 @@
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { hasSkill, getSkillIds, getSkill } from "../skills/skillRegistry";
 
 export interface SpecTestResult {
@@ -277,14 +277,14 @@ export function runSpecTests(spec: MiniApp): SpecTestResult {
             `${screenId}/${comp.id}: webView contains external script/link tags (must be self-contained)`
           );
         }
-        if (props.stateKeys?.length > 0 && !html.includes("SwissKnife")) {
+        if (props.stateKeys?.length > 0 && !html.includes("Baristapp")) {
           warnings.push(
-            `${screenId}/${comp.id}: webView declares stateKeys but HTML doesn't reference the SwissKnife bridge`
+            `${screenId}/${comp.id}: webView declares stateKeys but HTML doesn't reference the Baristapp bridge`
           );
         }
-        if (props.allowBridge && !html.includes("SwissKnife")) {
+        if (props.allowBridge && !html.includes("Baristapp")) {
           warnings.push(
-            `${screenId}/${comp.id}: webView has allowBridge=true but HTML doesn't use the SwissKnife bridge API`
+            `${screenId}/${comp.id}: webView has allowBridge=true but HTML doesn't use the Baristapp bridge API`
           );
         }
         break;

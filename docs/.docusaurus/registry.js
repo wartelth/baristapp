@@ -4,7 +4,9 @@ export default {
   "17896441": [() => import(/* webpackChunkName: "17896441" */ "@theme/DocItem"), "@theme/DocItem", require.resolveWeak("@theme/DocItem")],
   "1f3558de": [() => import(/* webpackChunkName: "1f3558de" */ "@site/docs/schema/effects.md"), "@site/docs/schema/effects.md", require.resolveWeak("@site/docs/schema/effects.md")],
   "22dd74f7": [() => import(/* webpackChunkName: "22dd74f7" */ "@generated/docusaurus-plugin-content-docs/default/p/index-466.json"), "@generated/docusaurus-plugin-content-docs/default/p/index-466.json", require.resolveWeak("@generated/docusaurus-plugin-content-docs/default/p/index-466.json")],
+  "2627d02a": [() => import(/* webpackChunkName: "2627d02a" */ "@site/docs/guides/hosting-docs.md"), "@site/docs/guides/hosting-docs.md", require.resolveWeak("@site/docs/guides/hosting-docs.md")],
   "36cca86b": [() => import(/* webpackChunkName: "36cca86b" */ "@site/docs/app/navigation.md"), "@site/docs/app/navigation.md", require.resolveWeak("@site/docs/app/navigation.md")],
+  "41a9a566": [() => import(/* webpackChunkName: "41a9a566" */ "@site/docs/guides/how-to-use.md"), "@site/docs/guides/how-to-use.md", require.resolveWeak("@site/docs/guides/how-to-use.md")],
   "52a95144": [() => import(/* webpackChunkName: "52a95144" */ "@site/docs/schema/components.md"), "@site/docs/schema/components.md", require.resolveWeak("@site/docs/schema/components.md")],
   "52b2aead": [() => import(/* webpackChunkName: "52b2aead" */ "@site/docs/guides/environment.md"), "@site/docs/guides/environment.md", require.resolveWeak("@site/docs/guides/environment.md")],
   "53d9c64b": [() => import(/* webpackChunkName: "53d9c64b" */ "@site/docs/server/generation.md"), "@site/docs/server/generation.md", require.resolveWeak("@site/docs/server/generation.md")],
@@ -21,6 +23,7 @@ export default {
   "ae60a892": [() => import(/* webpackChunkName: "ae60a892" */ "@site/docs/guides/adding-components.md"), "@site/docs/guides/adding-components.md", require.resolveWeak("@site/docs/guides/adding-components.md")],
   "b1016243": [() => import(/* webpackChunkName: "b1016243" */ "@site/docs/server/overview.md"), "@site/docs/server/overview.md", require.resolveWeak("@site/docs/server/overview.md")],
   "b615f6bf": [() => import(/* webpackChunkName: "b615f6bf" */ "@site/docs/schema/capabilities.md"), "@site/docs/schema/capabilities.md", require.resolveWeak("@site/docs/schema/capabilities.md")],
+  "bb82732b": [() => import(/* webpackChunkName: "bb82732b" */ "@site/docs/guides/release-checklist.md"), "@site/docs/guides/release-checklist.md", require.resolveWeak("@site/docs/guides/release-checklist.md")],
   "c9ea0dcf": [() => import(/* webpackChunkName: "c9ea0dcf" */ "@site/docs/guides/getting-started.md"), "@site/docs/guides/getting-started.md", require.resolveWeak("@site/docs/guides/getting-started.md")],
   "e7b4922d": [() => import(/* webpackChunkName: "e7b4922d" */ "@site/docs/architecture/security.md"), "@site/docs/architecture/security.md", require.resolveWeak("@site/docs/architecture/security.md")],
   "f7c41544": [() => import(/* webpackChunkName: "f7c41544" */ "@site/docs/app/renderer.md"), "@site/docs/app/renderer.md", require.resolveWeak("@site/docs/app/renderer.md")],};

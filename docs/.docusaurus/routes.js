@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/',
-    component: ComponentCreator('/', '844'),
+    component: ComponentCreator('/', '681'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', '20a'),
+        component: ComponentCreator('/', 'e36'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', 'f1f'),
+            component: ComponentCreator('/', 'bdc'),
             routes: [
               {
                 path: '/app/navigation',
@@ -77,6 +77,24 @@ export default [
               {
                 path: '/guides/getting-started',
                 component: ComponentCreator('/guides/getting-started', '86d'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
+                path: '/guides/hosting-docs',
+                component: ComponentCreator('/guides/hosting-docs', '100'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
+                path: '/guides/how-to-use',
+                component: ComponentCreator('/guides/how-to-use', '796'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
+                path: '/guides/release-checklist',
+                component: ComponentCreator('/guides/release-checklist', 'bfd'),
                 exact: true,
                 sidebar: "docs"
               },

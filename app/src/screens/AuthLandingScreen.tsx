@@ -15,7 +15,7 @@ import { SpaceBackdrop } from "../components/SpaceBackdrop";
 type Props = NativeStackScreenProps<AuthStackParamList, "AuthLanding">;
 
 const PRODUCT_STEPS = [
-  { icon: "document-text-outline" as const, title: "Describe your workflow", subtitle: "Tell SwissKnife what you need to build." },
+  { icon: "document-text-outline" as const, title: "Describe your workflow", subtitle: "Tell Baristapp what you need to build." },
   { icon: "options-outline" as const, title: "Refine requirements", subtitle: "Answer quick prompts to tailor the result." },
   { icon: "checkmark-done-outline" as const, title: "Deploy instantly", subtitle: "Use your mini-app and manage it from one place." },
 ];
@@ -55,7 +55,7 @@ export function AuthLandingScreen({ navigation }: Props) {
       <SpaceBackdrop />
       <Animated.View style={[styles.heroOrb, orbStyle]} />
       <Text style={styles.kicker}>AI App Studio</Text>
-      <Text style={styles.title}>Welcome to SwissKnife</Text>
+      <Text style={styles.title}>Welcome to Baristapp</Text>
       <Text style={styles.subtitle}>
         Build practical mini-apps for work and life in minutes, with a clean and secure workflow.
       </Text>

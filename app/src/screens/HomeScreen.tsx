@@ -16,7 +16,7 @@ import {
   Share,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { listApps, deleteApp, clearState, getAppMeta, saveAppMeta } from "../storage/storageLayer";
 import { MiniAppCard } from "../components/MiniAppCard";
 import { useGeneration } from "../context/GenerationContext";
@@ -165,11 +165,11 @@ export function HomeScreen({ navigation }: Props) {
 
   const handleShareNative = async () => {
     if (!sharePayload) return;
-    const qrValue = `swissknife://import?code=${sharePayload.shareCode}`;
+    const qrValue = `baristapp://import?code=${sharePayload.shareCode}`;
     try {
       await Share.share({
         title: `Share ${sharePayload.appTitle}`,
-        message: `Import this mini-app in SwissKnife.\nCode: ${sharePayload.shareCode}\n${qrValue}`,
+        message: `Import this mini-app in Baristapp.\nCode: ${sharePayload.shareCode}\n${qrValue}`,
       });
     } catch {
       // best effort
@@ -389,7 +389,7 @@ export function HomeScreen({ navigation }: Props) {
             {!!sharePayload && (
               <View style={[styles.qrCard, { backgroundColor: colors.background, borderColor: colors.borderAlt }]}>
                 <QRCode
-                  value={`swissknife://import?code=${sharePayload.shareCode}`}
+                  value={`baristapp://import?code=${sharePayload.shareCode}`}
                   size={160}
                   color="#111111"
                   backgroundColor="#ffffff"

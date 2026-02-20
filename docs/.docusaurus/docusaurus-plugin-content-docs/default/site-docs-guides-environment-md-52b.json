@@ -1,7 +1,7 @@
 {
   "id": "guides/environment",
   "title": "Environment Variables",
-  "description": "SwissKnife uses two configuration layers: swissknife.config.js for app/build-time config, and .env for server secrets.",
+  "description": "Baristapp uses two configuration layers: baristapp.config.js for app/build-time config, and .env for server secrets.",
   "source": "@site/docs/guides/environment.md",
   "sourceDirName": "guides",
   "slug": "/guides/environment",
@@ -19,5 +19,9 @@
   "previous": {
     "title": "Adding Actions",
     "permalink": "/guides/adding-actions"
+  },
+  "next": {
+    "title": "Hosting Docs",
+    "permalink": "/guides/hosting-docs"
   }
 }

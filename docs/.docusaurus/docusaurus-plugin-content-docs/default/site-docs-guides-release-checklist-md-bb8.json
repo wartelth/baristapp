@@ -1,0 +1,23 @@
+{
+  "id": "guides/release-checklist",
+  "title": "Release Checklist",
+  "description": "Use this checklist before public GitHub open-source launch and production website/docs publication.",
+  "source": "@site/docs/guides/release-checklist.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/release-checklist",
+  "permalink": "/guides/release-checklist",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6,
+    "title": "Release Checklist"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Hosting Docs",
+    "permalink": "/guides/hosting-docs"
+  }
+}

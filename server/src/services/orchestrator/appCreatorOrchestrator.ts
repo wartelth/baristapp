@@ -1,4 +1,4 @@
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { getLLMProvider } from "../llm/providerFactory";
 import { createToolRegistry } from "../worker/toolRegistry";
 import { runAgentWorker } from "../worker/agentWorker";

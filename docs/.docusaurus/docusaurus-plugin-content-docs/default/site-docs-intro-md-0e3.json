@@ -1,7 +1,7 @@
 {
   "id": "intro",
   "title": "Introduction",
-  "description": "AI-powered declarative micro-app engine — describe what you need, get a fully interactive mobile app.",
+  "description": "Build production-grade mini apps from plain English prompts with a secure declarative engine.",
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
   "slug": "/",

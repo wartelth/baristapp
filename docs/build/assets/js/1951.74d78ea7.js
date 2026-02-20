@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_baristapp_docs=globalThis.webpackChunk_baristapp_docs||[]).push([[1951],{1951(a,s,e){e.d(s,{createTreemapServices:()=>p.d});var p=e(6591);e(3114)}}]);

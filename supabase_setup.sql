@@ -1,5 +1,5 @@
 -- ============================================================================
--- SwissKnife Supabase Setup
+-- Baristapp Supabase Setup
 -- Run this entire file in the Supabase SQL Editor (https://supabase.com/dashboard)
 -- ============================================================================
 

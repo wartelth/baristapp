@@ -1,7 +1,7 @@
 {
   "id": "architecture/overview",
   "title": "Architecture Overview",
-  "description": "SwissKnife is a three-package monorepo where a shared schema connects an Express server (AI generation) to a React Native app (rendering engine).",
+  "description": "Baristapp is a schema-first mini-app platform: the same contract drives generation, validation, storage, and rendering.",
   "source": "@site/docs/architecture/overview.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/overview",

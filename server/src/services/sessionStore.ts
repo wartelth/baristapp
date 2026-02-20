@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 
 const TMP_DIR = path.join(__dirname, "..", "..", "tmp");
 

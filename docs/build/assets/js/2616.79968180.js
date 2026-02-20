@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunk_swissknife_docs=globalThis.webpackChunk_swissknife_docs||[]).push([[2616],{2616(s,e,i){i.d(e,{createInfoServices:()=>c.v});var c=i(639);i(3114)}}]);

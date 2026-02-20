@@ -1,4 +1,4 @@
-import type { GenerateResult, ClarifyResult, ModifyResult, MiniApp } from "@swissknife/shared";
+import type { GenerateResult, ClarifyResult, ModifyResult, MiniApp } from "@baristapp/shared";
 import { config } from "../config";
 import { getAuthHeaders } from "./supabaseClient";
 

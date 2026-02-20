@@ -4,83 +4,62 @@ sidebar_position: 1
 title: Introduction
 ---
 
-# SwissKnife
+# Baristapp (SwissKnife monorepo)
 
-**AI-powered declarative micro-app engine** — describe what you need, get a fully interactive mobile app.
+Build production-grade mini apps from plain English prompts with a secure declarative engine.
 
 ```mermaid
-graph LR
-    A["🗣️ User Prompt"] --> B["🤖 Claude AI"]
-    B --> C["📋 JSON Spec"]
-    C --> D["📱 React Native App"]
-    style A fill:#4f46e5,color:#fff,stroke:none
-    style B fill:#6366f1,color:#fff,stroke:none
-    style C fill:#818cf8,color:#fff,stroke:none
-    style D fill:#a5b4fc,color:#111,stroke:none
+flowchart LR
+    U["User intent<br/>natural language"] --> C["Clarify"]
+    C --> G["Generate<br/>JSON spec"]
+    G --> V{"Schema<br/>validation"}
+    V -->|valid| R["Render<br/>React Native app"]
+    V -->|invalid| F["Reject + retry"]
+    R --> M["Modify<br/>natural language edits"]
+    M --> G
+
+    style U fill:#241c16,color:#ede5dc,stroke:#c67c4e
+    style C fill:#1a1310,color:#ede5dc,stroke:#c67c4e
+    style G fill:#1a1310,color:#ede5dc,stroke:#c67c4e
+    style V fill:#3d2e22,color:#ede5dc,stroke:#d4956a
+    style R fill:#1a1310,color:#ede5dc,stroke:#c67c4e
+    style F fill:#6b1f1f,color:#f8d7da,stroke:#d4956a
+    style M fill:#1a1310,color:#ede5dc,stroke:#c67c4e
 ```
 
-## What is SwissKnife?
+## What this project is
 
-SwissKnife is a secure, declarative micro-app container. Users describe a tool in natural language, and the system generates a full interactive React Native app — **without writing or executing any code**.
+Baristapp is a secure mini-app platform with a strict schema-driven runtime:
 
-The pipeline:
+- Users describe an app in natural language.
+- The server returns a declarative JSON spec.
+- The mobile client renders it using whitelisted components and actions.
+- No generated source code is executed in the client.
 
-1. **Clarify** — AI asks follow-up questions to refine the request
-2. **Generate** — Claude produces a declarative JSON specification
-3. **Validate** — Zod schemas enforce structural correctness
-4. **Render** — The app interprets the spec as a live, interactive UI
-5. **Modify** — Users request changes via natural language
+This repository name is `SwissKnife`, while the product/website branding is `Baristapp`.
 
-:::info No Code Execution
-The output is a **declarative schema** (screens, components, actions, state) — never executable code. No `eval()`, no remote scripts, no dynamic imports. The app is a generic renderer that interprets JSON.
-:::
+## Why this architecture matters
 
-## Monorepo Structure
+- **Predictability:** every generated app must pass the same schema contract.
+- **Safety:** no `eval`, no arbitrary runtime code, no dynamic imports.
+- **Velocity:** new features are added by extending the schema + renderers, not by changing prompt hacks.
+- **Auditability:** specs are plain JSON and can be versioned, diffed, and validated.
 
-```
+## Monorepo map
+
+```text
 SwissKnife/
-├── app/        → React Native (Expo) — the "player"
-├── server/     → Express API — generation, storage, per-app endpoints
-├── shared/     → Zod schemas + TypeScript types — single source of truth
-└── docs/       → This documentation site
+├── app/       React Native renderer runtime (Expo)
+├── server/    Express API + LLM orchestration + persistence
+├── shared/    Zod schemas + TS contracts (single source of truth)
+├── docs/      Docusaurus technical documentation
+└── website/   Next.js marketing website
 ```
 
-| Package | Stack | Role |
-|---------|-------|------|
-| **shared** | Zod, TypeScript | Schema definitions & API types |
-| **server** | Express, Claude API, Supabase | AI generation, validation, storage |
-| **app** | React Native, Expo, React Navigation | Renderer engine, state management |
-| **docs** | Docusaurus | Documentation |
+## Read this next
 
-## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Start the server
-npm run server
-
-# Start the app (in another terminal)
-npm run app
-
-# Start the docs (in another terminal)
-npm run docs
-```
-
-## Key Concepts
-
-### Schema-First Design
-Every component and action is defined in `shared/src/schema.ts`. The schema is the contract between AI generation and app rendering.
-
-### Component Registry
-The app has 21 built-in component types (text, button, input, list, chart, camera, webView, etc.) registered in a renderer map. Claude generates specs using only these components.
-
-### Declarative Actions
-All interactivity is expressed as action objects — `setState`, `navigate`, `http`, `compute`, `transform`, `setMultiple`, `timer`, etc. — dispatched by the renderer engine. **15 action types** cover everything from state updates to API calls.
-
-### Expression Engine
-SwissKnife includes a safe expression evaluator that supports dynamic values in component props and actions. Expressions use `{{path}}` syntax and support path access, array/string methods, math operations, comparisons, ternary operators, and pipes. All evaluation happens without `eval()` or code execution — it's a hand-written recursive-descent parser operating on a token stream.
-
-### Dual Storage
-Apps persist locally (AsyncStorage) for instant access and sync to the cloud (Supabase) for cross-device availability.
+1. [Getting Started](./guides/getting-started.md) for local setup in under 15 minutes.
+2. [How to Use](./guides/how-to-use.md) for day-to-day workflows (create, modify, debug).
+3. [Architecture Overview](./architecture/overview.md) for system and data-flow diagrams.
+4. [Security Model](./architecture/security.md) for threat model and controls.
+5. [Release Checklist](./guides/release-checklist.md) before open-source/public launch.

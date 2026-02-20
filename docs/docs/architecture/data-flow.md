@@ -5,7 +5,7 @@ title: Data Flow
 
 # Data Flow
 
-This page documents the complete data flow for every major operation in SwissKnife.
+This page documents the complete data flow for every major operation in Baristapp.
 
 ## Create Flow
 

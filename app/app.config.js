@@ -1,4 +1,4 @@
-const rootConfig = require("../swissknife.config.js");
+const rootConfig = require("../baristapp.config.js");
 const appJson = require("./app.json");
 
 module.exports = {

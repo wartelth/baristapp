@@ -2,7 +2,7 @@
 
 ## Config (Debug vs Production)
 
-Edit **`swissknife.config.js`** at the project root to switch between debug and production:
+Edit **`baristapp.config.js`** at the project root to switch between debug and production:
 
 ```js
 module.exports = {
@@ -18,7 +18,7 @@ Or use env vars: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `EXPO_PUBLIC_SUPABASE_URL`
 ## Supabase Auth Setup
 
 1. **Supabase Dashboard** → Authentication → Providers → Email: enable, optionally disable "Confirm email" for dev.
-2. **Settings → API**: copy Project URL and anon/public key into `swissknife.config.js`.
+2. **Settings → API**: copy Project URL and anon/public key into `baristapp.config.js`.
 3. **Server**: add `SUPABASE_JWT_SECRET` to `.env` (from Supabase Dashboard → Settings → API → JWT Secret) so the server can verify auth tokens.
 
 ## Flow

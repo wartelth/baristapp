@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { buildMasterPrompt } from "../../../prompts/masterPrompt";
 import { CLARIFY_PROMPT } from "../../../prompts/clarifyPrompt";
 import { buildModifyPrompt } from "../../../prompts/modifyPrompt";

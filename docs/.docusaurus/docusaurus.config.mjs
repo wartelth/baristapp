@@ -20,6 +20,10 @@ export default {
   },
   "markdown": {
     "mermaid": true,
+    "hooks": {
+      "onBrokenMarkdownLinks": "warn",
+      "onBrokenMarkdownImages": "throw"
+    },
     "format": "mdx",
     "emoji": true,
     "mdx1Compat": {
@@ -29,10 +33,6 @@ export default {
     },
     "anchors": {
       "maintainCase": false
-    },
-    "hooks": {
-      "onBrokenMarkdownLinks": "warn",
-      "onBrokenMarkdownImages": "throw"
     }
   },
   "themes": [
@@ -60,9 +60,9 @@ export default {
       "respectPrefersColorScheme": true
     },
     "navbar": {
-      "title": "SwissKnife",
+      "title": "Baristapp Docs",
       "logo": {
-        "alt": "SwissKnife Logo",
+        "alt": "Baristapp Logo",
         "src": "img/logo.svg"
       },
       "items": [
@@ -73,7 +73,12 @@ export default {
           "label": "Docs"
         },
         {
-          "href": "https://github.com/your-org/swissknife",
+          "href": "https://baristapp.vercel.app",
+          "label": "Website",
+          "position": "right"
+        },
+        {
+          "href": "https://github.com/Baristapp/baristapp",
           "label": "GitHub",
           "position": "right"
         }
@@ -97,12 +102,24 @@ export default {
             {
               "label": "Schema Reference",
               "to": "/schema/components"
+            },
+            {
+              "label": "Release Checklist",
+              "to": "/guides/release-checklist"
             }
           ]
         },
         {
-          "title": "Packages",
+          "title": "Project",
           "items": [
+            {
+              "label": "Website",
+              "href": "https://baristapp.vercel.app"
+            },
+            {
+              "label": "GitHub",
+              "href": "https://github.com/Baristapp/baristapp"
+            },
             {
               "label": "App (Expo)",
               "to": "/app/overview"
@@ -110,15 +127,11 @@ export default {
             {
               "label": "Server (Express)",
               "to": "/server/overview"
-            },
-            {
-              "label": "Shared (Schema)",
-              "to": "/schema/components"
             }
           ]
         }
       ],
-      "copyright": "SwissKnife &mdash; Built with Docusaurus"
+      "copyright": "Baristapp &mdash; Built with Docusaurus"
     },
     "prism": {
       "theme": {

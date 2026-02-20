@@ -1,5 +1,5 @@
 /**
- * System prompt for modifying an existing SwissKnife micro-app.
+ * System prompt for modifying an existing Baristapp micro-app.
  * Dynamically includes the current spec so the model has full context.
  */
 
@@ -12,7 +12,7 @@ export function buildModifyPrompt(currentSpecJson: string): string {
 MODIFICATION MODE
 ═══════════════════════════════════════
 
-You are modifying an EXISTING SwissKnife micro-app. The current app spec is provided below.
+You are modifying an EXISTING Baristapp micro-app. The current app spec is provided below.
 
 RULES FOR MODIFICATION:
 1. Apply the user's requested changes while preserving everything else.

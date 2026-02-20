@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { useAppTheme } from "../context/AppThemeContext";
 import type { LibraryScreenProps } from "../types/navigation";
 import {
@@ -90,7 +90,7 @@ export function DeveloperLibraryScreen({ navigation }: LibraryScreenProps) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Text style={[styles.heading, { color: colors.text }]}>Official Library</Text>
       <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
-        Curated apps built by the SwissKnife team. Add any app to My Apps.
+        Curated apps built by the Baristapp team. Add any app to My Apps.
       </Text>
 
       <FlatList

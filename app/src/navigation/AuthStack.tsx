@@ -13,10 +13,10 @@ export function AuthStack() {
       initialRouteName="AuthLanding"
       screenOptions={{
         headerShown: false,
-        headerStyle: { backgroundColor: "#111118" },
-        headerTintColor: "#fff",
+        headerStyle: { backgroundColor: "#0F0B08" },
+        headerTintColor: "#EDE5DC",
         headerTitleStyle: { fontWeight: "600" },
-        contentStyle: { backgroundColor: "#111118" },
+        contentStyle: { backgroundColor: "#0F0B08" },
       }}
     >
       <Stack.Screen

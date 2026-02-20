@@ -8,7 +8,7 @@ import {
   Dimensions,
   Image,
 } from "react-native";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { getCardColor } from "../utils/colors";
 import { useAppTheme } from "../context/AppThemeContext";
 

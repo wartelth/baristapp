@@ -12,7 +12,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import type { ClarificationQuestion } from "@swissknife/shared";
+import type { ClarificationQuestion } from "@baristapp/shared";
 import { clarifyPrompt } from "../api/client";
 import { useGeneration } from "../context/GenerationContext";
 import { useAppTheme } from "../context/AppThemeContext";

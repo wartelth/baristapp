@@ -48,9 +48,12 @@ const sidebars: SidebarsConfig = {
       label: "Guides",
       items: [
         "guides/getting-started",
+        "guides/how-to-use",
         "guides/adding-components",
         "guides/adding-actions",
         "guides/environment",
+        "guides/hosting-docs",
+        "guides/release-checklist",
       ],
     },
   ],

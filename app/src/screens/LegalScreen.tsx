@@ -17,7 +17,7 @@ export function LegalScreen({ route }: Props) {
         <>
           <Text style={[styles.title, { color: colors.text }]}>Privacy Policy</Text>
           <Text style={[styles.paragraph, { color: colors.secondaryText }]}>
-            SwissKnife processes your prompts and mini-app requests through Anthropic Claude to generate or modify mini-apps.
+            Baristapp processes your prompts and mini-app requests through Anthropic Claude to generate or modify mini-apps.
           </Text>
           <Text style={[styles.paragraph, { color: colors.secondaryText }]}>
             Mini-app specifications and runtime state are stored in Supabase cloud storage and can be associated with your account token or your device ID.
