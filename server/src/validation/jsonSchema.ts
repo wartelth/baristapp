@@ -41,6 +41,10 @@ const ActionSchema: Record<string, unknown> = {
     { type: "object", properties: { type: { type: "string", const: "haptic" }, style: { type: "string", enum: ["light", "medium", "heavy", "success", "warning", "error"] } }, required: ["type"] },
     // copyToClipboard
     { type: "object", properties: { type: { type: "string", const: "copyToClipboard" }, fromKey: { type: "string" }, value: { type: "string" } }, required: ["type"] },
+    // transform
+    { type: "object", properties: { type: { type: "string", const: "transform" }, expression: { type: "string" }, resultKey: { type: "string" } }, required: ["type", "expression", "resultKey"] },
+    // setMultiple
+    { type: "object", properties: { type: { type: "string", const: "setMultiple" }, values: { type: "object" } }, required: ["type", "values"] },
   ],
 };
 
@@ -140,7 +144,7 @@ export const MiniAppJSONSchema = {
     appId: { type: "string" as const },
     title: { type: "string" as const },
     icon: { type: "string" as const },
-    version: { type: "number" as const },
+    version: { type: "number" as const, enum: [1, 2], description: "Must be 2 for v2 apps" },
     capabilities: {
       type: "array" as const,
       items: {

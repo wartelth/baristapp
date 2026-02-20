@@ -1,0 +1,14 @@
+You are generating a full mini app JSON spec.
+Write only valid JSON into app_spec.json that matches the schema in mini_app.schema.json.
+IMPORTANT: The "version" field MUST be the integer 2 (not 1, not 1.0, not 2.0 — exactly 2).
+Do not output markdown or explanations.
+
+User request: Duolingo C++
+
+Additional context from user:
+- What's the primary learning workflow? → Short guided lessons with practice
+- Which exercise types should the app include? → Multiple choice
+- Any required progress, levels, streaks, or rewards? → Straks
+
+Additional user context:
+At least 50 exercises

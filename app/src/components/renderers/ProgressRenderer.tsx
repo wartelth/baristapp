@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
@@ -11,10 +12,12 @@ export function ProgressRenderer({ component, state }: RendererProps) {
     variant = "bar",
     max = 100,
     color,
-    label,
+    label: rawLabel,
     height = 8,
     size = 80,
   } = component.props;
+
+  const label = rawLabel ? String(resolveTemplate(rawLabel, state) ?? rawLabel) : undefined;
 
   const value = Number(state[stateKey] ?? 0);
   const ratio = Math.max(0, Math.min(1, value / max));

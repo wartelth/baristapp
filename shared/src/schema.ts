@@ -592,12 +592,14 @@ export const Effect = z.object({
 // TOP-LEVEL MINI-APP SCHEMAS
 // =============================================================================
 
+const coerceVersion = (v: number) => Math.round(v) as 1 | 2;
+
 /** v1 schema — backward compat */
 export const MiniAppSchemaV1 = z.object({
   appId: z.string(),
   title: z.string(),
   icon: z.string().optional(),
-  version: z.literal(1),
+  version: z.number().transform(coerceVersion).pipe(z.literal(1)),
   capabilities: z.array(Capability).default(["localStorage"]),
   screens: z.array(Screen).min(1),
   dataModel: DataModel.optional(),
@@ -609,7 +611,7 @@ export const MiniAppSchemaV2 = z.object({
   appId: z.string(),
   title: z.string(),
   icon: z.string().optional(),
-  version: z.literal(2),
+  version: z.number().transform(coerceVersion).pipe(z.literal(2)),
   capabilities: z.array(Capability).default(["localStorage"]),
   screens: z.array(Screen).min(1),
   dataModel: DataModel.optional(),

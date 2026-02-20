@@ -30,3 +30,7 @@ export function ThemeProvider({
 export function useTheme(): Required<MiniAppTheme> {
   return useContext(ThemeContext);
 }
+
+export function themeToCssVars(theme: Required<MiniAppTheme>): string {
+  return `--bg:${theme.backgroundColor};--surface:${theme.surfaceColor};--primary:${theme.primaryColor};--text:${theme.textColor};--text2:${theme.secondaryTextColor};--border:${theme.borderColor};--danger:${theme.dangerColor};--success:${theme.successColor};`;
+}

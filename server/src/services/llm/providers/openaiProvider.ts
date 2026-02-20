@@ -236,7 +236,7 @@ export class OpenAIProvider implements LLMProvider {
                   },
                   { role: "user", content: userPrompt },
                 ],
-                max_completion_tokens: 1000,
+                max_completion_tokens: 4000,
                 stream: false,
                 ...(useJsonObjectFormat
                   ? {

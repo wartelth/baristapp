@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
@@ -34,7 +35,7 @@ export function TabsRenderer({ component, state, dispatch, onNavigate, renderChi
                   { color: isActive ? theme.primaryColor : theme.secondaryTextColor },
                 ]}
               >
-                {tab.label}
+                {String(resolveTemplate(tab.label, state) ?? tab.label)}
               </Text>
             </TouchableOpacity>
           );

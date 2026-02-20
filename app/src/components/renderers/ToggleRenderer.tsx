@@ -1,12 +1,14 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
 export function ToggleRenderer({ component, state, dispatch }: RendererProps) {
   if (component.type !== "toggle") return null;
   const theme = useTheme();
-  const { stateKey, label } = component.props;
+  const { stateKey, label: rawLabel } = component.props;
+  const label = rawLabel ? String(resolveTemplate(rawLabel, state) ?? rawLabel) : undefined;
 
   const value = !!state[stateKey];
 
