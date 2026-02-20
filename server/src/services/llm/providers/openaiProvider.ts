@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import type { MiniApp } from "@swissknife/shared";
-import { MASTER_PROMPT } from "../../../prompts/masterPrompt";
+import { buildMasterPrompt } from "../../../prompts/masterPrompt";
 import { CLARIFY_PROMPT } from "../../../prompts/clarifyPrompt";
 import { buildModifyPrompt } from "../../../prompts/modifyPrompt";
 import { extractJSON, validateMiniApp } from "../../../validation/schemaValidator";
@@ -136,7 +136,7 @@ export class OpenAIProvider implements LLMProvider {
               {
                 model: targetModel,
                 messages: [
-                  { role: "system", content: `${MASTER_PROMPT}\n\n${strongJsonInstruction}` },
+                  { role: "system", content: `${buildMasterPrompt()}\n\n${strongJsonInstruction}` },
                   { role: "user", content: userPrompt },
                 ],
                 max_completion_tokens: maxTokens,

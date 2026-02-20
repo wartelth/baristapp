@@ -1,5 +1,6 @@
 import { MiniAppSchema } from "@swissknife/shared";
 import type { MiniApp } from "@swissknife/shared";
+import { hasSkill, getSkillIds } from "../skills/skillRegistry";
 
 export interface ValidationSuccess {
   valid: true;
@@ -23,7 +24,7 @@ function normalizeRawSpec(raw: unknown): unknown {
   if (obj.version === undefined || obj.version === null) {
     obj.version = 2;
   }
-  if (obj.version === 1 && ("theme" in obj || "serverEndpoints" in obj || "effects" in obj)) {
+  if (obj.version === 1 && ("theme" in obj || "serverEndpoints" in obj || "effects" in obj || "skills" in obj)) {
     obj.version = 2;
   }
 
@@ -40,7 +41,43 @@ function normalizeRawSpec(raw: unknown): unknown {
     }
   }
 
+  // Auto-add "skills" capability when skills array is present
+  if (Array.isArray(obj.skills) && obj.skills.length > 0) {
+    const caps = Array.isArray(obj.capabilities) ? obj.capabilities : ["localStorage"];
+    if (!caps.includes("skills")) {
+      caps.push("skills");
+      obj.capabilities = caps;
+    }
+  }
+
   return obj;
+}
+
+/**
+ * Validates declared skill ids against the loaded skill catalog.
+ * Returns warnings for unknown skills (non-blocking) and strips them.
+ */
+function validateSkillReferences(data: MiniApp): string[] {
+  const warnings: string[] = [];
+  const spec = data as any;
+
+  if (!Array.isArray(spec.skills) || spec.skills.length === 0) return warnings;
+
+  const validSkills: string[] = [];
+  const knownIds = getSkillIds();
+
+  for (const skillId of spec.skills) {
+    if (hasSkill(skillId)) {
+      validSkills.push(skillId);
+    } else {
+      warnings.push(
+        `skills: Unknown skill "${skillId}" (not in catalog). Available: ${knownIds.join(", ")}. Removing from spec.`
+      );
+    }
+  }
+
+  spec.skills = validSkills;
+  return warnings;
 }
 
 /**
@@ -52,6 +89,10 @@ export function validateMiniApp(raw: unknown): ValidationResult {
   const result = MiniAppSchema.safeParse(normalized);
 
   if (result.success) {
+    const skillWarnings = validateSkillReferences(result.data);
+    if (skillWarnings.length > 0) {
+      console.warn("[VALIDATE] Skill warnings:", skillWarnings);
+    }
     return { valid: true, data: result.data };
   }
 

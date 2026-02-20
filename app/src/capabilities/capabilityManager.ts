@@ -65,6 +65,10 @@ const CAPABILITY_INFO: Record<MiniAppCapability, { title: string; description: s
     title: "Cloud Storage",
     description: "Sync app data to the cloud for backup and cross-device access.",
   },
+  skills: {
+    title: "Live Data Feeds",
+    description: "Access live data services (weather, news, crypto, etc.) through the SwissKnife platform.",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -113,6 +117,7 @@ const AUTO_GRANTED: MiniAppCapability[] = [
   "localStorage",
   "haptics",
   "clipboard",
+  "skills",
 ];
 
 export function requestCapability(
@@ -181,7 +186,7 @@ export async function requestAllCapabilities(
 export function resetPermissions(appId: string): void {
   const allCaps: MiniAppCapability[] = [
     "localStorage", "camera", "network", "microphone",
-    "location", "haptics", "clipboard", "notifications", "supabaseStorage",
+    "location", "haptics", "clipboard", "notifications", "supabaseStorage", "skills",
   ];
   for (const cap of allCaps) {
     const key = permKey(appId, cap);

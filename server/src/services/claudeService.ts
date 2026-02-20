@@ -1,5 +1,5 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { MASTER_PROMPT } from "../prompts/masterPrompt";
+import { buildMasterPrompt } from "../prompts/masterPrompt";
 import { MiniAppJSONSchema } from "../validation/jsonSchema";
 import { extractJSON, validateMiniApp } from "../validation/schemaValidator";
 import { saveSession } from "./sessionStore";
@@ -133,7 +133,7 @@ export async function generateMiniApp(
       prompt: userPrompt,
       options: {
         model,
-        systemPrompt: MASTER_PROMPT,
+        systemPrompt: buildMasterPrompt(),
         outputFormat: {
           type: "json_schema",
           schema: MiniAppJSONSchema as Record<string, unknown>,

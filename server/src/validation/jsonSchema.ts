@@ -45,6 +45,8 @@ const ActionSchema: Record<string, unknown> = {
     { type: "object", properties: { type: { type: "string", const: "transform" }, expression: { type: "string" }, resultKey: { type: "string" } }, required: ["type", "expression", "resultKey"] },
     // setMultiple
     { type: "object", properties: { type: { type: "string", const: "setMultiple" }, values: { type: "object" } }, required: ["type", "values"] },
+    // skillCall
+    { type: "object", properties: { type: { type: "string", const: "skillCall" }, skillId: { type: "string" }, actionId: { type: "string" }, params: { type: "object" }, resultKey: { type: "string" }, loadingKey: { type: "string" }, errorKey: { type: "string" } }, required: ["type", "skillId", "actionId", "resultKey"] },
   ],
 };
 
@@ -149,7 +151,7 @@ export const MiniAppJSONSchema = {
       type: "array" as const,
       items: {
         type: "string" as const,
-        enum: ["localStorage", "camera", "network", "microphone", "location", "haptics", "clipboard", "notifications", "supabaseStorage"],
+        enum: ["localStorage", "camera", "network", "microphone", "location", "haptics", "clipboard", "notifications", "supabaseStorage", "skills"],
       },
     },
     screens: {
@@ -172,6 +174,7 @@ export const MiniAppJSONSchema = {
     theme: ThemeSchema,
     serverEndpoints: { type: "array" as const, items: ServerEndpointSchema },
     effects: { type: "array" as const, items: EffectSchema },
+    skills: { type: "array" as const, items: { type: "string" as const } },
     dataModel: { type: "object" as const },
   },
   required: ["appId", "title", "version", "screens"] as const,

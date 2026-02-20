@@ -617,6 +617,63 @@ export function MiniAppRenderer({ spec, initialScreenId }: MiniAppRendererProps)
       return;
     }
 
+    // --- Skill call (async, server-proxied data feed) ---
+    if (a.type === "skillCall") {
+      (async () => {
+        const { skillId, actionId, params, resultKey, loadingKey, errorKey } = a;
+        if (loadingKey) setState((prev) => ({ ...prev, [loadingKey]: true }));
+        if (errorKey) setState((prev) => ({ ...prev, [errorKey]: null }));
+
+        try {
+          const BASE_URL = config.apiBaseUrl;
+          const resolvedParams: Record<string, unknown> = {};
+          if (params) {
+            for (const [k, v] of Object.entries(params)) {
+              resolvedParams[k] =
+                typeof v === "string" ? resolveTemplate(v, stateRef.current) : v;
+            }
+          }
+
+          const response = await fetch(
+            `${BASE_URL}/api/skills/${skillId}/invoke`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                actionId,
+                params: resolvedParams,
+                appId: spec.appId,
+                declaredSkills: (spec as any).skills ?? [],
+              }),
+            }
+          );
+          const result = await response.json();
+
+          if (result.success) {
+            setState((prev) => ({
+              ...prev,
+              [resultKey]: result.data,
+              ...(loadingKey ? { [loadingKey]: false } : {}),
+            }));
+          } else {
+            setState((prev) => ({
+              ...prev,
+              ...(errorKey ? { [errorKey]: result.error } : {}),
+              ...(loadingKey ? { [loadingKey]: false } : {}),
+            }));
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Skill call failed";
+          setState((prev) => ({
+            ...prev,
+            ...(errorKey ? { [errorKey]: message } : {}),
+            ...(loadingKey ? { [loadingKey]: false } : {}),
+          }));
+        }
+      })();
+      return;
+    }
+
     // --- Timer (side effect + state) ---
     if (a.type === "timer") {
       const { timerId, command, intervalMs = 1000, tickAction } = a;

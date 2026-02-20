@@ -1,0 +1,26 @@
+{
+  "id": "geocoding",
+  "name": "Geocoding",
+  "description": "Search for locations by name and get coordinates, or reverse geocode coordinates to place names",
+  "category": "utilities",
+  "capability": "network",
+  "rateLimit": { "requests": 60, "windowMs": 60000 },
+  "provider": {
+    "baseUrl": "https://geocoding-api.open-meteo.com/v1",
+    "authType": "none"
+  },
+  "actions": {
+    "search": {
+      "description": "Search for a location by name and get latitude/longitude coordinates",
+      "endpoint": "/search?name={{query}}&count={{limit}}&language={{language}}&format=json",
+      "method": "GET",
+      "params": {
+        "query": { "type": "string", "required": true, "description": "Location name to search for (e.g. 'Paris', 'New York')" },
+        "limit": { "type": "number", "required": false, "description": "Number of results (1-10)", "default": 5 },
+        "language": { "type": "string", "required": false, "description": "Language for results (e.g. en, fr, de)", "default": "en" }
+      },
+      "transform": "results",
+      "cacheTtlMs": 3600000
+    }
+  }
+}
