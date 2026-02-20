@@ -1,1 +1,0 @@
-A workout rep counter for push-ups, squats, and planks

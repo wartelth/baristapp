@@ -1,6 +1,0 @@
-My friends and I want to meetup but never know what to do because we live far away. Make an application that will help us decide in a funny game manner. We live in Paris munich NETHERLANDS
-
-Additional context from user:
-- How do friends join the game—by invite link, username search, or predefined friend list? → Invite link/code
-- How should the game decide the activity—voting, spin wheel, random pick, or something else? → Spin a wheel of activities
-- Should the app suggest activities based on your 3 cities, or do you manually add activity ideas? → Mix of both options

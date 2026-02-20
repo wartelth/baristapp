@@ -1,1 +1,0 @@
-A bird watching support app to help log the viewings with timestamps and maps

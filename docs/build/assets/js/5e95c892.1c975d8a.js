@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunk_baristapp_docs=globalThis.webpackChunk_baristapp_docs||[]).push([[9647],{1917(s,a,e){e.r(a),e.d(a,{default:()=>l});e(6540);var r=e(1750),c=e(7347),p=e(8600),t=e(3971),u=e(7645),i=e(4848);function l(s){return(0,i.jsx)(p.e3,{className:(0,r.A)(c.G.wrapper.docsPages),children:(0,i.jsx)(u.A,{children:(0,t.v)(s.route.routes)})})}}}]);
