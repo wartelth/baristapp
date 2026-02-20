@@ -1,6 +1,28 @@
 # Baristapp
 
-Build mobile mini-apps from plain English.
+[![GitHub Repo stars](https://img.shields.io/github/stars/wartelth/baristapp?style=social)](https://github.com/wartelth/baristapp)
+[![GitHub forks](https://img.shields.io/github/forks/wartelth/baristapp)](https://github.com/wartelth/baristapp/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/wartelth/baristapp)](https://github.com/wartelth/baristapp/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/wartelth/baristapp)](https://github.com/wartelth/baristapp/commits)
+[![License](https://img.shields.io/github/license/wartelth/baristapp)](./LICENSE)
+
+Build mobile mini-apps from plain English prompts.
+
+Baristapp generates declarative JSON app specs, validates them with shared schemas, then renders them safely in the mobile app (no eval / no remote code execution).
+
+**Links:** [Website](https://baristapp.app) · [Docs](https://docs.baristapp.dev) · [API health](https://api.baristapp.app/health) · [Report issue](https://github.com/wartelth/baristapp/issues/new)
+
+> Status: Beta (active development)  
+> Platforms: Expo/React Native app + Node/Express API + docs/website monorepo
+
+### Quick Start (60 seconds)
+
+```bash
+npm install
+# create server/.env from server/.env.example and set at least one LLM key
+npm run server
+npm run app
+```
 
 ## Website Screenshots
 
@@ -330,3 +352,9 @@ Main routes in `server/src/index.ts`:
    - implementation notes
    - test plan
    - screenshots/videos for UI changes
+
+---
+
+⭐ If this project helps you, please consider starring it:
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/wartelth/baristapp?style=social)](https://github.com/wartelth/baristapp)
