@@ -64,8 +64,9 @@ export function validateMiniApp(raw: unknown): ValidationResult {
 }
 
 /**
- * Attempts to extract JSON from Claude's response.
- * Handles cases where the model wraps JSON in markdown code fences.
+ * Attempts to extract JSON from an LLM or aider response.
+ * Handles markdown code fences, non-JSON preamble/postamble,
+ * and deeply nested JSON objects in mixed output.
  */
 export function extractJSON(text: string): unknown {
   let cleaned = text.trim();
@@ -81,14 +82,56 @@ export function extractJSON(text: string): unknown {
     }
   }
 
+  // Fast path: direct parse
   try {
     const parsed = JSON.parse(cleaned.trim());
     console.log("[VALIDATE] JSON.parse succeeded");
     return parsed;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[VALIDATE] ✖ JSON.parse failed: ${message}`);
-    console.error(`[VALIDATE] First 300 chars of cleaned text: ${cleaned.trim().slice(0, 300)}`);
-    throw err;
+  } catch {
+    // fall through to extraction strategies
   }
+
+  // Strategy: find the outermost { ... } brace pair using a depth counter.
+  // This handles aider output where JSON is surrounded by log lines.
+  const firstBrace = cleaned.indexOf("{");
+  if (firstBrace !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = firstBrace; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\" && inString) {
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          const candidate = cleaned.slice(firstBrace, i + 1);
+          try {
+            const parsed = JSON.parse(candidate);
+            console.log("[VALIDATE] JSON.parse succeeded (extracted from surrounding text)");
+            return parsed;
+          } catch {
+            // keep scanning for a later match
+          }
+        }
+      }
+    }
+  }
+
+  const message = `Could not extract valid JSON from response (${cleaned.length} chars)`;
+  console.error(`[VALIDATE] ${message}`);
+  console.error(`[VALIDATE] First 300 chars: ${cleaned.trim().slice(0, 300)}`);
+  throw new Error(message);
 }

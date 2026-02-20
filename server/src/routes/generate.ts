@@ -50,8 +50,13 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
 
   const { prompt, clarifications, additionalContext } = req.body;
 
-  const allowance = await checkGenerationAllowance(userId);
-  if (!allowance.allowed) {
+  let allowance: Awaited<ReturnType<typeof checkGenerationAllowance>> | null = null;
+  try {
+    allowance = await checkGenerationAllowance(userId);
+  } catch (billingErr) {
+    L.warn("BILLING", `#${reqId} Allowance check failed (allowing request): ${billingErr instanceof Error ? billingErr.message : String(billingErr)}`);
+  }
+  if (allowance && !allowance.allowed) {
     L.warn("RATE", `#${reqId} Plan limit reached user=${userId} plan=${allowance.planKey}`);
     res.status(402).json({
       success: false,
@@ -113,14 +118,18 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
     if (result.success) {
       const app = result.miniApp;
       const specSize = JSON.stringify(app).length;
-      await recordModelUsage({
-        userId,
-        appId: app.appId,
-        requestType: "generate",
-        modelName: result.usage.modelName,
-        costUsd: result.usage.costUsd,
-        numTurns: result.usage.numTurns,
-      });
+      try {
+        await recordModelUsage({
+          userId,
+          appId: app.appId,
+          requestType: "generate",
+          modelName: result.usage.modelName,
+          costUsd: result.usage.costUsd,
+          numTurns: result.usage.numTurns,
+        });
+      } catch (usageErr) {
+        L.warn("BILLING", `Usage recording failed (non-fatal): ${usageErr instanceof Error ? usageErr.message : String(usageErr)}`);
+      }
 
       L.success("GENERATE", `#${reqId} App generated in ${fmtMs(elapsed)}`);
       L.detail("GENERATE", "appId", app.appId);

@@ -159,17 +159,23 @@ export async function createMiniAppWithOrchestrator(
 
     await saveAppSpec(userId, app.appId, app);
 
-    const previousVersion = (await listAppVersions(userId, app.appId))[0];
-    const version = await saveAppVersion({
-      userId,
-      appId: app.appId,
-      parentVersionId: previousVersion?.id ?? null,
-      sourceRequestType: "generate",
-      commitMessage: "Generated app via orchestrator worker",
-      diffSummary: summarizeChecks(worker.testReport.checks),
-      testsPassed: worker.testReport.passed,
-      spec: app,
-    });
+    // Versioning is optional — tables may not exist for fresh/local setups
+    let version: Awaited<ReturnType<typeof saveAppVersion>> = null;
+    try {
+      const previousVersion = (await listAppVersions(userId, app.appId))[0];
+      version = await saveAppVersion({
+        userId,
+        appId: app.appId,
+        parentVersionId: previousVersion?.id ?? null,
+        sourceRequestType: "generate",
+        commitMessage: "Generated app via orchestrator worker",
+        diffSummary: summarizeChecks(worker.testReport.checks),
+        testsPassed: worker.testReport.passed,
+        spec: app,
+      });
+    } catch (versionErr) {
+      L.warn("AGENT", `Versioning skipped — ${versionErr instanceof Error ? versionErr.message : String(versionErr)}`);
+    }
 
     emitOrchestrationEvent({
       userId,
@@ -187,16 +193,20 @@ export async function createMiniAppWithOrchestrator(
     L.detail("AGENT", "Deploy provider", deployment.provider);
     L.detail("AGENT", "Deploy status", deployment.status);
     if (version?.id) {
-      await saveAppDeployment({
-        userId,
-        appId: app.appId,
-        versionId: version.id,
-        provider: deployment.provider,
-        status: deployment.status,
-        previewUrl: deployment.previewUrl ?? null,
-        runtimeId: deployment.sandboxId ?? null,
-        healthStatus: deployment.healthCheck?.message ?? null,
-      });
+      try {
+        await saveAppDeployment({
+          userId,
+          appId: app.appId,
+          versionId: version.id,
+          provider: deployment.provider,
+          status: deployment.status,
+          previewUrl: deployment.previewUrl ?? null,
+          runtimeId: deployment.sandboxId ?? null,
+          healthStatus: deployment.healthCheck?.message ?? null,
+        });
+      } catch (deployErr) {
+        L.warn("AGENT", `Deployment record skipped — ${deployErr instanceof Error ? deployErr.message : String(deployErr)}`);
+      }
     }
 
     emitOrchestrationEvent({
@@ -207,7 +217,12 @@ export async function createMiniAppWithOrchestrator(
       metadata: { previewUrl: deployment.previewUrl ?? null },
     });
 
-    const latestDeployment = await loadLatestDeployment(userId, app.appId);
+    let latestDeployment: Awaited<ReturnType<typeof loadLatestDeployment>> = null;
+    try {
+      latestDeployment = await loadLatestDeployment(userId, app.appId);
+    } catch {
+      // deployment lookup table may not exist
+    }
     return {
       success: true,
       miniApp: app,
@@ -246,17 +261,23 @@ export async function modifyMiniAppWithOrchestrator(
 
   const app = result.miniApp;
   await saveAppSpec(userId, app.appId, app);
-  const previousVersion = (await listAppVersions(userId, app.appId))[0];
-  const version = await saveAppVersion({
-    userId,
-    appId: app.appId,
-    parentVersionId: previousVersion?.id ?? null,
-    sourceRequestType: "modify",
-    commitMessage: "Modified app via orchestrator",
-    diffSummary: `Prompt: ${modifyPrompt.slice(0, 120)}`,
-    testsPassed: true,
-    spec: app,
-  });
+
+  let version: Awaited<ReturnType<typeof saveAppVersion>> = null;
+  try {
+    const previousVersion = (await listAppVersions(userId, app.appId))[0];
+    version = await saveAppVersion({
+      userId,
+      appId: app.appId,
+      parentVersionId: previousVersion?.id ?? null,
+      sourceRequestType: "modify",
+      commitMessage: "Modified app via orchestrator",
+      diffSummary: `Prompt: ${modifyPrompt.slice(0, 120)}`,
+      testsPassed: true,
+      spec: app,
+    });
+  } catch (versionErr) {
+    L.warn("AGENT", `Versioning skipped — ${versionErr instanceof Error ? versionErr.message : String(versionErr)}`);
+  }
 
   const deployment = await deployMiniAppToSandbox(
     app.appId,
@@ -264,16 +285,20 @@ export async function modifyMiniAppWithOrchestrator(
     app
   );
   if (version?.id) {
-    await saveAppDeployment({
-      userId,
-      appId: app.appId,
-      versionId: version.id,
-      provider: deployment.provider,
-      status: deployment.status,
-      previewUrl: deployment.previewUrl ?? null,
-      runtimeId: deployment.sandboxId ?? null,
-      healthStatus: deployment.healthCheck?.message ?? null,
-    });
+    try {
+      await saveAppDeployment({
+        userId,
+        appId: app.appId,
+        versionId: version.id,
+        provider: deployment.provider,
+        status: deployment.status,
+        previewUrl: deployment.previewUrl ?? null,
+        runtimeId: deployment.sandboxId ?? null,
+        healthStatus: deployment.healthCheck?.message ?? null,
+      });
+    } catch (deployErr) {
+      L.warn("AGENT", `Deployment record skipped — ${deployErr instanceof Error ? deployErr.message : String(deployErr)}`);
+    }
   }
 
   return {
