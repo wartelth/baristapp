@@ -65,7 +65,7 @@ const config: Config = {
           position: "right",
         },
         {
-          href: "https://github.com/Baristapp/baristapp",
+          href: "https://github.com/wartelth/baristapp",
           label: "GitHub",
           position: "right",
         },
@@ -87,7 +87,7 @@ const config: Config = {
           title: "Project",
           items: [
             { label: "Website", href: "https://baristapp.vercel.app" },
-            { label: "GitHub", href: "https://github.com/Baristapp/baristapp" },
+            { label: "GitHub", href: "https://github.com/wartelth/baristapp" },
             { label: "App (Expo)", to: "/app/overview" },
             { label: "Server (Express)", to: "/server/overview" },
           ],

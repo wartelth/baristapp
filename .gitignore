@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
 *.tsbuildinfo
 .expo/
 ios/
@@ -13,3 +15,11 @@ server/tmp/
 app/.claude/
 server/.claude/
 *.env.local
+server/.env
+app/.env
+app/.env.*
+server/.env.*
+docs/.env
+docs/.env.*
+website/.env
+website/.env.*

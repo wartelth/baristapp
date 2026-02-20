@@ -8,7 +8,8 @@
 
 module.exports = {
   debug: true,
-  apiBaseUrl: "http://192.168.2.223:3001",
+  // For physical devices, replace localhost with your LAN IP.
+  apiBaseUrl: process.env.API_BASE_URL || "http://localhost:3001",
   privacyPolicyUrl: "https://baristapp.app/privacy",
   supportUrl: "https://baristapp.app/support",
   supportEmail: "support@baristapp.app",
@@ -35,6 +36,6 @@ module.exports = {
     },
   },
   // Supabase (auth + storage). From Supabase Dashboard → Settings → API
-  supabaseUrl: process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || "https://cmlofvffdplajjgkszno.supabase.co",
-  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtbG9mdmZmZHBsYWpqZ2tzem5vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEwODUwMDMsImV4cCI6MjA4NjY2MTAwM30.4NRlDvhzFVLcIMKmkRBHwuQSsUOEWKlRguV-1e9WoZI",
+  supabaseUrl: process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || "",
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "",
 };

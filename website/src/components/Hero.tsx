@@ -57,7 +57,7 @@ export default function Hero() {
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </a>
           <a
-            href="https://github.com/Baristapp"
+            href="https://github.com/wartelth/baristapp"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium glass hover:border-accent/20 transition-all hover:-translate-y-0.5"

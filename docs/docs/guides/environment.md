@@ -32,7 +32,7 @@ Never commit `.env` to version control. The `.gitignore` should already exclude 
 ```javascript
 module.exports = {
   debug: true,                              // Enable debug logging
-  apiBaseUrl: "http://192.168.2.223:3001",  // Server URL
+  apiBaseUrl: "http://localhost:3001",       // Server URL
   supabaseUrl: "https://xxx.supabase.co",   // Supabase project URL
   supabaseAnonKey: "eyJ...",                // Supabase anonymous key (safe to expose)
 };
