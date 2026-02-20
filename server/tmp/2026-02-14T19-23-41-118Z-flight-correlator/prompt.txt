@@ -1,6 +1,0 @@
-Make an application that fetches and correlate the number of plane flights per country
-
-Additional context from user:
-- Where should the flight data come from? → Public aviation API (e.g., OpenSky Network)
-- How should users interact with the data? → View a list of countries ranked by flight count, See charts comparing flight volumes across countries, View trends over time (daily/weekly/monthly)
-- What does 'correlate' mean in your use case? → Compare flights against population or GDP

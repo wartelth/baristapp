@@ -1,6 +1,0 @@
-Make an app to render the game of life with emojis and allow the user to control stuff somehow
-
-Additional context from user:
-- How should users control the simulation? → Tap grid to toggle cells alive/dead
-- Should the grid start with a preset pattern or random cells? → Random cells each time
-- What grid size and emoji do you prefer? → Idk representative 

@@ -1,6 +1,0 @@
-An app to log the books I’ve read and have smart recommendations on follow ups
-
-Additional context from user:
-- When you log a book, what info do you want to record? → Title & author only, + Your review/notes, + Rating (1-5 stars)
-- How do you want to add books to your list? → Search a book database
-- How should recommendations work? → AI-powered based on your full reading history

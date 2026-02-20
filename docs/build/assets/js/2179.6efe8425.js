@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunk_baristapp_docs=globalThis.webpackChunk_baristapp_docs||[]).push([[2179],{2179(a,s,c){c.d(s,{createPacketServices:()=>e.$});var e=c(400);c(3114)}}]);
