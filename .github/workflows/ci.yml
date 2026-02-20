@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master", "feat/**", "fix/**", "chore/**"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  validate-monorepo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+            server/package-lock.json
+            shared/package-lock.json
+            docs/package-lock.json
+            website/package-lock.json
+
+      - name: Install root/workspace dependencies
+        run: npm ci
+
+      - name: Typecheck shared + server
+        run: npm run typecheck
+
+      - name: Server tests
+        run: npm run test --workspace=server
+
+      - name: Install website dependencies
+        run: npm ci
+        working-directory: website
+
+      - name: Website lint
+        run: npm run lint
+        working-directory: website
+
+      - name: Website build
+        run: npm run build
+        working-directory: website

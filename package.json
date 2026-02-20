@@ -1,14 +1,21 @@
 {
-  "name": "swissknife",
+  "name": "baristapp",
+  "license": "MIT",
   "private": true,
   "workspaces": [
     "shared",
     "server",
-    "app"
+    "app",
+    "docs"
   ],
   "scripts": {
     "server": "npm run dev --workspace=server",
     "app": "npm start --workspace=app",
+    "docs": "npm start --workspace=docs",
+    "docs:build": "npm run build --workspace=docs",
     "typecheck": "tsc --noEmit --workspace=shared && tsc --noEmit --workspace=server"
+  },
+  "devDependencies": {
+    "react-refresh": "^0.18.0"
   }
 }

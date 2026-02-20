@@ -1,18 +1,23 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { resolveTemplate } from "@baristapp/shared";
 import type { RendererProps } from "../../types";
 
 const VARIANT_COLORS = {
-  primary: "#4f46e5",
-  secondary: "#374151",
-  danger: "#dc2626",
+  primary: "#C67C4E",
+  secondary: "#3D2E22",
+  danger: "#CC5A45",
 };
 
-export function ButtonRenderer({ component, dispatch, onNavigate }: RendererProps) {
+export function ButtonRenderer({ component, state, dispatch, onNavigate }: RendererProps) {
   if (component.type !== "button") return null;
-  const { label, action, variant = "primary" } = component.props;
+  const { label, action, variant = "primary", disabled } = component.props;
+
+  const resolvedLabel = String(resolveTemplate(label, state) ?? label);
+  const isDisabled = typeof disabled === "string" ? !!state[disabled] : !!disabled;
 
   const handlePress = () => {
+    if (isDisabled) return;
     if (action.type === "navigate") {
       onNavigate(action.screenId);
     } else {
@@ -22,11 +27,16 @@ export function ButtonRenderer({ component, dispatch, onNavigate }: RendererProp
 
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor: VARIANT_COLORS[variant] }]}
+      style={[
+        styles.button,
+        { backgroundColor: VARIANT_COLORS[variant as keyof typeof VARIANT_COLORS] },
+        isDisabled && styles.disabled,
+      ]}
       onPress={handlePress}
       activeOpacity={0.7}
+      disabled={isDisabled}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>{resolvedLabel}</Text>
     </TouchableOpacity>
   );
 }
@@ -38,6 +48,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginVertical: 6,
+  },
+  disabled: {
+    opacity: 0.5,
   },
   label: {
     color: "#fff",

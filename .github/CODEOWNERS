@@ -1,0 +1,12 @@
+# Default owner for the full repository
+* @wartelth
+
+# Workspace-specific ownership
+/app/ @wartelth
+/server/ @wartelth
+/shared/ @wartelth
+/docs/ @wartelth
+/website/ @wartelth
+
+# GitHub meta
+/.github/ @wartelth
