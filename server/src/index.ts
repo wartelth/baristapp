@@ -116,5 +116,8 @@ app.listen(PORT, () => {
   L.detail("BOOT", "DAYTONA_API_KEY", process.env.DAYTONA_API_KEY ? "set" : "not set");
   L.detail("BOOT", "SANDBOX_RUNTIME_MODE", process.env.SANDBOX_RUNTIME_MODE ?? "auto");
   L.detail("BOOT", "SERVER_PUBLIC_BASE_URL", process.env.SERVER_PUBLIC_BASE_URL ?? "http://localhost:3001");
+  L.detail("BOOT", "AGENT_EXECUTOR_MODE", process.env.AGENT_EXECUTOR_MODE ?? "native");
+  L.detail("BOOT", "AIDER_EXECUTION_TARGET", process.env.AIDER_EXECUTION_TARGET ?? "auto");
+  L.detail("BOOT", "AIDER_MODEL", process.env.AIDER_MODEL ?? process.env.OPENAI_CODING_MODEL ?? "gpt-5.1");
   L.separator();
 });

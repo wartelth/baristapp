@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
@@ -13,7 +14,8 @@ try {
 export function DatePickerRenderer({ component, state, dispatch }: RendererProps) {
   if (component.type !== "datePicker") return null;
   const theme = useTheme();
-  const { stateKey, mode = "date", label } = component.props;
+  const { stateKey, mode = "date", label: rawLabel } = component.props;
+  const label = rawLabel ? String(resolveTemplate(rawLabel, state) ?? rawLabel) : undefined;
   const [show, setShow] = useState(false);
 
   const currentValue = state[stateKey] ? new Date(String(state[stateKey])) : new Date();

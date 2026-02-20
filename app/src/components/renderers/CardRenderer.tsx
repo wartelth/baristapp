@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
@@ -7,6 +8,9 @@ export function CardRenderer({ component, state, dispatch, onNavigate, renderChi
   if (component.type !== "card") return null;
   const theme = useTheme();
   const { title, subtitle, children, elevation = 2, onPress } = component.props;
+
+  const resolvedTitle = title ? String(resolveTemplate(title, state) ?? title) : undefined;
+  const resolvedSubtitle = subtitle ? String(resolveTemplate(subtitle, state) ?? subtitle) : undefined;
 
   const content = (
     <View
@@ -20,8 +24,8 @@ export function CardRenderer({ component, state, dispatch, onNavigate, renderChi
         },
       ]}
     >
-      {title && <Text style={[styles.title, { color: theme.textColor }]}>{title}</Text>}
-      {subtitle && <Text style={[styles.subtitle, { color: theme.secondaryTextColor }]}>{subtitle}</Text>}
+      {resolvedTitle && <Text style={[styles.title, { color: theme.textColor }]}>{resolvedTitle}</Text>}
+      {resolvedSubtitle && <Text style={[styles.subtitle, { color: theme.secondaryTextColor }]}>{resolvedSubtitle}</Text>}
       {children?.map((child: any) => (
         <View key={child.id}>{renderChild?.(child, state, dispatch, onNavigate)}</View>
       ))}

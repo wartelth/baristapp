@@ -1,12 +1,14 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { resolveTemplate } from "@swissknife/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 
 export function SliderRenderer({ component, state, dispatch }: RendererProps) {
   if (component.type !== "slider") return null;
   const theme = useTheme();
-  const { stateKey, min = 0, max = 100, step = 1, label } = component.props;
+  const { stateKey, min = 0, max = 100, step = 1, label: rawLabel } = component.props;
+  const label = rawLabel ? String(resolveTemplate(rawLabel, state) ?? rawLabel) : undefined;
 
   const value = Number(state[stateKey] ?? min);
   // Native slider via a simple track + thumb since @react-native-community/slider

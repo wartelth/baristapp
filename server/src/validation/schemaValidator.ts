@@ -13,20 +13,52 @@ export interface ValidationFailure {
 
 export type ValidationResult = ValidationSuccess | ValidationFailure;
 
+function normalizeRawSpec(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return raw;
+  const obj = raw as Record<string, unknown>;
+
+  if (typeof obj.version === "number") {
+    obj.version = Math.round(obj.version);
+  }
+  if (obj.version === undefined || obj.version === null) {
+    obj.version = 2;
+  }
+  if (obj.version === 1 && ("theme" in obj || "serverEndpoints" in obj || "effects" in obj)) {
+    obj.version = 2;
+  }
+
+  // Normalize dataModel: {} → { entities: [] } so the Zod schema doesn't reject it
+  if (
+    obj.dataModel !== undefined &&
+    typeof obj.dataModel === "object" &&
+    obj.dataModel !== null &&
+    !Array.isArray(obj.dataModel)
+  ) {
+    const dm = obj.dataModel as Record<string, unknown>;
+    if (!Array.isArray(dm.entities)) {
+      dm.entities = [];
+    }
+  }
+
+  return obj;
+}
+
 /**
  * Validates raw JSON against the MiniApp Zod schema.
  * Returns structured result with parsed data or error messages.
  */
 export function validateMiniApp(raw: unknown): ValidationResult {
-  const result = MiniAppSchema.safeParse(raw);
+  const normalized = normalizeRawSpec(raw);
+  const result = MiniAppSchema.safeParse(normalized);
 
   if (result.success) {
     return { valid: true, data: result.data };
   }
 
-  const errors = result.error.issues.map(
-    (issue) => `${issue.path.join(".")}: ${issue.message}`
-  );
+  const errors = result.error.issues.map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.join(".") : "<root>";
+    return `${path}: ${issue.message}`;
+  });
 
   return { valid: false, errors };
 }

@@ -33,6 +33,8 @@ export interface WorkerRunInput {
   tools: WorkerTools;
 }
 
+const EXTERNAL_RESOURCE_RE = /<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']https?:\/\//i;
+
 function runSpecChecks(spec: MiniApp): { passed: boolean; checks: string[] } {
   const checks: string[] = [];
   if (!spec.screens?.length) checks.push("App has no screens");
@@ -47,6 +49,24 @@ function runSpecChecks(spec: MiniApp): { passed: boolean; checks: string[] } {
     return false;
   });
   if (duplicateEndpoints) checks.push("Duplicate server endpoint ids");
+
+  for (const screen of spec.screens ?? []) {
+    for (const comp of (screen as any).components ?? []) {
+      if (comp.type === "webView") {
+        const html: string = comp.props?.html ?? "";
+        if (!html || html.trim().length < 50) {
+          checks.push(`WebView "${comp.id}" has empty or trivial HTML (must be >50 chars)`);
+        }
+        if (EXTERNAL_RESOURCE_RE.test(html)) {
+          checks.push(`WebView "${comp.id}" contains external script/link tags — HTML must be self-contained (Apple 4.7 compliance)`);
+        }
+        const declaredKeys: string[] = comp.props?.stateKeys ?? [];
+        if (declaredKeys.length > 0 && !html.includes("SwissKnife")) {
+          checks.push(`WebView "${comp.id}" declares stateKeys but HTML does not use the SwissKnife bridge API`);
+        }
+      }
+    }
+  }
 
   return {
     passed: checks.length === 0,

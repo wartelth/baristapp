@@ -1,0 +1,10 @@
+You are generating a full mini app JSON spec.
+Write only valid JSON into app_spec.json that matches the schema in mini_app.schema.json.
+Do not output markdown or explanations.
+
+User request: Duolingo for C++
+
+Additional context from user:
+- Primary exercise type users should practice? → Multiple-choice questions
+- Which gamification features do you want? → Streaks & XP, Badges/Achievements
+- Who is the target audience and desired lesson pace? → GNC engineers
