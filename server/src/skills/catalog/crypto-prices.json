@@ -1,0 +1,42 @@
+{
+  "id": "crypto-prices",
+  "name": "Crypto Prices",
+  "description": "Get live cryptocurrency prices, market data, and trending coins from CoinGecko",
+  "category": "finance",
+  "capability": "network",
+  "rateLimit": { "requests": 30, "windowMs": 60000 },
+  "provider": {
+    "baseUrl": "https://api.coingecko.com/api/v3",
+    "authType": "none"
+  },
+  "actions": {
+    "price": {
+      "description": "Get current price for one or more coins (comma-separated ids like 'bitcoin,ethereum')",
+      "endpoint": "/simple/price?ids={{coinIds}}&vs_currencies={{currency}}&include_24hr_change=true&include_market_cap=true",
+      "method": "GET",
+      "params": {
+        "coinIds": { "type": "string", "required": true, "description": "Comma-separated coin ids (e.g. bitcoin,ethereum,solana)" },
+        "currency": { "type": "string", "required": false, "description": "Target currency (e.g. usd, eur, gbp)", "default": "usd" }
+      },
+      "cacheTtlMs": 60000
+    },
+    "trending": {
+      "description": "Get top trending coins in the last 24 hours",
+      "endpoint": "/search/trending",
+      "method": "GET",
+      "params": {},
+      "transform": "coins",
+      "cacheTtlMs": 300000
+    },
+    "markets": {
+      "description": "Get top coins by market cap with price, volume, and change data",
+      "endpoint": "/coins/markets?vs_currency={{currency}}&order=market_cap_desc&per_page={{limit}}&page=1&sparkline=false",
+      "method": "GET",
+      "params": {
+        "currency": { "type": "string", "required": false, "description": "Target currency", "default": "usd" },
+        "limit": { "type": "number", "required": false, "description": "Number of coins to return (1-100)", "default": 20 }
+      },
+      "cacheTtlMs": 120000
+    }
+  }
+}

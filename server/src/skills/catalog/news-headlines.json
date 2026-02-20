@@ -1,0 +1,40 @@
+{
+  "id": "news-headlines",
+  "name": "News Headlines",
+  "description": "Get top news headlines and search articles by keyword from NewsAPI",
+  "category": "news",
+  "capability": "network",
+  "rateLimit": { "requests": 30, "windowMs": 60000 },
+  "provider": {
+    "baseUrl": "https://newsapi.org/v2",
+    "authType": "apiKey",
+    "authEnvVar": "NEWSAPI_KEY",
+    "authHeader": "X-Api-Key"
+  },
+  "actions": {
+    "top": {
+      "description": "Get top headlines for a country and/or category",
+      "endpoint": "/top-headlines?country={{country}}&category={{category}}&pageSize={{limit}}",
+      "method": "GET",
+      "params": {
+        "country": { "type": "string", "required": false, "description": "2-letter country code (e.g. us, gb, fr, de)", "default": "us" },
+        "category": { "type": "string", "required": false, "description": "Category: business, entertainment, general, health, science, sports, technology", "default": "general" },
+        "limit": { "type": "number", "required": false, "description": "Number of articles (1-100)", "default": 10 }
+      },
+      "transform": "articles",
+      "cacheTtlMs": 300000
+    },
+    "search": {
+      "description": "Search news articles by keyword",
+      "endpoint": "/everything?q={{query}}&sortBy=publishedAt&pageSize={{limit}}&language={{language}}",
+      "method": "GET",
+      "params": {
+        "query": { "type": "string", "required": true, "description": "Search keywords" },
+        "limit": { "type": "number", "required": false, "description": "Number of articles (1-100)", "default": 10 },
+        "language": { "type": "string", "required": false, "description": "2-letter language code (e.g. en, fr, de)", "default": "en" }
+      },
+      "transform": "articles",
+      "cacheTtlMs": 300000
+    }
+  }
+}

@@ -1,32 +1,85 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import clarifyRouter from "./routes/clarify";
 import generateRouter from "./routes/generate";
+import modifyRouter from "./routes/modify";
+import appsRouter from "./routes/apps";
+import storageRouter from "./routes/storage";
+import reportsRouter from "./routes/reports";
+import socialRouter from "./routes/social";
+import libraryRouter from "./routes/library";
+import billingRouter from "./routes/billing";
+import skillsRouter from "./routes/skills";
+import { getSkillIds } from "./skills/skillRegistry";
 import { ensureTmpDir, listSessions } from "./services/sessionStore";
+import { ensureReportsDir } from "./services/reportStore";
+import L, { fmtMs, fmtStatus, fmtBytes, nextReqId } from "./utils/logger";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
-// Ensure tmp/ directory exists for session storage
 ensureTmpDir();
+ensureReportsDir();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
-// Request logging middleware
-app.use((req, _res, next) => {
-  console.log(`[REQ] ${req.method} ${req.path} from ${req.ip}`);
+// ---------------------------------------------------------------------------
+// Request / Response logging middleware
+// ---------------------------------------------------------------------------
+app.use((req, res, next) => {
+  const id = nextReqId();
+  const start = Date.now();
+  (req as any).__reqId = id;
+
+  L.log("REQ", `#${id} ${req.method} ${req.path} ← ${req.ip ?? "unknown"}`);
+
+  const originalJson = res.json.bind(res);
+  res.json = (body: any) => {
+    const elapsed = Date.now() - start;
+    const size = JSON.stringify(body)?.length ?? 0;
+    L.log("RES", `#${id} ${fmtStatus(res.statusCode)} ${req.method} ${req.path} → ${fmtBytes(size)} ${fmtMs(elapsed)}`);
+    return originalJson(body);
+  };
+
   next();
 });
 
 // Health check
 app.get("/health", (_req, res) => {
-  console.log("[HEALTH] Health check hit");
   res.json({ status: "ok" });
 });
 
+// Clarification step (pre-generation)
+app.use("/api/clarify", clarifyRouter);
+
 // Mini-app generation
 app.use("/api/generate", generateRouter);
+
+// Mini-app modification
+app.use("/api/modify", modifyRouter);
+
+// Per-app server endpoints (ML inference, transforms, proxies)
+app.use("/api/apps", appsRouter);
+
+// Cloud storage (Supabase-backed)
+app.use("/api/storage", storageRouter);
+
+// User content reports
+app.use("/api/reports", reportsRouter);
+
+// Social: profile + sharing
+app.use("/api/social", socialRouter);
+
+// Developer library templates
+app.use("/api/library", libraryRouter);
+
+// Billing + subscriptions (RevenueCat sync + webhooks)
+app.use("/api/billing", billingRouter);
+
+// Skills — curated data feed connectors for mini apps
+app.use("/api/skills", skillsRouter);
 
 // Debug: list saved generation sessions
 app.get("/api/sessions", (_req, res) => {
@@ -34,8 +87,44 @@ app.get("/api/sessions", (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[BOOT] SwissKnife server running on port ${PORT}`);
-  console.log(`[BOOT] ANTHROPIC_API_KEY ${process.env.ANTHROPIC_API_KEY ? "is set" : "is MISSING"}`);
-  console.log(`[BOOT] CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=${process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC ?? "not set"}`);
-  console.log(`[BOOT] DISABLE_AUTOUPDATER=${process.env.DISABLE_AUTOUPDATER ?? "not set"}`);
+  const supabaseServerKey =
+    process.env.SUPABASE_SECRET_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  L.banner("Baristapp Server v2");
+  L.detail("BOOT", "Port", PORT as number);
+  L.detail("BOOT", "LLM_PROVIDER", process.env.LLM_PROVIDER ?? "claude");
+  L.detail(
+    "BOOT",
+    "OPENAI_CODING_MODEL",
+    process.env.OPENAI_CODING_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-5.1"
+  );
+  L.detail("BOOT", "OPENAI_SMALL_MODEL", process.env.OPENAI_SMALL_MODEL ?? "gpt-5-mini");
+  L.detail("BOOT", "ANTHROPIC_API_KEY", process.env.ANTHROPIC_API_KEY ? "set" : "MISSING ⚠");
+  L.detail("BOOT", "OPENAI_API_KEY", process.env.OPENAI_API_KEY ? "set" : "not set");
+  if ((process.env.LLM_PROVIDER ?? "claude") === "openai" && !process.env.OPENAI_API_KEY) {
+    L.warn("BOOT", "LLM_PROVIDER=openai but OPENAI_API_KEY is missing");
+  }
+  L.detail("BOOT", "SUPABASE_URL", process.env.SUPABASE_URL ? "set" : "not set");
+  L.detail(
+    "BOOT",
+    "SUPABASE_SERVER_KEY",
+    supabaseServerKey
+      ? supabaseServerKey.startsWith("sb_secret_")
+        ? "set (secret)"
+        : "set (legacy)"
+      : "not set"
+  );
+  L.detail("BOOT", "REVENUECAT_SECRET_API_KEY", process.env.REVENUECAT_SECRET_API_KEY ? "set" : "not set");
+  L.detail("BOOT", "REVENUECAT_WEBHOOK_AUTH", process.env.REVENUECAT_WEBHOOK_AUTH ? "set" : "not set");
+  L.detail("BOOT", "DAYTONA_API_URL", process.env.DAYTONA_API_URL ? "set" : "not set");
+  L.detail("BOOT", "DAYTONA_API_KEY", process.env.DAYTONA_API_KEY ? "set" : "not set");
+  L.detail("BOOT", "SANDBOX_RUNTIME_MODE", process.env.SANDBOX_RUNTIME_MODE ?? "auto");
+  L.detail("BOOT", "SERVER_PUBLIC_BASE_URL", process.env.SERVER_PUBLIC_BASE_URL ?? "http://localhost:3001");
+  L.detail("BOOT", "AGENT_EXECUTOR_MODE", process.env.AGENT_EXECUTOR_MODE ?? "native");
+  L.detail("BOOT", "AIDER_EXECUTION_TARGET", process.env.AIDER_EXECUTION_TARGET ?? "auto");
+  L.detail("BOOT", "AIDER_MODEL", process.env.AIDER_MODEL ?? process.env.OPENAI_CODING_MODEL ?? "gpt-5.1");
+  const skillIds = getSkillIds();
+  L.detail("BOOT", "SKILLS_LOADED", `${skillIds.length} (${skillIds.join(", ")})`);
+  L.separator();
 });

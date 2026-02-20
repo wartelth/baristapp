@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
+import { saveCloudSpec } from "../api/supabaseClient";
 
 // ---------------------------------------------------------------------------
 // In-memory cache (keeps the public API synchronous)
@@ -12,6 +13,7 @@ let cacheLoaded = false;
 const APPS_INDEX_KEY = "apps:index";
 const appSpecKey = (appId: string) => `app:${appId}:spec`;
 const appStateKey = (appId: string) => `app:${appId}:state`;
+const appMetaKey = (appId: string) => `app:${appId}:meta`;
 
 // ---------------------------------------------------------------------------
 // Initialization — must be awaited before first use
@@ -54,6 +56,9 @@ export function saveApp(spec: MiniApp): void {
   if (!cache.has(appStateKey(spec.appId))) {
     persist(appStateKey(spec.appId), JSON.stringify(spec.initialState ?? {}));
   }
+
+  // Fire-and-forget cloud sync
+  saveCloudSpec(spec.appId, spec).catch(() => {});
 }
 
 export function getApp(appId: string): MiniApp | null {
@@ -71,6 +76,7 @@ export function listApps(): MiniApp[] {
 export function deleteApp(appId: string): void {
   remove(appSpecKey(appId));
   remove(appStateKey(appId));
+  remove(appMetaKey(appId));
 
   const index = listAppIds().filter((id) => id !== appId);
   persist(APPS_INDEX_KEY, JSON.stringify(index));
@@ -106,6 +112,56 @@ export function setFullState(
 
 export function clearState(appId: string): void {
   remove(appStateKey(appId));
+}
+
+/** Delete all locally stored mini-app specs and states. */
+export function clearAllApps(): void {
+  const keysToDelete: string[] = [];
+  for (const key of cache.keys()) {
+    if (key.startsWith("app:") || key === APPS_INDEX_KEY) {
+      keysToDelete.push(key);
+    }
+  }
+  for (const key of keysToDelete) {
+    remove(key);
+  }
+}
+
+export interface AppMeta {
+  ownerUserId: string;
+  ownerDisplayName: string;
+  ownerAvatarIndex: number;
+}
+
+export function getAppMeta(appId: string): AppMeta | null {
+  const raw = cache.get(appMetaKey(appId));
+  if (!raw) return null;
+  return JSON.parse(raw) as AppMeta;
+}
+
+export function saveAppMeta(appId: string, meta: AppMeta): void {
+  persist(appMetaKey(appId), JSON.stringify(meta));
+}
+
+// ---------------------------------------------------------------------------
+// User profile
+// ---------------------------------------------------------------------------
+
+export interface UserProfile {
+  displayName: string;
+  avatarIndex: number;
+}
+
+const PROFILE_KEY = "user:profile";
+
+export function getProfile(): UserProfile | null {
+  const raw = cache.get(PROFILE_KEY);
+  if (!raw) return null;
+  return JSON.parse(raw) as UserProfile;
+}
+
+export function saveProfile(profile: UserProfile): void {
+  persist(PROFILE_KEY, JSON.stringify(profile));
 }
 
 // ---------------------------------------------------------------------------

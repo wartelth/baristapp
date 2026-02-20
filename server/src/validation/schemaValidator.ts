@@ -1,5 +1,6 @@
-import { MiniAppSchema } from "@swissknife/shared";
-import type { MiniApp } from "@swissknife/shared";
+import { MiniAppSchema } from "@baristapp/shared";
+import type { MiniApp } from "@baristapp/shared";
+import { hasSkill, getSkillIds } from "../skills/skillRegistry";
 
 export interface ValidationSuccess {
   valid: true;
@@ -13,27 +14,100 @@ export interface ValidationFailure {
 
 export type ValidationResult = ValidationSuccess | ValidationFailure;
 
+function normalizeRawSpec(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return raw;
+  const obj = raw as Record<string, unknown>;
+
+  if (typeof obj.version === "number") {
+    obj.version = Math.round(obj.version);
+  }
+  if (obj.version === undefined || obj.version === null) {
+    obj.version = 2;
+  }
+  if (obj.version === 1 && ("theme" in obj || "serverEndpoints" in obj || "effects" in obj || "skills" in obj)) {
+    obj.version = 2;
+  }
+
+  // Normalize dataModel: {} → { entities: [] } so the Zod schema doesn't reject it
+  if (
+    obj.dataModel !== undefined &&
+    typeof obj.dataModel === "object" &&
+    obj.dataModel !== null &&
+    !Array.isArray(obj.dataModel)
+  ) {
+    const dm = obj.dataModel as Record<string, unknown>;
+    if (!Array.isArray(dm.entities)) {
+      dm.entities = [];
+    }
+  }
+
+  // Auto-add "skills" capability when skills array is present
+  if (Array.isArray(obj.skills) && obj.skills.length > 0) {
+    const caps = Array.isArray(obj.capabilities) ? obj.capabilities : ["localStorage"];
+    if (!caps.includes("skills")) {
+      caps.push("skills");
+      obj.capabilities = caps;
+    }
+  }
+
+  return obj;
+}
+
+/**
+ * Validates declared skill ids against the loaded skill catalog.
+ * Returns warnings for unknown skills (non-blocking) and strips them.
+ */
+function validateSkillReferences(data: MiniApp): string[] {
+  const warnings: string[] = [];
+  const spec = data as any;
+
+  if (!Array.isArray(spec.skills) || spec.skills.length === 0) return warnings;
+
+  const validSkills: string[] = [];
+  const knownIds = getSkillIds();
+
+  for (const skillId of spec.skills) {
+    if (hasSkill(skillId)) {
+      validSkills.push(skillId);
+    } else {
+      warnings.push(
+        `skills: Unknown skill "${skillId}" (not in catalog). Available: ${knownIds.join(", ")}. Removing from spec.`
+      );
+    }
+  }
+
+  spec.skills = validSkills;
+  return warnings;
+}
+
 /**
  * Validates raw JSON against the MiniApp Zod schema.
  * Returns structured result with parsed data or error messages.
  */
 export function validateMiniApp(raw: unknown): ValidationResult {
-  const result = MiniAppSchema.safeParse(raw);
+  const normalized = normalizeRawSpec(raw);
+  const result = MiniAppSchema.safeParse(normalized);
 
   if (result.success) {
+    const skillWarnings = validateSkillReferences(result.data);
+    if (skillWarnings.length > 0) {
+      console.warn("[VALIDATE] Skill warnings:", skillWarnings);
+    }
     return { valid: true, data: result.data };
   }
 
-  const errors = result.error.issues.map(
-    (issue) => `${issue.path.join(".")}: ${issue.message}`
-  );
+  const errors = result.error.issues.map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.join(".") : "<root>";
+    return `${path}: ${issue.message}`;
+  });
 
   return { valid: false, errors };
 }
 
 /**
- * Attempts to extract JSON from Claude's response.
- * Handles cases where the model wraps JSON in markdown code fences.
+ * Attempts to extract JSON from an LLM or aider response.
+ * Handles markdown code fences, non-JSON preamble/postamble,
+ * and deeply nested JSON objects in mixed output.
  */
 export function extractJSON(text: string): unknown {
   let cleaned = text.trim();
@@ -49,14 +123,56 @@ export function extractJSON(text: string): unknown {
     }
   }
 
+  // Fast path: direct parse
   try {
     const parsed = JSON.parse(cleaned.trim());
     console.log("[VALIDATE] JSON.parse succeeded");
     return parsed;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[VALIDATE] ✖ JSON.parse failed: ${message}`);
-    console.error(`[VALIDATE] First 300 chars of cleaned text: ${cleaned.trim().slice(0, 300)}`);
-    throw err;
+  } catch {
+    // fall through to extraction strategies
   }
+
+  // Strategy: find the outermost { ... } brace pair using a depth counter.
+  // This handles aider output where JSON is surrounded by log lines.
+  const firstBrace = cleaned.indexOf("{");
+  if (firstBrace !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = firstBrace; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\" && inString) {
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          const candidate = cleaned.slice(firstBrace, i + 1);
+          try {
+            const parsed = JSON.parse(candidate);
+            console.log("[VALIDATE] JSON.parse succeeded (extracted from surrounding text)");
+            return parsed;
+          } catch {
+            // keep scanning for a later match
+          }
+        }
+      }
+    }
+  }
+
+  const message = `Could not extract valid JSON from response (${cleaned.length} chars)`;
+  console.error(`[VALIDATE] ${message}`);
+  console.error(`[VALIDATE] First 300 chars: ${cleaned.trim().slice(0, 300)}`);
+  throw new Error(message);
 }

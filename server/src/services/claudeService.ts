@@ -1,13 +1,19 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { MASTER_PROMPT } from "../prompts/masterPrompt";
+import { buildMasterPrompt } from "../prompts/masterPrompt";
 import { MiniAppJSONSchema } from "../validation/jsonSchema";
 import { extractJSON, validateMiniApp } from "../validation/schemaValidator";
 import { saveSession } from "./sessionStore";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
+import L, { fmtMs, fmtCost } from "../utils/logger";
 
 interface GenerationSuccess {
   success: true;
   miniApp: MiniApp;
+  usage: {
+    modelName: string;
+    costUsd: number;
+    numTurns: number;
+  };
 }
 
 interface GenerationFailure {
@@ -17,14 +23,108 @@ interface GenerationFailure {
 
 type GenerationResult = GenerationSuccess | GenerationFailure;
 
+// ---------------------------------------------------------------------------
+// Two-tier model selection
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Complexity scoring — weighted signals instead of naive keyword count
+// ---------------------------------------------------------------------------
+
+/** Features that add complexity weight */
+const COMPLEXITY_SIGNALS: { keywords: string[]; weight: number; tag: string }[] = [
+  // Hardware / media (need capabilities + extra components)
+  { keywords: ["camera", "photo", "capture", "scan", "qr code"], weight: 3, tag: "camera" },
+  { keywords: ["record", "audio", "microphone", "voice", "speech"], weight: 3, tag: "audio" },
+  { keywords: ["map", "location", "gps", "nearby", "directions"], weight: 3, tag: "location" },
+
+  // ML / AI inference
+  { keywords: ["classify", "identify", "recognize", "detect", "predict"], weight: 3, tag: "ml" },
+  { keywords: ["machine learning", "ml model", "inference", "huggingface"], weight: 3, tag: "ml-explicit" },
+
+  // Data visualization
+  { keywords: ["chart", "graph", "visualize", "visualization", "dashboard", "analytics"], weight: 2, tag: "dataviz" },
+
+  // Multi-screen / complex UI
+  { keywords: ["tabs", "modal", "multi-screen", "multiple screens", "pages", "navigation"], weight: 2, tag: "multi-ui" },
+  { keywords: ["onboarding", "wizard", "step by step", "multi-step", "flow"], weight: 2, tag: "wizard" },
+
+  // Timers / real-time
+  { keywords: ["timer", "countdown", "stopwatch", "pomodoro", "real-time", "live", "interval"], weight: 2, tag: "timer" },
+
+  // External data
+  { keywords: ["api", "fetch", "http", "endpoint", "external", "weather", "news"], weight: 2, tag: "api" },
+
+  // Gamification / social (implies scoring, progress, multiple states)
+  { keywords: ["game", "quiz", "trivia", "score", "points", "leaderboard", "achievement", "badge", "streak", "level"], weight: 2, tag: "gamification" },
+  { keywords: ["duolingo", "kahoot", "wordle", "flashcard"], weight: 3, tag: "game-reference" },
+  { keywords: ["multiplayer", "shared", "friends", "social", "compete", "versus", "challenge"], weight: 2, tag: "social" },
+
+  // Tracking / logging (implies lists, history, persistence)
+  { keywords: ["track", "tracker", "log", "journal", "diary", "history", "habit", "routine", "streak"], weight: 2, tag: "tracking" },
+  { keywords: ["analyze", "monitor", "statistics", "stats", "progress", "report"], weight: 2, tag: "analytics" },
+
+  // Rich content
+  { keywords: ["recipe", "cookbook", "meal plan", "workout plan", "training plan", "curriculum", "course", "lesson"], weight: 2, tag: "structured-content" },
+  { keywords: ["calendar", "schedule", "planner", "agenda", "booking", "reservation"], weight: 2, tag: "calendar" },
+  { keywords: ["canvas", "draw", "paint", "sketch", "editor", "rich text"], weight: 3, tag: "canvas" },
+
+  // WebView-worthy
+  { keywords: ["html", "webview", "web view", "interactive diagram", "animation"], weight: 2, tag: "webview" },
+
+  // Simple signals (low weight, need many to trigger)
+  { keywords: ["list", "todo", "note", "counter", "calculator"], weight: 1, tag: "simple" },
+];
+
+/** Threshold: total weight >= this → COMPLEX (use Opus) */
+const COMPLEXITY_THRESHOLD = 4;
+
+function isComplexPrompt(prompt: string): { complex: boolean; matchedKeywords: string[] } {
+  const lower = prompt.toLowerCase();
+  let totalWeight = 0;
+  const matchedKeywords: string[] = [];
+
+  for (const signal of COMPLEXITY_SIGNALS) {
+    const matched = signal.keywords.some((kw) => lower.includes(kw));
+    if (matched) {
+      totalWeight += signal.weight;
+      matchedKeywords.push(signal.tag);
+    }
+  }
+
+  // Long prompts with clarifications are inherently more detailed
+  if (prompt.length > 300) totalWeight += 1;
+  if (prompt.length > 600) totalWeight += 1;
+
+  // Multiple sentences suggest a more detailed spec
+  const sentenceCount = (prompt.match(/[.!?]\s/g) || []).length + 1;
+  if (sentenceCount >= 4) totalWeight += 1;
+
+  return {
+    complex: totalWeight >= COMPLEXITY_THRESHOLD,
+    matchedKeywords: [...matchedKeywords, `weight=${totalWeight}`],
+  };
+}
+
 /**
  * Sends user prompt to Claude Code agent and returns a validated MiniApp spec.
- * The Agent SDK handles multi-turn retries internally via maxTurns.
  */
 export async function generateMiniApp(
   userPrompt: string
 ): Promise<GenerationResult> {
-  console.log("[AGENT] Starting Claude Code agent generation");
+  const { complex, matchedKeywords } = isComplexPrompt(userPrompt);
+  const model = complex ? "claude-opus-4-6" : "claude-sonnet-4-5-20250929";
+  const modelShort = complex ? "Opus 4.6" : "Sonnet 4.5";
+  const maxTurns = complex ? 6 : 3;
+  const maxBudget = complex ? 2.0 : 0.5;
+
+  L.log("AGENT", `Model selection: ${complex ? "COMPLEX" : "SIMPLE"} → ${modelShort}`);
+  if (matchedKeywords.length > 0) {
+    L.detail("AGENT", "Keywords", matchedKeywords.join(", "));
+  }
+  L.detail("AGENT", "Model", model);
+  L.detail("AGENT", "Max turns", maxTurns);
+  L.detail("AGENT", "Budget", `$${maxBudget.toFixed(2)}`);
 
   const startTime = Date.now();
 
@@ -32,15 +132,16 @@ export async function generateMiniApp(
     const session = query({
       prompt: userPrompt,
       options: {
-        systemPrompt: MASTER_PROMPT,
+        model,
+        systemPrompt: buildMasterPrompt(),
         outputFormat: {
           type: "json_schema",
           schema: MiniAppJSONSchema as Record<string, unknown>,
         },
         permissionMode: "bypassPermissions",
         allowDangerouslySkipPermissions: true,
-        maxTurns: 3,
-        maxBudgetUsd: 0.50,
+        maxTurns,
+        maxBudgetUsd: maxBudget,
         allowedTools: [],
         disallowedTools: ["Bash", "Edit", "Write", "Read", "Glob", "Grep", "NotebookEdit"],
       },
@@ -53,7 +154,16 @@ export async function generateMiniApp(
 
     for await (const message of session) {
       if (message.type === "system" && message.subtype === "init") {
-        console.log(`[AGENT] Session initialized — model: ${message.model}`);
+        L.log("AGENT", `Session initialized — confirmed model: ${message.model}`);
+      }
+
+      if (message.type === "assistant") {
+        const elapsed = Date.now() - startTime;
+        const msg = (message as any).message;
+        const preview = typeof msg === "string"
+          ? msg.slice(0, 80).replace(/\n/g, " ")
+          : "(structured)";
+        L.log("AGENT", `Turn response ${fmtMs(elapsed)} — ${preview}...`);
       }
 
       if (message.type === "result") {
@@ -64,18 +174,17 @@ export async function generateMiniApp(
           structuredOutput = message.structured_output;
           costUsd = message.total_cost_usd;
           numTurns = message.num_turns;
-          console.log(
-            `[AGENT] Success — ${numTurns} turn(s), $${costUsd.toFixed(4)}, ${elapsed}ms`
-          );
+          L.success("AGENT", `Completed in ${fmtMs(elapsed)}`);
+          L.detail("AGENT", "Turns", numTurns);
+          L.detail("AGENT", "Cost", fmtCost(costUsd));
+          L.detail("AGENT", "Output", structuredOutput ? "structured JSON" : `text (${resultText.length} chars)`);
         } else {
-          // Error result
           const errors = "errors" in message ? message.errors : ["Unknown agent error"];
-          console.error(
-            `[AGENT] Failed (${message.subtype}) — ${errors.join("; ")} — ${elapsed}ms`
-          );
+          L.error("AGENT", `Failed (${message.subtype}) — ${fmtMs(elapsed)}`);
+          (errors as string[]).forEach((e, i) => L.detail("AGENT", `Error ${i + 1}`, e));
           return {
             success: false,
-            error: `Agent error (${message.subtype}): ${errors.join("; ")}`,
+            error: `Agent error (${message.subtype}): ${(errors as string[]).join("; ")}`,
           };
         }
       }
@@ -84,36 +193,66 @@ export async function generateMiniApp(
     // Try structured output first, then fall back to parsing result text
     let raw: unknown;
     if (structuredOutput !== undefined && structuredOutput !== null) {
-      console.log("[AGENT] Using structured_output from agent");
+      L.log("VALIDATE", "Using structured_output from agent");
       raw = structuredOutput;
     } else if (resultText) {
-      console.log("[AGENT] Falling back to parsing result text");
+      L.log("VALIDATE", "Falling back to parsing result text");
       raw = extractJSON(resultText);
     } else {
+      L.error("AGENT", "Agent returned no output at all");
       return { success: false, error: "Agent returned no output" };
     }
 
-    console.log("[VALIDATE] Running Zod validation...");
+    L.log("VALIDATE", "Running Zod validation...");
     const validation = validateMiniApp(raw);
 
     if (validation.valid) {
-      console.log(
-        `[VALIDATE] Valid — appId="${validation.data.appId}", ` +
-          `title="${validation.data.title}", ` +
-          `${validation.data.screens.length} screen(s), ` +
-          `${validation.data.screens.reduce((n, s) => n + s.components.length, 0)} component(s)`
-      );
+      const data = validation.data;
+      // Count components recursively (children, tabs, renderItem, etc.)
+      function countComponents(components: any[]): number {
+        let count = 0;
+        for (const c of components) {
+          count++;
+          if (c.props?.children) count += countComponents(c.props.children);
+          if (c.props?.tabs) {
+            for (const tab of c.props.tabs) {
+              if (tab.children) count += countComponents(tab.children);
+            }
+          }
+          if (c.props?.renderItem?.components) count += countComponents(c.props.renderItem.components);
+        }
+        return count;
+      }
+      const componentCount = data.screens.reduce((n, s) => n + countComponents(s.components), 0);
+      const v = (data as any).version ?? 1;
+      const capabilities = (data as any).capabilities?.length ?? 0;
+      const endpoints = (data as any).serverEndpoints?.length ?? 0;
+      const effects = (data as any).effects?.length ?? 0;
 
-      // Save session for debugging
-      saveSession(validation.data.appId, userPrompt, validation.data);
+      L.success("VALIDATE", "Schema validation passed");
+      L.detail("VALIDATE", "appId", data.appId);
+      L.detail("VALIDATE", "title", `"${data.title}"`);
+      L.detail("VALIDATE", "version", `v${v}`);
+      L.detail("VALIDATE", "screens", data.screens.length);
+      L.detail("VALIDATE", "components (deep)", componentCount);
+      if (capabilities > 0) L.detail("VALIDATE", "capabilities", capabilities);
+      if (endpoints > 0) L.detail("VALIDATE", "serverEndpoints", endpoints);
+      if (effects > 0) L.detail("VALIDATE", "effects", effects);
 
-      return { success: true, miniApp: validation.data };
+      saveSession(data.appId, userPrompt, data);
+      return {
+        success: true,
+        miniApp: data,
+        usage: {
+          modelName: model,
+          costUsd,
+          numTurns,
+        },
+      };
     }
 
-    console.log(
-      `[VALIDATE] Failed with ${validation.errors.length} error(s):`
-    );
-    validation.errors.forEach((e, i) => console.log(`[VALIDATE]   ${i + 1}. ${e}`));
+    L.error("VALIDATE", `Failed with ${validation.errors.length} error(s):`);
+    validation.errors.forEach((e, i) => L.detail("VALIDATE", `Error ${i + 1}`, e));
 
     return {
       success: false,
@@ -122,7 +261,7 @@ export async function generateMiniApp(
   } catch (err) {
     const elapsed = Date.now() - startTime;
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[AGENT] Exception — ${message} — ${elapsed}ms`);
+    L.error("AGENT", `Exception after ${fmtMs(elapsed)} — ${message}`);
     return { success: false, error: `Agent exception: ${message}` };
   }
 }

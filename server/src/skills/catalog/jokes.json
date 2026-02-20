@@ -1,0 +1,35 @@
+{
+  "id": "jokes",
+  "name": "Jokes",
+  "description": "Get random jokes by category — programming, puns, dark humor, and more",
+  "category": "entertainment",
+  "capability": "network",
+  "rateLimit": { "requests": 60, "windowMs": 60000 },
+  "provider": {
+    "baseUrl": "https://v2.jokeapi.dev",
+    "authType": "none"
+  },
+  "actions": {
+    "random": {
+      "description": "Get a random joke, optionally filtered by category",
+      "endpoint": "/joke/{{category}}?type={{jokeType}}&safe-mode",
+      "method": "GET",
+      "params": {
+        "category": { "type": "string", "required": false, "description": "Category: Any, Programming, Misc, Pun, Spooky, Christmas", "default": "Any" },
+        "jokeType": { "type": "string", "required": false, "description": "Type: single, twopart, or any (both)", "default": "any" }
+      },
+      "cacheTtlMs": 0
+    },
+    "search": {
+      "description": "Search jokes by keyword",
+      "endpoint": "/joke/Any?contains={{query}}&safe-mode&amount={{limit}}",
+      "method": "GET",
+      "params": {
+        "query": { "type": "string", "required": true, "description": "Search keyword" },
+        "limit": { "type": "number", "required": false, "description": "Number of jokes (1-10)", "default": 3 }
+      },
+      "transform": "jokes",
+      "cacheTtlMs": 0
+    }
+  }
+}
