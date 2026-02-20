@@ -1,7 +1,7 @@
 {
   "id": "architecture/security",
   "title": "Security Model",
-  "description": "SwissKnife is designed with security as a first-class concern. The declarative architecture eliminates entire categories of vulnerabilities.",
+  "description": "Baristapp is designed to reduce risk by construction: model output is treated as untrusted data and never executed as code.",
   "source": "@site/docs/architecture/security.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/security",

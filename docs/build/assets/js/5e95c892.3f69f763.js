@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunk_swissknife_docs=globalThis.webpackChunk_swissknife_docs||[]).push([[9647],{1917(s,e,r){r.r(e),r.d(e,{default:()=>o});r(6540);var a=r(1750),c=r(7347),i=r(8600),n=r(3971),u=r(7645),l=r(4848);function o(s){return(0,l.jsx)(i.e3,{className:(0,a.A)(c.G.wrapper.docsPages),children:(0,l.jsx)(u.A,{children:(0,n.v)(s.route.routes)})})}}}]);

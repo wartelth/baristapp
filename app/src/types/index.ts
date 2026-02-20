@@ -1,4 +1,4 @@
-import type { MiniAppComponent, MiniAppAction } from "@swissknife/shared";
+import type { MiniAppComponent, MiniAppAction } from "@baristapp/shared";
 
 export interface RendererProps {
   component: MiniAppComponent;
@@ -14,4 +14,4 @@ export interface RendererProps {
   ) => React.ReactNode;
 }
 
-export type { MiniApp, MiniAppScreen, MiniAppComponent, MiniAppAction } from "@swissknife/shared";
+export type { MiniApp, MiniAppScreen, MiniAppComponent, MiniAppAction } from "@baristapp/shared";

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import type { MiniApp, MiniAppComponent, MiniAppAction } from "@swissknife/shared";
-import { resolveTemplate, evaluate } from "@swissknife/shared";
+import type { MiniApp, MiniAppComponent, MiniAppAction } from "@baristapp/shared";
+import { resolveTemplate, evaluate } from "@baristapp/shared";
 import type { RendererProps } from "../types";
 import { getState, setFullState } from "../storage/storageLayer";
 import { saveCloudState, loadCloudState } from "../api/supabaseClient";

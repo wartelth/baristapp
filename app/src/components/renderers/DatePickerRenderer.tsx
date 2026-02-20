@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
-import { resolveTemplate } from "@swissknife/shared";
+import { resolveTemplate } from "@baristapp/shared";
 import type { RendererProps } from "../../types";
 import { useTheme } from "../ThemeProvider";
 

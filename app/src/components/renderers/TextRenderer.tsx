@@ -1,13 +1,13 @@
 import React from "react";
 import { Text, StyleSheet } from "react-native";
-import { resolveTemplate, getByPath } from "@swissknife/shared";
+import { resolveTemplate, getByPath } from "@baristapp/shared";
 import type { RendererProps } from "../../types";
 
 const VARIANT_STYLES = {
   title: { fontSize: 24, fontWeight: "700" as const },
   subtitle: { fontSize: 18, fontWeight: "600" as const },
   body: { fontSize: 16, fontWeight: "400" as const },
-  caption: { fontSize: 12, fontWeight: "400" as const, color: "#888" },
+  caption: { fontSize: 12, fontWeight: "400" as const, color: "#9C8B7A" },
 };
 
 export function TextRenderer({ component, state }: RendererProps) {
@@ -35,7 +35,7 @@ export function TextRenderer({ component, state }: RendererProps) {
 
 const styles = StyleSheet.create({
   base: {
-    color: "#fff",
+    color: "#EDE5DC",
     marginVertical: 4,
   },
 });

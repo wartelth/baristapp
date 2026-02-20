@@ -5,62 +5,79 @@ title: Security Model
 
 # Security Model
 
-SwissKnife is designed with security as a first-class concern. The declarative architecture eliminates entire categories of vulnerabilities.
+Baristapp is designed to reduce risk by construction: model output is treated as untrusted data and never executed as code.
 
-## Core Principle: No Code Execution
+## Threat model in one sentence
+
+User prompts and LLM output may be malicious or malformed, so every step assumes adversarial input and enforces strict validation before runtime use.
+
+## Core principle: declarative, not executable
 
 ```mermaid
 flowchart LR
-    Prompt["User Prompt"] --> AI["Claude AI"]
-    AI --> JSON["JSON Spec"]
-    JSON --> Val{"Zod Validation"}
-    Val -->|valid| Render["Renderer"]
-    Val -->|invalid| Reject["Rejected"]
+    Prompt["User prompt"] --> AI["LLM"]
+    AI --> JSON["JSON spec"]
+    JSON --> Val{"Schema validation"}
+    Val -->|valid| Render["Renderer runtime"]
+    Val -->|invalid| Reject["Reject"]
 
-    Render -.-x Eval["eval()"]
-    Render -.-x Scripts["Remote Scripts"]
-    Render -.-x Import["Dynamic Imports"]
+    Render -.-x Eval["eval / Function"]
+    Render -.-x Scripts["Remote script injection"]
+    Render -.-x Import["Dynamic code loading"]
 
-    style Eval fill:#dc2626,color:#fff,stroke:none
-    style Scripts fill:#dc2626,color:#fff,stroke:none
-    style Import fill:#dc2626,color:#fff,stroke:none
-    style Render fill:#16a34a,color:#fff,stroke:none
+    style Eval fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Scripts fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Import fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Render fill:#1f5134,color:#dff7e8,stroke:#7b9a6d
 ```
 
-The app is a **generic renderer** — it interprets a JSON schema. There is no mechanism to execute arbitrary code:
+The runtime is a generic renderer that interprets JSON. It has no mechanism to execute arbitrary generated code:
 
 - No `eval()` or `Function()` constructor
 - No `<script>` tags or remote script loading
 - No dynamic `import()` or `require()`
-- No `dangerouslySetInnerHTML` or equivalent
+- No direct HTML injection in native UI rendering paths
 
-## Validation Pipeline
-
-Every generated spec passes through strict validation before rendering:
+## Security control layers
 
 ```mermaid
 flowchart TD
-    Raw["Raw Claude Output"] --> Extract["Extract JSON<br/>(strip markdown fences)"]
-    Extract --> Parse["Zod Schema Parse"]
-    Parse -->|"success"| Types["Type-safe MiniApp object"]
-    Parse -->|"failure"| Error["Validation Error<br/>(detailed path info)"]
-    Types --> Mount["Mount + Render"]
-    Error --> Retry["Log + potentially retry"]
-
-    style Parse fill:#4f46e5,color:#fff,stroke:none
-    style Error fill:#dc2626,color:#fff,stroke:none
-    style Types fill:#16a34a,color:#fff,stroke:none
+    Input["Prompt + model output"] --> Layer1["1. Input constraints"]
+    Layer1 --> Layer2["2. Schema validation"]
+    Layer2 --> Layer3["3. Capability gating"]
+    Layer3 --> Layer4["4. Endpoint/domain whitelists"]
+    Layer4 --> Layer5["5. Auth + request scoping"]
+    Layer5 --> Layer6["6. Client runtime guardrails"]
 ```
 
-The Zod schema enforces:
-- Only known component types (20 defined)
-- Only known action types (13 defined)
-- Correct property shapes for each type
-- Valid enum values for variants, operators, etc.
+## Validation pipeline
+
+Every generated or modified spec must parse cleanly against shared Zod schemas:
+
+```mermaid
+flowchart TD
+    Raw["Raw model output"] --> Extract["Extract JSON payload"]
+    Extract --> Parse["Zod parse + coercion rules"]
+    Parse -->|"success"| Types["Typed MiniApp object"]
+    Parse -->|"failure"| Error["Validation error"]
+    Types --> Mount["Mount + Render"]
+    Error --> Reject["Reject + return safe error"]
+
+    style Parse fill:#3d2e22,color:#ede5dc,stroke:#d4956a
+    style Error fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Types fill:#1f5134,color:#dff7e8,stroke:#7b9a6d
+```
+
+### What this blocks
+
+- Unknown component/action types.
+- Invalid prop shapes and malformed action payloads.
+- Illegal enum/operator/capability values.
+- Cross-version spec drift.
 
 ## Capability System
 
-Apps must declare the native capabilities they need. The user grants permissions explicitly:
+Capabilities are explicit and minimal. Apps request what they need, and user/device permissions are still enforced by native platforms.
 
 | Capability | Permission Required | Auto-granted |
 |-----------|-------------------|-------------|
@@ -74,19 +91,13 @@ Apps must declare the native capabilities they need. The user grants permissions
 | `notifications` | Native dialog | No |
 | `supabaseStorage` | No | Yes |
 
-## Proxy Whitelist
+## Network and endpoint safety
 
-The `proxy` endpoint handler only forwards requests to pre-approved domains:
+Server-side proxying is restricted to approved domains. Endpoint execution is scoped and validated.
 
-```
-api-inference.huggingface.co
-api.openweathermap.org
-jsonplaceholder.typicode.com
-pokeapi.co
-api.github.com
-```
-
-Any attempt to proxy to an unlisted domain is rejected.
+- Requests to non-whitelisted domains are denied.
+- Per-app endpoints are namespaced to avoid cross-app access.
+- Sensitive headers/secrets are not exposed to client-generated specs.
 
 ## Auth & Identity
 
@@ -100,10 +111,10 @@ flowchart TD
     Device -->|Yes| DeviceID["user_id = device:{id}"]
     Device -->|No| Reject2["401 Unauthorized"]
 
-    style UserID fill:#16a34a,color:#fff,stroke:none
-    style DeviceID fill:#eab308,color:#000,stroke:none
-    style Reject fill:#dc2626,color:#fff,stroke:none
-    style Reject2 fill:#dc2626,color:#fff,stroke:none
+    style UserID fill:#1f5134,color:#dff7e8,stroke:#7b9a6d
+    style DeviceID fill:#7a5d20,color:#fff7d6,stroke:#d4956a
+    style Reject fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Reject2 fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
 ```
 
 ## Per-App Isolation
@@ -113,11 +124,11 @@ flowchart TD
 - Server endpoints are scoped: `/api/apps/{appId}/endpoints/{endpointId}`
 - Apps cannot access each other's state or endpoints
 
-## WebView Security
+## WebView and embedded content
 
-The `webView` component renders HTML/CSS/JavaScript in a sandboxed WebView (WKWebView on iOS, WebView on Android). Security is enforced at multiple layers:
+When WebView-style components are used, content must stay sandboxed with strict navigation and bridge validation.
 
-### Sandbox Constraints
+### Sandbox controls
 
 ```mermaid
 flowchart TD
@@ -132,31 +143,32 @@ flowchart TD
     WebView -.-x File["File System"]
     WebView -.-x Native["Native APIs"]
     
-    style WebView fill:#4f46e5,color:#fff,stroke:none
-    style Block fill:#dc2626,color:#fff,stroke:none
-    style Reject fill:#dc2626,color:#fff,stroke:none
-    style Process fill:#16a34a,color:#fff,stroke:none
+    style WebView fill:#3d2e22,color:#ede5dc,stroke:#d4956a
+    style Block fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Reject fill:#6b1f1f,color:#fde8e8,stroke:#d4956a
+    style Process fill:#1f5134,color:#dff7e8,stroke:#7b9a6d
 ```
 
-**Navigation Restrictions:**
+**Navigation restrictions**
 - All external URLs are blocked (`onShouldStartLoadWithRequest` returns `false`)
 - Only inline HTML (`data:` URIs) and `about:blank` are allowed
 - No redirects to external domains
 
-**File Access:**
+**File access**
 - `allowFileAccess={false}` — No local file system access
 - `allowFileAccessFromFileURLs={false}` — No file:// URL access
 - `allowUniversalAccessFromFileURLs={false}` — No cross-origin file access
 
-**Bridge API:**
+**Bridge API**
 - Only whitelisted message types: `setState`, `dispatch`, `message`, `bridgeReady`
 - All bridge messages are validated before processing
 - State updates are limited to declared `stateKeys` (if provided)
 - Actions dispatched from WebView must match the schema (validated by renderer)
 
-**Apple Guideline 4.7 Compliance:**
-The WebView implementation follows Apple's guidelines for HTML5 mini-apps:
-- Content is generated dynamically (not pre-packaged HTML files)
-- No access to native device features from WebView JavaScript
-- All native interactions go through the validated bridge API
-- WebView content cannot access camera, location, contacts, etc. directly
+## Security operations checklist
+
+- Enforce schema validation on all generation/modify endpoints.
+- Keep capability and domain whitelists reviewed and versioned.
+- Rotate secrets and isolate environments (dev/staging/prod).
+- Log rejects/validation failures for anomaly detection.
+- Run dependency and container/runtime scans before each release.

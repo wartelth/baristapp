@@ -5,127 +5,139 @@ title: Architecture Overview
 
 # Architecture Overview
 
-SwissKnife is a three-package monorepo where a **shared schema** connects an **Express server** (AI generation) to a **React Native app** (rendering engine).
+Baristapp is a schema-first mini-app platform: the same contract drives generation, validation, storage, and rendering.
 
 ## System Architecture
 
 ```mermaid
 graph TB
-    subgraph Client["📱 App (React Native / Expo)"]
-        UI["Screens & Navigation"]
+    subgraph Client["Mobile Client (React Native / Expo)"]
+        UI["Screens + Navigation"]
         Renderer["MiniAppRenderer"]
-        Storage["Storage Layer"]
+        Actions["Action Dispatcher"]
+        Local["Local state + storage"]
         Caps["Capability Manager"]
     end
 
-    subgraph Server["⚙️ Server (Express)"]
+    subgraph Server["Server (Express)"]
         API["REST API"]
-        Gen["Claude Generation"]
-        Mod["Modify Service"]
-        Clar["Clarify Service"]
-        Sub["Subserver Manager"]
-        Val["Schema Validator"]
+        Clarify["Clarify Service"]
+        Generate["Generate Service"]
+        Modify["Modify Service"]
+        Validate["Schema Validator"]
+        Session["Session Store"]
+        Runtime["Sandbox/Worker Runtime"]
     end
 
-    subgraph Shared["📦 Shared"]
+    subgraph Shared["Shared Contract"]
         Schema["Zod Schemas"]
-        Types["TypeScript Types"]
+        Types["TS Types"]
+        Expr["Expression Engine helpers"]
     end
 
-    subgraph External["☁️ External Services"]
-        Claude["Claude API"]
-        Supa["Supabase"]
-        HF["HuggingFace"]
+    subgraph External["External Services"]
+        LLM["LLM Provider APIs"]
+        DB["Supabase / persistence"]
+        Third["Whitelisted third-party APIs"]
     end
 
     UI --> Renderer
-    Renderer --> Storage
-    Renderer --> Caps
+    Renderer --> Actions
+    Actions --> Local
+    Actions --> Caps
     UI -->|HTTP| API
 
-    API --> Gen
-    API --> Mod
-    API --> Clar
-    API --> Sub
-    Gen --> Val
-    Mod --> Val
+    API --> Clarify
+    API --> Generate
+    API --> Modify
+    Generate --> Validate
+    Modify --> Validate
+    API --> Session
+    API --> Runtime
 
-    Gen --> Claude
-    Mod --> Claude
-    Clar --> Claude
-    Sub --> HF
-    API --> Supa
-    Storage -->|Cloud Sync| API
+    Clarify --> LLM
+    Generate --> LLM
+    Modify --> LLM
+    API --> DB
+    Runtime --> Third
+    Local -->|cloud sync| API
 
-    Val --> Schema
-    Gen --> Schema
+    Validate --> Schema
+    Generate --> Schema
     Renderer --> Schema
     Schema --> Types
+    Schema --> Expr
 
-    style Client fill:#1e1b4b,color:#e0e7ff,stroke:#4f46e5
-    style Server fill:#1e1b4b,color:#e0e7ff,stroke:#4f46e5
-    style Shared fill:#312e81,color:#e0e7ff,stroke:#6366f1
-    style External fill:#0f172a,color:#e0e7ff,stroke:#334155
+    style Client fill:#1a1310,color:#ede5dc,stroke:#c67c4e
+    style Server fill:#1a1310,color:#ede5dc,stroke:#c67c4e
+    style Shared fill:#241c16,color:#ede5dc,stroke:#d4956a
+    style External fill:#0f0b08,color:#ede5dc,stroke:#7b9a6d
 ```
 
-## Package Dependencies
+## Request lifecycle
 
 ```mermaid
-graph LR
-    App["app/"] -->|imports| Shared["shared/"]
-    Server["server/"] -->|imports| Shared
-    App -->|HTTP calls| Server
+sequenceDiagram
+    participant User
+    participant App as Mobile App
+    participant API as Server API
+    participant LLM as LLM Provider
+    participant Val as Schema Validator
 
-    style App fill:#4f46e5,color:#fff,stroke:none
-    style Server fill:#6366f1,color:#fff,stroke:none
-    style Shared fill:#818cf8,color:#fff,stroke:none
+    User->>App: Describe requested app
+    App->>API: POST /clarify (optional)
+    API->>LLM: Generate clarification prompts
+    LLM-->>API: Clarifying questions
+    API-->>App: Questions
+
+    App->>API: POST /generate
+    API->>LLM: Generate JSON spec
+    LLM-->>API: Candidate spec
+    API->>Val: Parse + validate
+    Val-->>API: Valid MiniApp object
+    API-->>App: MiniApp JSON
+    App->>App: Render components + wire actions
 ```
 
-- **shared** has zero internal dependencies — it's pure Zod schemas and types
-- **server** imports shared for validation and type checking
-- **app** imports shared for types; communicates with server via HTTP
+## Package boundaries
+
+| Package | Responsibility | Must not do |
+|---|---|---|
+| `shared` | Schema/types contract | Call network or platform APIs |
+| `server` | Generate/modify/validate and persistence | Trust unvalidated model output |
+| `app` | Render validated specs and dispatch actions | Execute arbitrary generated code |
+| `docs` | Product and engineering documentation | Drift from actual implementation |
+| `website` | Marketing site and entry points | Act as source of technical truth |
 
 ## Schema as Contract
 
-The core design principle: **the Zod schema is the single source of truth**.
+The contract in `shared/src/schema.ts` is the primary interface between AI and runtime.
 
 ```mermaid
 flowchart LR
     S["shared/src/schema.ts"]
-    S -->|validates output| Gen["Server Generation"]
-    S -->|types props| Rend["App Renderers"]
-    S -->|constrains| Prompt["System Prompt"]
-    S -->|defines| API["API Contracts"]
+    S -->|validates| Gen["Generation/Modify services"]
+    S -->|types| Rend["Renderer components"]
+    S -->|constrains| Prompt["Prompt contract"]
+    S -->|documents| Docs["Docs + examples"]
 
-    style S fill:#4f46e5,color:#fff,stroke:none
+    style S fill:#3d2e22,color:#ede5dc,stroke:#d4956a
 ```
 
-When Claude generates a mini-app spec, the server validates it against the Zod schema. The app renders only components and actions defined in that same schema. This means:
+## Extension model
 
-1. **Claude can't invent new component types** — they'd fail validation
-2. **The app can't receive unknown shapes** — TypeScript enforces the schema
-3. **Adding a new feature** requires updating the schema first, then server + app
+When adding a new component or action:
 
-## Schema Versions
+1. Extend `shared` schema and TS types first.
+2. Add renderer/dispatcher implementation in `app`.
+3. Update generation prompts and validation expectations in `server`.
+4. Add docs and examples for usage and safety implications.
 
-| Version | Components | Actions | Features |
-|---------|-----------|---------|----------|
-| **v1** | 5 basic | 4 basic | Screens, simple state |
-| **v2** | 20 total | 13 total | Theme, effects, server endpoints, capabilities |
-| **v3** | 21 total | 15 total | Expression engine, WebView component |
+This flow prevents partial rollouts and keeps the system deterministic.
 
-The unified `MiniAppSchema` is a union of both versions for backward compatibility.
+## Production readiness notes
 
-## Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Mobile | React Native + Expo 54 | Cross-platform renderer |
-| Navigation | React Navigation v7 | Screen routing |
-| State | React useState + refs | Per-app state management |
-| Local Storage | AsyncStorage | Persistent key-value store |
-| Server | Express.js | REST API + middleware |
-| AI | Claude API (Sonnet/Opus) | Spec generation & modification |
-| Cloud | Supabase | Auth, database, storage |
-| Schema | Zod | Runtime validation |
-| Types | TypeScript | Static analysis |
+- Enforce strict schema validation for every generation and modification request.
+- Keep endpoint and capability whitelists explicit and reviewed.
+- Use environment-specific secrets and isolated Supabase projects.
+- Maintain docs as release artifacts, not afterthoughts.

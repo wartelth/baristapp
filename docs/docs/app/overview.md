@@ -50,7 +50,7 @@ graph TD
 | File | Purpose |
 |------|---------|
 | `App.tsx` | Root: providers, navigation container, initialization |
-| `config.ts` | Reads from `swissknife.config.js` via Expo extras |
+| `config.ts` | Reads from `baristapp.config.js` via Expo extras |
 | `components/MiniAppRenderer.tsx` | Core rendering engine (584 lines) |
 | `storage/storageLayer.ts` | AsyncStorage + in-memory cache |
 | `capabilities/capabilityManager.ts` | Native permission system |
@@ -115,4 +115,4 @@ sequenceDiagram
 }
 ```
 
-Read from `swissknife.config.js` → `app.config.js` → Expo `extra` → `config.ts`.
+Read from `baristapp.config.js` → `app.config.js` → Expo `extra` → `config.ts`.

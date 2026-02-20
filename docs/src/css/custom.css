@@ -1,45 +1,72 @@
 :root {
-  --ifm-color-primary: #4f46e5;
-  --ifm-color-primary-dark: #4338ca;
-  --ifm-color-primary-darker: #3730a3;
-  --ifm-color-primary-darkest: #312e81;
-  --ifm-color-primary-light: #6366f1;
-  --ifm-color-primary-lighter: #818cf8;
-  --ifm-color-primary-lightest: #a5b4fc;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(79, 70, 229, 0.1);
+  --ifm-color-primary: #c67c4e;
+  --ifm-color-primary-dark: #b56f43;
+  --ifm-color-primary-darker: #a8653e;
+  --ifm-color-primary-darkest: #8a5233;
+  --ifm-color-primary-light: #d08b61;
+  --ifm-color-primary-lighter: #d99b76;
+  --ifm-color-primary-lightest: #e5b596;
+  --ifm-code-font-size: 94%;
+  --ifm-font-family-base: "Inter", "Geist", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: "Inter", "Geist", system-ui, -apple-system, sans-serif;
+  --ifm-background-color: #f8f5f1;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.92);
+  --ifm-footer-background-color: #241c16;
+  --ifm-toc-border-color: rgba(61, 46, 34, 0.18);
+  --ifm-color-content-secondary: #5f5145;
+  --ifm-link-color: #a8653e;
+  --docusaurus-highlighted-code-line-bg: rgba(198, 124, 78, 0.14);
 }
 
 [data-theme="dark"] {
-  --ifm-color-primary: #818cf8;
-  --ifm-color-primary-dark: #6366f1;
-  --ifm-color-primary-darker: #4f46e5;
-  --ifm-color-primary-darkest: #4338ca;
-  --ifm-color-primary-light: #a5b4fc;
-  --ifm-color-primary-lighter: #c7d2fe;
-  --ifm-color-primary-lightest: #e0e7ff;
-  --ifm-background-color: #111118;
-  --ifm-background-surface-color: #1a1a24;
-  --docusaurus-highlighted-code-line-bg: rgba(129, 140, 248, 0.15);
+  --ifm-color-primary: #d4956a;
+  --ifm-color-primary-dark: #ce875a;
+  --ifm-color-primary-darker: #c67c4e;
+  --ifm-color-primary-darkest: #a8653e;
+  --ifm-color-primary-light: #dda17a;
+  --ifm-color-primary-lighter: #e4ad89;
+  --ifm-color-primary-lightest: #ebbf9f;
+  --ifm-background-color: #0f0b08;
+  --ifm-background-surface-color: #1a1310;
+  --ifm-navbar-background-color: rgba(15, 11, 8, 0.82);
+  --ifm-footer-background-color: #0f0b08;
+  --ifm-color-content: #ede5dc;
+  --ifm-color-content-secondary: #9c8b7a;
+  --ifm-toc-border-color: rgba(198, 124, 78, 0.15);
+  --ifm-code-background: #241c16;
+  --ifm-pre-background: #1a1310;
+  --docusaurus-highlighted-code-line-bg: rgba(212, 149, 106, 0.18);
 }
 
-.hero__title {
-  font-size: 3rem;
-  background: linear-gradient(135deg, #818cf8, #c084fc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.navbar {
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(198, 124, 78, 0.12);
 }
 
-.hero__subtitle {
-  color: var(--ifm-color-primary-lighter);
+.footer {
+  border-top: 1px solid rgba(198, 124, 78, 0.16);
 }
 
-/* Mermaid diagram styling */
+.theme-doc-markdown h1,
+.theme-doc-markdown h2,
+.theme-doc-markdown h3 {
+  letter-spacing: -0.02em;
+}
+
+.theme-doc-markdown a:hover {
+  text-decoration: none;
+  color: var(--ifm-color-primary-lightest);
+}
+
 .docusaurus-mermaid-container {
   margin: 1.5rem 0;
+  border: 1px solid rgba(198, 124, 78, 0.14);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(26, 19, 16, 0.35), rgba(26, 19, 16, 0.08));
+  padding: 0.85rem;
 }
 
-/* Clean table styling */
 table {
   display: table;
   width: 100%;

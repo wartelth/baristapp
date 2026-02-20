@@ -18,7 +18,7 @@ export function InputRenderer({ component, state, dispatch }: RendererProps) {
     <TextInput
       style={[styles.input, multiline && styles.multiline]}
       placeholder={placeholder}
-      placeholderTextColor="#666"
+      placeholderTextColor="#9C8B7A"
       value={value}
       onChangeText={(text) =>
         dispatch({ type: "setState", key: stateKey, value: text })
@@ -31,10 +31,10 @@ export function InputRenderer({ component, state, dispatch }: RendererProps) {
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: "#1e1e2e",
-    color: "#fff",
+    backgroundColor: "#1A1310",
+    color: "#EDE5DC",
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: "#3D2E22",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { runAgentWorker } from "./agentWorker";
 import type { LLMProvider } from "../llm/providers/types";
 

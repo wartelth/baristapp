@@ -1,6 +1,6 @@
-# SwissKnife — Project Architecture & Source Code Guide
+# Baristapp — Project Architecture & Source Code Guide
 
-> **Purpose:** This document provides a comprehensive introduction to the SwissKnife codebase for AI models and developers. It explains the structure of both the **app** (React Native/Expo) and the **server** (Express/Node.js), the shared schema, and how components interact.
+> **Purpose:** This document provides a comprehensive introduction to the Baristapp codebase for AI models and developers. It explains the structure of both the **app** (React Native/Expo) and the **server** (Express/Node.js), the shared schema, and how components interact.
 
 ---
 
@@ -8,9 +8,9 @@
 
 1. [Project Overview](#1-project-overview)
 2. [Monorepo Structure](#2-monorepo-structure)
-3. [Shared Package (`@swissknife/shared`)](#3-shared-package-swissknifeshared)
-4. [App Package (`@swissknife/app`)](#4-app-package-swissknifeapp)
-5. [Server Package (`@swissknife/server`)](#5-server-package-swissknifeserver)
+3. [Shared Package (`@baristapp/shared`)](#3-shared-package-baristappshared)
+4. [App Package (`@baristapp/app`)](#4-app-package-baristappapp)
+5. [Server Package (`@baristapp/server`)](#5-server-package-baristappserver)
 6. [Data Flow & API Contract](#6-data-flow--api-contract)
 7. [Key Concepts for AI Assistants](#7-key-concepts-for-ai-assistants)
 
@@ -18,7 +18,7 @@
 
 ## 1. Project Overview
 
-**SwissKnife** is an AI-powered mini-app generator. Users describe a tool they need in natural language; the system:
+**Baristapp** is an AI-powered mini-app generator. Users describe a tool they need in natural language; the system:
 
 1. **Clarifies** — Asks follow-up questions to refine the request (Claude Haiku)
 2. **Generates** — Produces a declarative JSON spec for a mini-app (Claude Agent SDK)
@@ -32,11 +32,11 @@ The output is a **declarative schema** (screens, components, actions, state) —
 ## 2. Monorepo Structure
 
 ```
-SwissKnife/
+Baristapp/
 ├── app/                  # React Native (Expo) mobile app — the "player"
 ├── server/               # Express API — generation, modification, storage, per-app endpoints
 ├── shared/                # Zod schemas + TypeScript types — single source of truth
-├── swissknife.config.js   # Root config — debug/production, API URL, Supabase credentials
+├── baristapp.config.js   # Root config — debug/production, API URL, Supabase credentials
 └── package.json           # Workspaces: shared, server, app
 ```
 
@@ -45,11 +45,11 @@ SwissKnife/
 - `npm run app` — Start Expo dev server
 - `npm run typecheck` — Type-check shared + server
 
-**Config:** Edit `swissknife.config.js` to switch debug/production, set `apiBaseUrl`, and add Supabase URL + anon key.
+**Config:** Edit `baristapp.config.js` to switch debug/production, set `apiBaseUrl`, and add Supabase URL + anon key.
 
 ---
 
-## 3. Shared Package (`@swissknife/shared`)
+## 3. Shared Package (`@baristapp/shared`)
 
 **Location:** `shared/src/`  
 **Purpose:** Single source of truth for the MiniApp schema and API types. Used by both app and server.
@@ -127,7 +127,7 @@ Each endpoint has:
 
 ---
 
-## 4. App Package (`@swissknife/app`)
+## 4. App Package (`@baristapp/app`)
 
 **Location:** `app/src/`  
 **Stack:** React Native, Expo, React Navigation  
@@ -138,7 +138,7 @@ Each endpoint has:
 | File | Purpose |
 |------|---------|
 | `App.tsx` | Root: `AuthProvider`, `GenerationProvider`, `NavigationContainer` |
-| `app.config.js` | Injects `swissknife.config.js` into Expo `extra` |
+| `app.config.js` | Injects `baristapp.config.js` into Expo `extra` |
 | `index.ts` | Expo entry point |
 
 **Flow:** Onboarding (first launch) → Auth (Login/Signup) → Main (tabs)
@@ -173,7 +173,7 @@ app/src/
 │   ├── NotificationToast.tsx
 │   ├── LoadingOverlay.tsx
 │   └── renderers/    # One per component type (20 files)
-├── config.ts        # Reads from Expo extra (swissknife.config.js)
+├── config.ts        # Reads from Expo extra (baristapp.config.js)
 ├── context/
 │   ├── AuthContext.tsx      # session, signIn, signUp, signOut
 │   ├── GenerationContext.tsx  # busy, startGenerate, startModify, notification
@@ -261,15 +261,15 @@ Examples:
 
 **File:** `app/src/config.ts`
 
-- Reads from `Constants.expoConfig.extra` (injected by `app.config.js` from `swissknife.config.js`)
-- Fallback: `require("../../swissknife.config.js")` when extra is empty
+- Reads from `Constants.expoConfig.extra` (injected by `app.config.js` from `baristapp.config.js`)
+- Fallback: `require("../../baristapp.config.js")` when extra is empty
 - `config.apiBaseUrl`, `config.supabaseUrl`, `config.supabaseAnonKey`, `config.debug`
 
 ### 4.9 API Client
 
 **File:** `app/src/api/client.ts`
 
-- Uses `config.apiBaseUrl` (from `swissknife.config.js`)
+- Uses `config.apiBaseUrl` (from `baristapp.config.js`)
 - Generation/runtime: `clarifyPrompt`, `generateMiniApp`, `modifyMiniApp`, `callServerEndpoint`
 - Safety/privacy: `reportMiniApp`, `deleteMyCloudData`
 - Social sharing: `createShareCode`, `importSharedAppByCode`, `listInstalledSharedApps`, `listSharedWithMe`
@@ -288,7 +288,7 @@ Examples:
 
 ---
 
-## 5. Server Package (`@swissknife/server`)
+## 5. Server Package (`@baristapp/server`)
 
 **Location:** `server/src/`  
 **Stack:** Express, Claude API (Anthropic), Supabase  
@@ -442,7 +442,7 @@ Sign out → Auth
 User taps Share on a mini-app card (My Apps)
     → App: POST /api/social/share/:appId
     → Server: create/rotate short code (format: abc-def-ghi)
-    → App: show share modal with code + QR payload (swissknife://import?code=...)
+    → App: show share modal with code + QR payload (baristapp://import?code=...)
 Friend opens Social tab
     → Import modal: type code OR scan QR
     → App: normalize/extract code and POST /api/social/import/:shareCode
@@ -498,7 +498,7 @@ Friend opens Social tab
 - `SUPABASE_JWT_SECRET` — For verifying auth tokens (Supabase Dashboard → Settings → API → JWT Secret)
 - `PORT` — Default 3001
 
-**App (via `swissknife.config.js` or env):**
+**App (via `baristapp.config.js` or env):**
 - `apiBaseUrl` — API URL (set in config)
 - `supabaseUrl`, `supabaseAnonKey` — Supabase credentials
 
@@ -515,7 +515,7 @@ Friend opens Social tab
 
 | What | Path |
 |------|------|
-| Root config | `swissknife.config.js` |
+| Root config | `baristapp.config.js` |
 | MiniApp schema | `shared/src/schema.ts` |
 | API types | `shared/src/types.ts` |
 | App config | `app/src/config.ts` |
@@ -531,7 +531,7 @@ Friend opens Social tab
 
 ## Setup
 
-1. **Config:** Edit `swissknife.config.js` — set `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`.
+1. **Config:** Edit `baristapp.config.js` — set `apiBaseUrl`, `supabaseUrl`, `supabaseAnonKey`.
 2. **Server:** Add `.env` with `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (or legacy `SUPABASE_SERVICE_ROLE_KEY`), `SUPABASE_JWT_SECRET`.
 3. **Supabase:** Run `supabase_setup.sql` (or `markdown/supabase_schema.sql`) in Supabase SQL Editor.
    This creates social/library tables and seeds official templates.

@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunk_swissknife_docs=globalThis.webpackChunk_swissknife_docs||[]).push([[1951],{1951(s,e,i){i.d(e,{createTreemapServices:()=>a.d});var a=i(6591);i(3114)}}]);

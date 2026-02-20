@@ -1,4 +1,4 @@
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import L from "../../utils/logger";
 import { mountAppEndpoints } from "../subServerManager";
 import {

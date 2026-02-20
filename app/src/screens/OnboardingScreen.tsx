@@ -97,7 +97,7 @@ export function OnboardingScreen({ navigation }: Props) {
       <SpaceBackdrop />
       <Animated.View style={[styles.heroOrb, orbStyle]} />
       <Text style={styles.kicker}>Quick Setup</Text>
-      <Text style={styles.title}>SwissKnife</Text>
+      <Text style={styles.title}>Baristapp</Text>
       <Text style={styles.subtitle}>
         Get started in under a minute.
       </Text>

@@ -467,7 +467,7 @@ export const WebViewComponent = z.object({
     htmlKey: z.string().optional(),
     /** Height of the WebView in pixels */
     height: z.number().optional(),
-    /** State keys to inject into the WebView as window.__SWISSKNIFE_STATE__ */
+    /** State keys to inject into the WebView as window.__BARISTAPP_STATE__ */
     stateKeys: z.array(z.string()).optional(),
     /** Whether to allow the WebView to communicate back via postMessage */
     allowBridge: z.boolean().optional(),

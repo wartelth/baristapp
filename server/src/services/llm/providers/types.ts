@@ -1,4 +1,4 @@
-import type { ClarificationQuestion, MiniApp } from "@swissknife/shared";
+import type { ClarificationQuestion, MiniApp } from "@baristapp/shared";
 
 export interface LlmUsage {
   modelName: string;

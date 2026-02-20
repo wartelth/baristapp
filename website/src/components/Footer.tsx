@@ -1,46 +1,41 @@
 "use client";
 
-import { Zap, Github } from "lucide-react";
+import { Coffee, Github, BookOpen } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-border/50 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
+    <footer className="border-t border-border/30 py-10">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center">
+              <Coffee className="w-3 h-3 text-amber-100" />
             </div>
-            <span className="text-sm font-semibold">SwissKnife</span>
-            <span className="text-xs text-muted">
-              &middot; AI-Powered Mini App Studio
-            </span>
+            <span className="text-sm font-semibold">Baristapp</span>
+            <span className="text-xs text-muted">&middot; Your barista for apps</span>
           </div>
 
-          <div className="flex items-center gap-6 text-sm text-muted">
+          <div className="flex items-center gap-5 text-xs text-muted">
             <a
-              href="https://github.com/SwissKnife/swissknife"
+              href="https://docs.baristapp.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
             >
-              <Github className="w-4 h-4" />
+              <BookOpen className="w-3.5 h-3.5" />
+              Docs
+            </a>
+            <a
+              href="https://github.com/Baristapp/baristapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
+            >
+              <Github className="w-3.5 h-3.5" />
               GitHub
             </a>
-            <a href="#features" className="hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#skills" className="hover:text-foreground transition-colors">
-              Skills
-            </a>
-            <a href="#security" className="hover:text-foreground transition-colors">
-              Security
-            </a>
+            <span>MIT License &middot; {new Date().getFullYear()}</span>
           </div>
-
-          <p className="text-xs text-muted/60">
-            MIT License &middot; {new Date().getFullYear()}
-          </p>
         </div>
       </div>
     </footer>

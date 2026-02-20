@@ -1,5 +1,5 @@
 /**
- * SwissKnife Expression Engine — Safe evaluator for {{expressions}} in JSON specs.
+ * Baristapp Expression Engine — Safe evaluator for {{expressions}} in JSON specs.
  *
  * Supports:
  *   - Path access:        {{user.profile.name}}, {{items[0].title}}

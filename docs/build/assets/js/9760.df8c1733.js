@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_baristapp_docs=globalThis.webpackChunk_baristapp_docs||[]).push([[9760],{9760(a,s,c){c.d(s,{createArchitectureServices:()=>e.S});var e=c(5878);c(3114)}}]);

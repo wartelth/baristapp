@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   success: {
-    backgroundColor: "#16432a",
+    backgroundColor: "#233427",
     borderWidth: 1,
-    borderColor: "#22c55e",
+    borderColor: "#7B9A6D",
   },
   error: {
-    backgroundColor: "#3f1219",
+    backgroundColor: "#3B1E1A",
     borderWidth: 1,
-    borderColor: "#dc2626",
+    borderColor: "#CC5A45",
   },
   inner: {
     flexDirection: "row",
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   action: {
-    color: "#1e40af",
+    color: "#D4956A",
     fontSize: 14,
     fontWeight: "700",
   },

@@ -1,15 +1,15 @@
 import React, { createContext, useContext } from "react";
-import type { MiniAppTheme } from "@swissknife/shared";
+import type { MiniAppTheme } from "@baristapp/shared";
 
 const DEFAULT_THEME: Required<MiniAppTheme> = {
-  backgroundColor: "#111118",
-  surfaceColor: "#1e1e2e",
-  primaryColor: "#1e40af",
-  textColor: "#ffffff",
-  secondaryTextColor: "#888888",
-  borderColor: "#333333",
-  dangerColor: "#dc2626",
-  successColor: "#22c55e",
+  backgroundColor: "#0F0B08",
+  surfaceColor: "#1A1310",
+  primaryColor: "#C67C4E",
+  textColor: "#EDE5DC",
+  secondaryTextColor: "#9C8B7A",
+  borderColor: "#3D2E22",
+  dangerColor: "#CC5A45",
+  successColor: "#7B9A6D",
 };
 
 const ThemeContext = createContext<Required<MiniAppTheme>>(DEFAULT_THEME);

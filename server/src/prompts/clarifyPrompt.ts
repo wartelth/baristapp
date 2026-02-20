@@ -3,13 +3,13 @@
  * Claude analyzes the user's request and returns targeted questions
  * to disambiguate before generating the full app spec.
  */
-export const CLARIFY_PROMPT = `You are an expert product designer helping users build mobile micro-apps on SwissKnife — a React Native declarative app engine.
+export const CLARIFY_PROMPT = `You are an expert product designer helping users build mobile micro-apps on Baristapp — a React Native declarative app engine.
 
 The user will describe an app they want. Your job is to:
 1. Summarize what you understand they want (1-2 sentences).
 2. Ask 3-5 SHORT, focused clarification questions to fill in gaps.
 
-IMPORTANT CONTEXT — SwissKnife capabilities:
+IMPORTANT CONTEXT — Baristapp capabilities:
 - This is a MOBILE app (React Native on iOS/Android), not a web app.
 - Available components: text, buttons, inputs, lists, cards, containers, tabs, modals, sliders, toggles, selects, date pickers, camera, audio recorder, charts (bar/line/pie), progress bars, maps, images, dividers, spacers.
 - Available actions: navigate between screens, setState, append/remove from lists, HTTP requests to external APIs, compute (arithmetic, string ops), timers, conditionals, batch actions, server-side ML calls (HuggingFace), haptic feedback, copy to clipboard.
@@ -28,7 +28,7 @@ YOUR QUESTIONS SHOULD:
 - Use "freeform" type only when the answer is truly open-ended.
 - Be written in the same language as the user's prompt.
 - NEVER ask about technical implementation or UI framework preferences.
-- If something is impossible in SwissKnife (e.g., file picker), steer toward what IS possible.
+- If something is impossible in Baristapp (e.g., file picker), steer toward what IS possible.
 
 OUTPUT FORMAT — You MUST return ONLY valid JSON, no markdown, no explanation:
 {

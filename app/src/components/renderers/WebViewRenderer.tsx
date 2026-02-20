@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useEffect, useMemo } from "react";
 import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
-import { resolveTemplate } from "@swissknife/shared";
+import { resolveTemplate } from "@baristapp/shared";
 import type { RendererProps } from "../../types";
 import { useTheme, themeToCssVars } from "../ThemeProvider";
 
@@ -26,9 +26,9 @@ function buildBridgeScript(stateKeys: string[], state: Record<string, unknown>):
       var _ready = false;
       var _readyCallbacks = [];
 
-      window.__SWISSKNIFE_STATE__ = _state;
+      window.__BARISTAPP_STATE__ = _state;
 
-      window.SwissKnife = {
+      window.Baristapp = {
         getState: function(key) {
           return key ? _state[key] : Object.assign({}, _state);
         },
@@ -57,9 +57,9 @@ function buildBridgeScript(stateKeys: string[], state: Record<string, unknown>):
         },
         _receiveState: function(newState) {
           _state = Object.assign(_state, newState);
-          window.__SWISSKNIFE_STATE__ = _state;
+          window.__BARISTAPP_STATE__ = _state;
           _listeners.forEach(function(cb) {
-            try { cb(_state); } catch(e) { console.error('SwissKnife listener error:', e); }
+            try { cb(_state); } catch(e) { console.error('Baristapp listener error:', e); }
           });
         }
       };
@@ -312,8 +312,8 @@ export function WebViewRenderer({ component, state, dispatch }: RendererProps) {
     }
 
     webViewRef.current.injectJavaScript(`
-      if (window.SwissKnife && window.SwissKnife._receiveState) {
-        window.SwissKnife._receiveState(${JSON.stringify(stateUpdate)});
+      if (window.Baristapp && window.Baristapp._receiveState) {
+        window.Baristapp._receiveState(${JSON.stringify(stateUpdate)});
       }
       true;
     `);
@@ -377,7 +377,7 @@ export function WebViewRenderer({ component, state, dispatch }: RendererProps) {
         startInLoadingState={true}
         renderLoading={() => (
           <View style={styles.loading}>
-            <ActivityIndicator size="small" color="#818cf8" />
+            <ActivityIndicator size="small" color="#C67C4E" />
           </View>
         )}
         onShouldStartLoadWithRequest={(request) => {
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     marginVertical: 8,
-    backgroundColor: "#111118",
+    backgroundColor: "#0F0B08",
   },
   webView: {
     flex: 1,
@@ -410,10 +410,10 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#111118",
+    backgroundColor: "#0F0B08",
   },
   emptyText: {
-    color: "#888",
+    color: "#9C8B7A",
     textAlign: "center",
     padding: 20,
   },

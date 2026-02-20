@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import type { MiniAppServerEndpoint } from "@swissknife/shared";
+import type { MiniAppServerEndpoint } from "@baristapp/shared";
 import { handleHuggingFace } from "../subservers/huggingfaceHandler";
 import { handleTransform } from "../subservers/transformHandler";
 import { handleProxy } from "../subservers/proxyHandler";

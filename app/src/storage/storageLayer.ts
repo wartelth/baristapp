@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { saveCloudSpec } from "../api/supabaseClient";
 
 // ---------------------------------------------------------------------------

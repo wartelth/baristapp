@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SwissKnife — AI-Powered Mini App Studio",
+  title: "Baristapp — Your Barista for Apps",
   description:
     "Describe any tool in plain English. Get a fully interactive mobile app in seconds. Open source, declarative, secure by design.",
   keywords: [
@@ -25,16 +25,17 @@ export const metadata: Metadata = {
     "open source",
     "declarative UI",
     "mobile apps",
+    "Baristapp",
   ],
   openGraph: {
-    title: "SwissKnife — AI-Powered Mini App Studio",
+    title: "Baristapp — Your Barista for Apps",
     description:
       "Describe any tool in plain English. Get a fully interactive mobile app in seconds.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SwissKnife — AI-Powered Mini App Studio",
+    title: "Baristapp — Your Barista for Apps",
     description:
       "Describe any tool in plain English. Get a fully interactive mobile app in seconds.",
   },

@@ -54,7 +54,7 @@ export function ChartRenderer({ component, state }: RendererProps) {
   if (chartType === "pie") {
     const values = data.map((d) => Number(yKey ? d[yKey] : d.y ?? d.value ?? d));
     const total = values.reduce((s, v) => s + v, 0) || 1;
-    const defaultColors = ["#1e40af", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#f97316"];
+    const defaultColors = ["#C67C4E", "#7B9A6D", "#D4956A", "#CC5A45", "#8B5E3C", "#6E8A60", "#B46D42", "#A35A32"];
 
     return (
       <View style={[styles.wrapper, { minHeight: height }]}>

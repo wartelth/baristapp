@@ -3,7 +3,7 @@ import { buildModifyPrompt } from "../prompts/modifyPrompt";
 import { MiniAppJSONSchema } from "../validation/jsonSchema";
 import { extractJSON, validateMiniApp } from "../validation/schemaValidator";
 import { saveSession } from "./sessionStore";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import L, { fmtMs, fmtCost } from "../utils/logger";
 
 interface ModifySuccess {

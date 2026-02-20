@@ -269,7 +269,7 @@ export default function App() {
   if (!ready) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#1e40af" />
+        <ActivityIndicator size="large" color="#C67C4E" />
       </View>
     );
   }
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#111118",
+    backgroundColor: "#0F0B08",
   },
 });
 

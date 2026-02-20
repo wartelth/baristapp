@@ -1,5 +1,5 @@
-import { MiniAppSchema } from "@swissknife/shared";
-import type { MiniApp } from "@swissknife/shared";
+import { MiniAppSchema } from "@baristapp/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { hasSkill, getSkillIds } from "../skills/skillRegistry";
 
 export interface ValidationSuccess {

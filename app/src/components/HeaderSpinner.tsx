@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: "#1e40af",
+    color: "#C67C4E",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2.5,
-    borderColor: "#2a2a3e",
+    borderColor: "#3D2E22",
   },
   arc: {
     position: "absolute",
@@ -147,6 +147,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2.5,
     borderColor: "transparent",
-    borderTopColor: "#1e40af",
+    borderTopColor: "#C67C4E",
   },
 });

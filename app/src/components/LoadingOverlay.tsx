@@ -21,7 +21,7 @@ interface Phase {
 }
 
 const PHASES: Phase[] = [
-  { label: "Connecting", detail: "Reaching the SwissKnife server...", minMs: 2000 },
+  { label: "Connecting", detail: "Reaching the Baristapp server...", minMs: 2000 },
   { label: "Selecting model", detail: "Choosing the best model for your prompt...", minMs: 3000 },
   { label: "Generating", detail: "Claude is building your app...", minMs: 40000 },
   { label: "Assembling", detail: "Structuring components and actions...", minMs: 20000 },
@@ -190,19 +190,19 @@ export function LoadingOverlay({ startTime, onClose }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.85)",
+    backgroundColor: "rgba(15,11,8,0.9)",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100,
   },
   card: {
-    backgroundColor: "#1a1a2e",
+    backgroundColor: "#1A1310",
     borderRadius: 20,
     padding: 28,
     alignItems: "center",
     width: 300,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
+    borderColor: "#3D2E22",
   },
 
   // Close
@@ -214,12 +214,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#2a2a3e",
+    backgroundColor: "#241C16",
     justifyContent: "center",
     alignItems: "center",
   },
   closeBtnText: {
-    color: "#888",
+    color: "#9C8B7A",
     fontSize: 14,
     fontWeight: "700",
   },
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 3,
-    borderColor: "#2a2a3e",
+    borderColor: "#3D2E22",
     justifyContent: "flex-start",
     alignItems: "flex-start",
   },
@@ -248,19 +248,19 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 3,
     borderColor: "transparent",
-    borderTopColor: "#1e40af",
+    borderTopColor: "#C67C4E",
   },
 
   // Phase text
   phaseLabel: {
-    color: "#fff",
+    color: "#EDE5DC",
     fontSize: 18,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 4,
   },
   phaseDetail: {
-    color: "#888",
+    color: "#9C8B7A",
     fontSize: 13,
     textAlign: "center",
     marginBottom: 20,
@@ -283,40 +283,40 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   stepDone: {
-    backgroundColor: "#22c55e",
+    backgroundColor: "#7B9A6D",
   },
   stepActive: {
-    backgroundColor: "#1e40af",
+    backgroundColor: "#C67C4E",
   },
   stepPending: {
-    backgroundColor: "#333",
+    backgroundColor: "#3D2E22",
   },
   stepLabel: {
     fontSize: 13,
     flex: 1,
   },
   stepLabelActive: {
-    color: "#ccc",
+    color: "#E0D4C7",
   },
   stepLabelPending: {
-    color: "#555",
+    color: "#7A6858",
   },
   checkmark: {
-    color: "#22c55e",
+    color: "#7B9A6D",
     fontSize: 11,
     fontWeight: "600",
   },
 
   // Timer
   timer: {
-    color: "#666",
+    color: "#8D7A69",
     fontSize: 14,
     fontWeight: "500",
   },
 
   // Dismiss hint
   dismissHint: {
-    color: "#444",
+    color: "#6E5E52",
     fontSize: 11,
     marginTop: 12,
   },

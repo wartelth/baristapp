@@ -438,7 +438,7 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
       {/* About section */}
       <Text style={[styles.sectionTitle, { color: colors.secondaryText }]}>About</Text>
       <View style={[styles.section, { backgroundColor: colors.surfaceAlt, borderColor: colors.borderAlt }]}>
-        <SettingsRow label="SwissKnife" value="AI Mini-App Generator" colors={colors} />
+        <SettingsRow label="Baristapp" value="AI Mini-App Generator" colors={colors} />
         <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />
         <SettingsRow label="Powered by" value="Claude" colors={colors} />
         <View style={[styles.divider, { backgroundColor: colors.borderAlt }]} />

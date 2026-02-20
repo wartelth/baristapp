@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { MiniAppCapability } from "@swissknife/shared";
+import type { MiniAppCapability } from "@baristapp/shared";
 
 // ---------------------------------------------------------------------------
 // Permission state (in-memory cache + AsyncStorage)
@@ -39,7 +39,7 @@ const CAPABILITY_INFO: Record<MiniAppCapability, { title: string; description: s
   },
   network: {
     title: "Network Access",
-    description: "Make network requests through the SwissKnife proxy.",
+    description: "Make network requests through the Baristapp proxy.",
   },
   microphone: {
     title: "Microphone",
@@ -67,7 +67,7 @@ const CAPABILITY_INFO: Record<MiniAppCapability, { title: string; description: s
   },
   skills: {
     title: "Live Data Feeds",
-    description: "Access live data services (weather, news, crypto, etc.) through the SwissKnife platform.",
+    description: "Access live data services (weather, news, crypto, etc.) through the Baristapp platform.",
   },
 };
 

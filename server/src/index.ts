@@ -91,7 +91,7 @@ app.listen(PORT, () => {
     process.env.SUPABASE_SECRET_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  L.banner("SwissKnife Server v2");
+  L.banner("Baristapp Server v2");
   L.detail("BOOT", "Port", PORT as number);
   L.detail("BOOT", "LLM_PROVIDER", process.env.LLM_PROVIDER ?? "claude");
   L.detail(

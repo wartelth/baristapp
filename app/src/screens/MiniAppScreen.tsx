@@ -11,7 +11,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { getApp } from "../storage/storageLayer";
 import { MiniAppRenderer } from "../components/MiniAppRenderer";
 import { useGeneration } from "../context/GenerationContext";
@@ -162,7 +162,7 @@ export function MiniAppScreen({ route, navigation }: Props) {
             <TextInput
               style={styles.modifyInput}
               placeholder='e.g. "add a reset button"'
-              placeholderTextColor="#555"
+              placeholderTextColor="#7A6858"
               value={modifyText}
               onChangeText={setModifyText}
               multiline
@@ -196,18 +196,18 @@ export function MiniAppScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111118",
+    backgroundColor: "#0F0B08",
   },
   // Header button
   headerBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: "#2a2a3e",
+    backgroundColor: "#241C16",
     marginRight: 4,
   },
   headerBtnText: {
-    color: "#1e40af",
+    color: "#C67C4E",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#111118",
+    backgroundColor: "#0F0B08",
     padding: 24,
   },
   errorContent: {
@@ -226,25 +226,25 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   errorIcon: {
-    color: "#dc2626",
+    color: "#CC5A45",
     fontSize: 40,
     fontWeight: "800",
     marginBottom: 12,
   },
   errorTitle: {
-    color: "#fff",
+    color: "#EDE5DC",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 8,
   },
   errorText: {
-    color: "#888",
+    color: "#9C8B7A",
     fontSize: 14,
     textAlign: "center",
     marginBottom: 16,
   },
   errorHint: {
-    color: "#555",
+    color: "#7A6858",
     fontSize: 13,
     textAlign: "center",
     lineHeight: 18,
@@ -252,41 +252,41 @@ const styles = StyleSheet.create({
   // Modify modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(15,11,8,0.76)",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
   },
   modalCard: {
-    backgroundColor: "#1a1a2e",
+    backgroundColor: "#1A1310",
     borderRadius: 20,
     padding: 24,
     width: "100%",
     maxWidth: 400,
     borderWidth: 1,
-    borderColor: "#2a2a3e",
+    borderColor: "#3D2E22",
   },
   modalTitle: {
-    color: "#fff",
+    color: "#EDE5DC",
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 4,
   },
   modalSubtitle: {
-    color: "#888",
+    color: "#9C8B7A",
     fontSize: 14,
     marginBottom: 16,
   },
   modifyInput: {
-    backgroundColor: "#111118",
-    color: "#fff",
+    backgroundColor: "#0F0B08",
+    color: "#EDE5DC",
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
     borderWidth: 1,
-    borderColor: "#2a2a3e",
+    borderColor: "#3D2E22",
     marginBottom: 16,
   },
   modalButtons: {
@@ -297,11 +297,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#2a2a3e",
+    backgroundColor: "#241C16",
     alignItems: "center",
   },
   cancelBtnText: {
-    color: "#888",
+    color: "#9C8B7A",
     fontSize: 15,
     fontWeight: "600",
   },
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#1e40af",
+    backgroundColor: "#C67C4E",
     alignItems: "center",
   },
   submitBtnDisabled: {

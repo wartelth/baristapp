@@ -1,7 +1,7 @@
 {
   "id": "architecture/data-flow",
   "title": "Data Flow",
-  "description": "This page documents the complete data flow for every major operation in SwissKnife.",
+  "description": "This page documents the complete data flow for every major operation in Baristapp.",
   "source": "@site/docs/architecture/data-flow.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/data-flow",

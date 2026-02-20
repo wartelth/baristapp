@@ -1,5 +1,5 @@
 /**
- * App-side cloud storage via the SwissKnife server proxy.
+ * App-side cloud storage via the Baristapp server proxy.
  * Uses the server's REST API (which uses Supabase under the hood).
  * When logged in, sends Authorization Bearer token; otherwise uses device ID.
  */

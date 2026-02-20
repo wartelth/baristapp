@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import type { RendererProps } from "../../types";
-import type { MiniAppComponent } from "@swissknife/shared";
+import type { MiniAppComponent } from "@baristapp/shared";
 
 // Forward declaration — will be injected to avoid circular imports
 let renderComponent: (
@@ -56,13 +56,13 @@ export function ListRenderer({ component, state, dispatch, onNavigate }: Rendere
 
 const styles = StyleSheet.create({
   empty: {
-    color: "#666",
+    color: "#9C8B7A",
     fontSize: 14,
     textAlign: "center",
     marginVertical: 16,
   },
   item: {
-    backgroundColor: "#1e1e2e",
+    backgroundColor: "#1A1310",
     borderRadius: 8,
     padding: 12,
     marginVertical: 4,

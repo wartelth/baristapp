@@ -1,4 +1,4 @@
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { validateMiniApp } from "../../validation/schemaValidator";
 import { runSpecTests } from "../../validation/specTester";
 import type {

@@ -66,6 +66,21 @@
               "sidebar": "docs"
             },
             {
+              "id": "guides/hosting-docs",
+              "path": "/guides/hosting-docs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/how-to-use",
+              "path": "/guides/how-to-use",
+              "sidebar": "docs"
+            },
+            {
+              "id": "guides/release-checklist",
+              "path": "/guides/release-checklist",
+              "sidebar": "docs"
+            },
+            {
               "id": "intro",
               "path": "/",
               "sidebar": "docs"

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from "react";
-import type { MiniApp } from "@swissknife/shared";
+import type { MiniApp } from "@baristapp/shared";
 import { generateMiniApp, modifyMiniApp } from "../api/client";
 import { saveApp, clearState } from "../storage/storageLayer";
 import { requestAllCapabilities } from "../capabilities/capabilityManager";
