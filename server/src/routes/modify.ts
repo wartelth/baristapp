@@ -80,14 +80,18 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
 
     if (result.success) {
       const app = result.miniApp;
-      await recordModelUsage({
-        userId,
-        appId: app.appId,
-        requestType: "modify",
-        modelName: result.usage.modelName,
-        costUsd: result.usage.costUsd,
-        numTurns: result.usage.numTurns,
-      });
+      try {
+        await recordModelUsage({
+          userId,
+          appId: app.appId,
+          requestType: "modify",
+          modelName: result.usage.modelName,
+          costUsd: result.usage.costUsd,
+          numTurns: result.usage.numTurns,
+        });
+      } catch (usageErr) {
+        L.warn("BILLING", `Usage recording failed (non-fatal): ${usageErr instanceof Error ? usageErr.message : String(usageErr)}`);
+      }
       L.success("GENERATE", `#${reqId} App modified in ${fmtMs(elapsed)}`);
       L.detail("GENERATE", "model cost", `$${result.usage.costUsd.toFixed(4)}`);
       if (result.previewUrl) {
