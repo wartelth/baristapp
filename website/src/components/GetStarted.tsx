@@ -44,15 +44,23 @@ export default function GetStarted() {
               </div>
               <div className="flex gap-3">
                 <span className="text-muted/60 select-none">$</span>
-                <span className="text-foreground/80">cd baristapp && npm install</span>
+                <span className="text-foreground/80">cd baristapp</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-muted/60 select-none">$</span>
-                <span className="text-foreground/80">cp server/.env.example server/.env</span>
+                <span className="text-foreground/80">npm install</span>
               </div>
               <div className="flex gap-3">
                 <span className="text-muted/60 select-none">$</span>
-                <span className="text-foreground/80">npm run dev</span>
+                <span className="text-foreground/80">copy server/.env.example to server/.env</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-muted/60 select-none">$</span>
+                <span className="text-foreground/80">npm run server</span>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-muted/60 select-none">$</span>
+                <span className="text-foreground/80">npm run app</span>
               </div>
             </div>
           </div>

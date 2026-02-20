@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageSquare, Shield, Zap, Share2, RefreshCw, Smartphone } from "lucide-react";
+import { MessageSquare, Shield, Zap, Share2, RefreshCw, Smartphone, Coffee } from "lucide-react";
 
 const features = [
   {
@@ -34,6 +34,11 @@ const features = [
     title: "Share Instantly",
     description: "Share any app with a short code or QR. Friends import it in one tap.",
   },
+  {
+    icon: Coffee,
+    title: "Beans + Curated Tools",
+    description: "Every native mini-app is called a Bean. Each Bean can use curated APIs and tools we maintain for quality and safety.",
+  },
 ];
 
 const container = {
@@ -61,7 +66,7 @@ export default function WhatItDoes() {
             What It Does
           </h2>
           <p className="text-muted max-w-lg mx-auto">
-            Everything you need to go from idea to interactive app.
+            Everything you need to go from idea to interactive Bean.
           </p>
         </motion.div>
 

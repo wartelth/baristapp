@@ -13,7 +13,7 @@
     "app": "npm start --workspace=app",
     "docs": "npm start --workspace=docs",
     "docs:build": "npm run build --workspace=docs",
-    "typecheck": "tsc --noEmit --workspace=shared && tsc --noEmit --workspace=server"
+    "typecheck": "npm exec --workspace=shared tsc -- --noEmit && npm exec --workspace=server tsc -- --noEmit"
   },
   "devDependencies": {
     "react-refresh": "^0.18.0"

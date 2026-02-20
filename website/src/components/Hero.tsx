@@ -38,7 +38,8 @@ export default function Hero() {
           className="text-lg text-muted max-w-xl mx-auto mb-10 leading-relaxed"
         >
           Describe any tool in plain English.
-          Baristapp brews a fully interactive mobile app in seconds.
+          Baristapp brews a fully interactive native mini-app called a Bean.
+          Each Bean gets curated APIs and tools.
           No code. No deploy. Just say what you need.
         </motion.p>
 
