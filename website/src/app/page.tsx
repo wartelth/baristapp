@@ -4,6 +4,7 @@ import WhatItDoes from "@/components/WhatItDoes";
 import HowItWorks from "@/components/HowItWorks";
 import AppShowcase from "@/components/AppShowcase";
 import GetStarted from "@/components/GetStarted";
+import TechCredits from "@/components/TechCredits";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <HowItWorks />
       <AppShowcase />
       <GetStarted />
+      <TechCredits />
       <Footer />
     </main>
   );

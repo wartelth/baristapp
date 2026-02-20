@@ -324,7 +324,3 @@ Main routes in `server/src/index.ts`:
    - implementation notes
    - test plan
    - screenshots/videos for UI changes
-
----
-
-If you want, I can also generate a matching `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and PR template to complete the typical GitHub repo docs set.
