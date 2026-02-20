@@ -123,6 +123,16 @@ export const ServerCallAction = z.object({
   errorKey: z.string().optional(),
 });
 
+export const SkillCallAction = z.object({
+  type: z.literal("skillCall"),
+  skillId: z.string(),
+  actionId: z.string(),
+  params: z.record(z.string(), z.unknown()).optional(),
+  resultKey: z.string(),
+  loadingKey: z.string().optional(),
+  errorKey: z.string().optional(),
+});
+
 export const HapticAction = z.object({
   type: z.literal("haptic"),
   style: z.enum(["light", "medium", "heavy", "success", "warning", "error"]).optional(),
@@ -157,6 +167,7 @@ export const Action: z.ZodType = z.lazy(() =>
     HttpAction,
     ComputeAction,
     ServerCallAction,
+    SkillCallAction,
     HapticAction,
     CopyToClipboardAction,
     GetLocationAction,
@@ -559,6 +570,7 @@ export const Capability = z.enum([
   "clipboard",
   "notifications",
   "supabaseStorage",
+  "skills",
 ]);
 
 // =============================================================================
@@ -619,6 +631,7 @@ export const MiniAppSchemaV2 = z.object({
   theme: Theme.optional(),
   serverEndpoints: z.array(ServerEndpoint).optional(),
   effects: z.array(Effect).optional(),
+  skills: z.array(z.string()).optional(),
 });
 
 /** Unified schema — accepts both v1 and v2 */

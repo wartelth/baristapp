@@ -1,5 +1,6 @@
 import type { MiniApp } from "@swissknife/shared";
 import { validateMiniApp } from "../../validation/schemaValidator";
+import { runSpecTests } from "../../validation/specTester";
 import type {
   GenerationResult,
   LLMProvider,
@@ -33,56 +34,43 @@ export interface WorkerRunInput {
   tools: WorkerTools;
 }
 
-const EXTERNAL_RESOURCE_RE = /<(?:script|link)\b[^>]*\b(?:src|href)\s*=\s*["']https?:\/\//i;
+function buildRepairPrompt(
+  basePrompt: string,
+  errors: string[],
+  warnings: string[]
+): string {
+  const lines = [basePrompt, ""];
 
-function runSpecChecks(spec: MiniApp): { passed: boolean; checks: string[] } {
-  const checks: string[] = [];
-  if (!spec.screens?.length) checks.push("App has no screens");
-  if (!spec.title || spec.title.trim().length < 2) checks.push("App title too short");
-  if (!spec.icon || String(spec.icon).length < 1) checks.push("Missing icon");
-
-  const endpointIds = new Set<string>();
-  const duplicateEndpoints = (spec as any).serverEndpoints?.some((e: any) => {
-    if (!e?.id) return false;
-    if (endpointIds.has(e.id)) return true;
-    endpointIds.add(e.id);
-    return false;
-  });
-  if (duplicateEndpoints) checks.push("Duplicate server endpoint ids");
-
-  for (const screen of spec.screens ?? []) {
-    for (const comp of (screen as any).components ?? []) {
-      if (comp.type === "webView") {
-        const html: string = comp.props?.html ?? "";
-        if (!html || html.trim().length < 50) {
-          checks.push(`WebView "${comp.id}" has empty or trivial HTML (must be >50 chars)`);
-        }
-        if (EXTERNAL_RESOURCE_RE.test(html)) {
-          checks.push(`WebView "${comp.id}" contains external script/link tags — HTML must be self-contained (Apple 4.7 compliance)`);
-        }
-        const declaredKeys: string[] = comp.props?.stateKeys ?? [];
-        if (declaredKeys.length > 0 && !html.includes("SwissKnife")) {
-          checks.push(`WebView "${comp.id}" declares stateKeys but HTML does not use the SwissKnife bridge API`);
-        }
-      }
-    }
+  if (errors.length > 0) {
+    lines.push(
+      "CRITICAL ERRORS (the app WILL crash — you MUST fix all of these):",
+      ...errors.map((e) => `  ❌ ${e}`),
+      ""
+    );
   }
 
-  return {
-    passed: checks.length === 0,
-    checks,
-  };
-}
+  if (warnings.length > 0) {
+    lines.push(
+      "WARNINGS (likely bugs — fix if possible):",
+      ...warnings.map((w) => `  ⚠ ${w}`),
+      ""
+    );
+  }
 
-function buildRepairPrompt(basePrompt: string, checks: string[]): string {
-  return [
-    basePrompt,
+  lines.push(
+    "Common fixes:",
+    "- Every stateKey used by input/slider/toggle/select/tabs MUST exist in initialState.",
+    "- Every resultKey from http/serverCall/skillCall should have a sensible default in initialState (null, [], {}).",
+    "- list/chart dataKey must point to an array in initialState (use [] as default).",
+    "- modal visibleKey must be a boolean in initialState (default false).",
+    "- navigate screenId must match an existing screen id.",
+    "- serverCall endpointId must match an id in serverEndpoints.",
+    "- skillCall skillId must be listed in the top-level skills array.",
     "",
-    "Repair requirements from automated checks:",
-    ...checks.map((c) => `- ${c}`),
-    "",
-    "Keep the same app intent, but fix all issues above.",
-  ].join("\n");
+    "Keep the same app intent, but fix ALL errors above. Output ONLY the corrected JSON."
+  );
+
+  return lines.join("\n");
 }
 
 export async function runAgentWorker(input: WorkerRunInput): Promise<WorkerExecutionResult> {
@@ -113,44 +101,73 @@ export async function runAgentWorker(input: WorkerRunInput): Promise<WorkerExecu
     }
 
     const generatedSpec = generation.miniApp;
+
+    // Phase 1: Schema validation (Zod)
     const validation = validateMiniApp(generatedSpec);
     if (!validation.valid) {
       iterationLog.push({
         iteration: i,
         action: draftOrRepair,
         ok: false,
-        message: validation.errors.join("; "),
+        message: `Schema: ${validation.errors.join("; ")}`,
       });
-      currentPrompt = buildRepairPrompt(input.prompt, validation.errors);
+      currentPrompt = buildRepairPrompt(input.prompt, validation.errors, []);
       continue;
     }
 
-    const checkReport = runSpecChecks(generatedSpec);
-    currentSpec = generatedSpec;
+    // Phase 2: Deep spec tests (runtime-safety checks)
+    const testResult = runSpecTests(validation.data);
+    currentSpec = validation.data;
+
+    const allChecks = [...testResult.errors, ...testResult.warnings];
     iterationLog.push({
       iteration: i,
       action: "test",
-      ok: checkReport.passed,
-      message: checkReport.passed
-        ? "Spec checks passed"
-        : `Spec checks failed: ${checkReport.checks.join("; ")}`,
+      ok: testResult.passed,
+      message: testResult.passed
+        ? `All tests passed (${testResult.warnings.length} warnings)`
+        : `${testResult.errors.length} errors, ${testResult.warnings.length} warnings`,
     });
 
-    if (checkReport.passed) {
+    if (testResult.errors.length > 0) {
+      L.warn("AGENT", `Spec tests: ${testResult.errors.length} errors`);
+      for (const e of testResult.errors) L.detail("AGENT", "  ERR", e);
+    }
+    if (testResult.warnings.length > 0) {
+      L.detail("AGENT", "Spec warnings", testResult.warnings.length);
+    }
+
+    if (testResult.passed) {
       return {
         success: true,
         miniApp: currentSpec,
-        testReport: checkReport,
+        testReport: { passed: true, checks: allChecks },
         iterationLog,
       };
     }
 
-    currentPrompt = buildRepairPrompt(input.prompt, checkReport.checks);
+    currentPrompt = buildRepairPrompt(input.prompt, testResult.errors, testResult.warnings);
+  }
+
+  // If we exhausted iterations but have a spec, return it with the test report
+  // so the user at least gets something (even if imperfect)
+  if (currentSpec) {
+    const finalTests = runSpecTests(currentSpec);
+    L.warn("AGENT", `Returning spec with ${finalTests.errors.length} errors after max iterations`);
+    return {
+      success: true,
+      miniApp: currentSpec,
+      testReport: {
+        passed: finalTests.passed,
+        checks: [...finalTests.errors, ...finalTests.warnings],
+      },
+      iterationLog,
+    };
   }
 
   return {
     success: false,
-    testReport: { passed: false, checks: ["Max iterations reached"] },
+    testReport: { passed: false, checks: ["Max iterations reached without producing a valid spec"] },
     iterationLog,
     error: "Worker reached max iterations without passing checks",
   };

@@ -3,10 +3,10 @@
  * Dynamically includes the current spec so the model has full context.
  */
 
-import { MASTER_PROMPT } from "./masterPrompt";
+import { buildMasterPrompt } from "./masterPrompt";
 
 export function buildModifyPrompt(currentSpecJson: string): string {
-  return `${MASTER_PROMPT}
+  return `${buildMasterPrompt()}
 
 ═══════════════════════════════════════
 MODIFICATION MODE

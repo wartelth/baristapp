@@ -1,3 +1,5 @@
+import { buildSkillPromptSummary } from "../skills/skillRegistry";
+
 /**
  * Master prompt — WebView-first generation with native component fallback.
  * Guides the LLM to produce beautiful HTML5 mini-apps by default,
@@ -46,7 +48,8 @@ Top-level MiniApp:
   "initialState": { <key: value pairs> },
   "theme": { <optional colors> },
   "serverEndpoints": [ <optional> ],
-  "effects": [ <optional> ]
+  "effects": [ <optional> ],
+  "skills": [ <optional list of skill ids> ]
 }
 
 Screen:
@@ -241,6 +244,45 @@ EXAMPLE 4: Counter (Native — simple utility)
 }
 
 ═══════════════════════════════════════
+SKILLS — LIVE DATA FEEDS
+═══════════════════════════════════════
+
+Mini apps can access live data through platform-provided skills. Skills are server-side data connectors — the app never sees API keys or raw credentials.
+
+To use skills:
+1. Add "skills" to capabilities array
+2. Add a top-level "skills" array listing the skill ids you need
+3. Use "skillCall" actions to fetch data (in effects or button actions)
+
+skillCall action:
+  { "type": "skillCall", "skillId": "weather", "actionId": "current", "params": { "lat": 48.85, "lon": 2.35 }, "resultKey": "weatherData", "loadingKey": "loading", "errorKey": "error" }
+
+Params support {{stateKey}} interpolation — e.g. "lat": "{{userLat}}" reads from app state at runtime.
+
+IMPORTANT: Only use skills listed below. Do NOT invent skill ids.
+
+\${SKILLS_CATALOG}
+
+Example — Weather Dashboard:
+{
+  "skills": ["weather", "geocoding"],
+  "capabilities": ["localStorage", "skills"],
+  "effects": [
+    { "trigger": "onMount", "action": { "type": "skillCall", "skillId": "weather", "actionId": "current", "params": { "lat": 48.8566, "lon": 2.3522 }, "resultKey": "weather", "loadingKey": "loading" } }
+  ]
+}
+
+Example — Crypto Tracker with auto-refresh:
+{
+  "skills": ["crypto-prices"],
+  "capabilities": ["localStorage", "skills"],
+  "effects": [
+    { "trigger": "onMount", "action": { "type": "skillCall", "skillId": "crypto-prices", "actionId": "markets", "params": { "limit": 10 }, "resultKey": "coins", "loadingKey": "loading" } },
+    { "trigger": "onInterval", "intervalMs": 60000, "action": { "type": "skillCall", "skillId": "crypto-prices", "actionId": "markets", "params": { "limit": 10 }, "resultKey": "coins" } }
+  ]
+}
+
+═══════════════════════════════════════
 CAPABILITIES
 ═══════════════════════════════════════
 "localStorage" — always include
@@ -252,6 +294,7 @@ CAPABILITIES
 "clipboard" — for copyToClipboard action
 "notifications" — for push notifications
 "supabaseStorage" — for cloud sync
+"skills" — for skillCall action (live data feeds)
 
 ═══════════════════════════════════════
 THEME (optional — also sets WebView CSS variables)
@@ -317,7 +360,7 @@ EXPRESSION ENGINE (use in any native component string value)
   Pipes:   {{price | toFixed(2)}}, {{name | uppercase}}, {{date | timeAgo}}
 
 ═══════════════════════════════════════
-15 ACTION TYPES
+16 ACTION TYPES
 ═══════════════════════════════════════
 
 Basic:
@@ -338,6 +381,7 @@ Advanced:
   copyToClipboard — { "type": "copyToClipboard", "fromKey": "...", "value": "..." }
   transform    — { "type": "transform", "expression": "items.filter('done').length", "resultKey": "completedCount" }
   setMultiple  — { "type": "setMultiple", "values": { "key1": "...", "key2": true } }
+  skillCall    — { "type": "skillCall", "skillId": "...", "actionId": "...", "params": {...}, "resultKey": "...", "loadingKey": "...", "errorKey": "..." }
 
 ═══════════════════════════════════════
 SERVER ENDPOINTS (optional)
@@ -372,4 +416,16 @@ RULES
 14. For ML apps: use cameraView + serverCall.
 15. Choose WebView for any app where visual quality matters. Choose native only for simple utilities or hardware access.
 
+16. When the user asks for live data (weather, crypto, news, jokes, locations), use skillCall with the appropriate skill. Always prefer skills over raw http actions for supported data.
+17. When using skills, add "skills" to capabilities AND list skill ids in the top-level "skills" array.
+
 Remember: Output ONLY the JSON object. No other text.`;
+
+/**
+ * Builds the final master prompt with the skills catalog injected.
+ * Call this at generation time so the catalog reflects loaded skills.
+ */
+export function buildMasterPrompt(): string {
+  const catalog = buildSkillPromptSummary();
+  return MASTER_PROMPT.replace("${SKILLS_CATALOG}", catalog || "(No skills loaded)");
+}

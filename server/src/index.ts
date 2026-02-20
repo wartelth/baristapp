@@ -10,6 +10,8 @@ import reportsRouter from "./routes/reports";
 import socialRouter from "./routes/social";
 import libraryRouter from "./routes/library";
 import billingRouter from "./routes/billing";
+import skillsRouter from "./routes/skills";
+import { getSkillIds } from "./skills/skillRegistry";
 import { ensureTmpDir, listSessions } from "./services/sessionStore";
 import { ensureReportsDir } from "./services/reportStore";
 import L, { fmtMs, fmtStatus, fmtBytes, nextReqId } from "./utils/logger";
@@ -76,6 +78,9 @@ app.use("/api/library", libraryRouter);
 // Billing + subscriptions (RevenueCat sync + webhooks)
 app.use("/api/billing", billingRouter);
 
+// Skills — curated data feed connectors for mini apps
+app.use("/api/skills", skillsRouter);
+
 // Debug: list saved generation sessions
 app.get("/api/sessions", (_req, res) => {
   res.json({ sessions: listSessions() });
@@ -119,5 +124,7 @@ app.listen(PORT, () => {
   L.detail("BOOT", "AGENT_EXECUTOR_MODE", process.env.AGENT_EXECUTOR_MODE ?? "native");
   L.detail("BOOT", "AIDER_EXECUTION_TARGET", process.env.AIDER_EXECUTION_TARGET ?? "auto");
   L.detail("BOOT", "AIDER_MODEL", process.env.AIDER_MODEL ?? process.env.OPENAI_CODING_MODEL ?? "gpt-5.1");
+  const skillIds = getSkillIds();
+  L.detail("BOOT", "SKILLS_LOADED", `${skillIds.length} (${skillIds.join(", ")})`);
   L.separator();
 });

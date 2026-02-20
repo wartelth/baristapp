@@ -49,6 +49,7 @@ import {
   ConditionalAction,
   BatchAction,
   ServerCallAction,
+  SkillCallAction,
   HapticAction,
   CopyToClipboardAction,
   GetLocationAction,
@@ -117,6 +118,7 @@ export type CopyToClipboardActionType = z.infer<typeof CopyToClipboardAction>;
 export type GetLocationActionType = z.infer<typeof GetLocationAction>;
 export type TransformActionType = z.infer<typeof TransformAction>;
 export type SetMultipleActionType = z.infer<typeof SetMultipleAction>;
+export type SkillCallActionType = z.infer<typeof SkillCallAction>;
 
 // ---------------------------------------------------------------------------
 // Clarification API types
