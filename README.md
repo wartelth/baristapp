@@ -10,7 +10,7 @@ Build mobile mini-apps from plain English prompts.
 
 Baristapp generates declarative JSON app specs, validates them with shared schemas, then renders them safely in the mobile app (no eval / no remote code execution).
 
-**Links:** [Website](https://baristapp.app) · [Docs](https://docs.baristapp.dev) · [API health](https://api.baristapp.app/health) · [Report issue](https://github.com/wartelth/baristapp/issues/new)
+**Links:** [Repository](https://github.com/wartelth/baristapp) · [Issues](https://github.com/wartelth/baristapp/issues) · [Pull Requests](https://github.com/wartelth/baristapp/pulls) · [Actions](https://github.com/wartelth/baristapp/actions)
 
 > Status: Beta (active development)  
 > Platforms: Expo/React Native app + Node/Express API + docs/website monorepo
