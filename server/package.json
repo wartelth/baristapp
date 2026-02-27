@@ -8,7 +8,7 @@
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.42",
+    "@anthropic-ai/claude-agent-sdk": "^0.2.49",
     "@anthropic-ai/sdk": "^0.74.0",
     "@baristapp/shared": "*",
     "@supabase/supabase-js": "^2.95.3",
